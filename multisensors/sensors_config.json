@@ -1,0 +1,115 @@
+{
+    "sensors" : [
+        {
+            "type": "RGBCamera",
+            "name": "RGBCamera_0",
+            "transform": {
+                "x": {"relative": true, "value": -1.1}, "y": {"relative": false, "value": -1}, "z": {"relative": true, "value": 1.1},
+                "yaw": -30
+            },
+            "options": {},
+            "grid": [0, 0]
+        },
+        {
+            "type": "RGBCamera",
+            "name": "RGBCamera_1",
+            "transform": {
+                "x": {"relative": true, "value": -1.05}, "y": {"relative": false, "value": -0.5}, "z": {"relative": true, "value": 1.1},
+                "yaw": 0
+            },
+            "options": {},
+            "grid": [0, 1]
+        },
+        {
+            "type": "RGBCamera",
+            "name": "RGBCamera_2",
+            "transform": {
+                "x": {"relative": true, "value": -1}, "y": {"relative": false, "value": 0}, "z": {"relative": true, "value": 1.1},
+                "yaw": 0
+            },
+            "options": {},
+            "grid": [0, 2]
+        },
+        {
+            "type": "RGBCamera",
+            "name": "RGBCamera_3",
+            "transform": {
+                "x": {"relative": true, "value": -1.05}, "y": {"relative": false, "value": 0.5}, "z": {"relative": true, "value": 1.1},
+                "yaw": 0
+            },
+            "options": {},
+            "grid": [0, 3]
+        },
+        {
+            "type": "RGBCamera",
+            "name": "RGBCamera_4",
+            "transform": {
+                "x": {"relative": true, "value": -1.1}, "y": {"relative": false, "value": 1}, "z": {"relative": true, "value": 1.1},
+                "yaw": 30
+            },
+            "options": {},
+            "grid": [0, 4]
+        },
+
+        {
+            "type": "RGBCamera",
+            "name": "RGBCamera_5",
+            "transform": {
+                "x": {"relative": true, "value": -0.5}, "y": {"relative": false, "value": -0.75}, "z": {"relative": true, "value": 0.5},
+                "yaw": -30
+            },
+            "options": {},
+            "grid": [1, 1]
+        },
+        {
+            "type": "RGBCamera",
+            "name": "RGBCamera_6",
+            "transform": {
+                "x": {"relative": true, "value": -0.5}, "y": {"relative": false, "value": 0}, "z": {"relative": true, "value": 0.5},
+                "yaw": 0
+            },
+            "options": {},
+            "grid": [1, 2]
+        },
+        {
+            "type": "RGBCamera",
+            "name": "RGBCamera_7",
+            "transform": {
+                "x": {"relative": true, "value": -0.5}, "y": {"relative": false, "value": 0.75}, "z": {"relative": true, "value": 0.5},
+                "yaw": 30
+            },
+            "options": {},
+            "grid": [1, 3]
+        },
+        {
+            "type": "GNSS",
+            "name": "GNSS",
+            "transform": {
+                "x": {"relative": true, "value": 0}, "z": {"relative": true, "value": 0.5}
+            },
+            "options": {}
+        },
+        {
+            "type": "Radar",
+            "name": "Radar",
+            "transform": {
+                "x": {"relative": true, "value": 0}, "y": {"relative": false, "value": 0}, "z": {"relative": true, "value": 1},
+                "yaw": 90
+            },
+            "options": {},
+            "grid": [1, 0]
+        },
+        {
+            "type": "LiDAR",
+            "name": "LiDAR",
+            "transform": {
+                "x": {"relative": true, "value": 0}, "y": {"relative": false, "value": 0}, "z": {"relative": true, "value": 1.2},
+                "yaw": 90
+            },
+            "options": {
+                "range": "100"
+            },
+            "grid": [1, 4]
+        }
+    ]
+}
