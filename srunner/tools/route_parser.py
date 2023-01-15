@@ -9,11 +9,13 @@ Module used to parse all the route and scenario configuration parameters.
 
 import json
 import math
+from typing import Tuple
 import xml.etree.ElementTree as ET
 
 import carla
 from agents.navigation.local_planner import RoadOption
 from srunner.scenarioconfigs.route_scenario_configuration import RouteScenarioConfiguration
+from srunner.tools.vehicle import Vehicle
 
 # TODO  check this threshold, it could be a bit larger but not so large that we cluster scenarios.
 TRIGGER_THRESHOLD = 2.0  # Threshold to say if a trigger position is new or repeated, works for matching positions
@@ -75,9 +77,36 @@ class RouteParser(object):
 
             new_config.trajectory = waypoint_list
 
+            # Parse the ego vehicles
+            vehicles = RouteParser.parse_vehicles(route)
+            ego_vehicles = []
+            other_vehicles = []
+            for idx, vehicle in enumerate(vehicles):
+                vehicle.transform = waypoint_list[idx]
+                if vehicle.rolename == "hero":
+                    ego_vehicles.append(vehicle)
+                else:
+                    other_vehicles.append(vehicle)
+
+            new_config.ego_vehicles.extend(ego_vehicles)
+            new_config.other_actors.extend(other_vehicles)
+
             list_route_descriptions.append(new_config)
 
         return list_route_descriptions
+
+    @staticmethod
+    def parse_vehicles(route) -> Tuple[list, list]:
+        """
+        Returns a list of vehicles
+        """
+        vehicles = []
+        for vehicle in route.iter('vehicle'):
+            vehicles.append(Vehicle(model=vehicle.attrib['model'], 
+                                rolename=vehicle.attrib['rolename'],
+                                transform=None
+                                ))
+        return vehicles
 
     @staticmethod
     def parse_weather(route):

@@ -381,7 +381,8 @@ class ScenarioRunner(object):
         # Prepare scenario
         print("Preparing scenario: " + config.name)
         try:
-            self._prepare_ego_vehicles(config.ego_vehicles)
+            # self._prepare_ego_vehicles(config.ego_vehicles)
+            self._prepare_ego_vehicles([])
             if self._args.openscenario:
                 scenario = OpenScenario(world=self.world,
                                         ego_vehicles=self.ego_vehicles,

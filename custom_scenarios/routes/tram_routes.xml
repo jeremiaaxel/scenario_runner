@@ -25,6 +25,7 @@
 		<waypoint x="81.7" y="28.4" z="0.0" pitch="0.0" roll="0.0" yaw="91.0" />
 	</route>
 	<route id="2" town="Town10HD">
+		<vehicle id="0" model="vehicle.tesla.cybertruck" rolename="hero" />
 		<waypoint x="109.9" y="-1.4" z="0.0" pitch="0.0" roll="0.0" yaw="0.0" />
 		<waypoint x="110.0" y="-23.3" z="0.0" pitch="0.0" roll="0.0" yaw="0.0" />
 		<waypoint x="66.7" y="-68.0" z="0.0" pitch="0.0" roll="0.0" yaw="-90.0" />
@@ -39,6 +40,7 @@
 		<waypoint x="109.6" y="44.5" z="0.0" pitch="0.0" roll="0.0" yaw="0.0" />
 	</route>
 	<route id="3" town="Town10HD">
+		<vehicle id="0" model="vehicle.tesla.cybertruck" rolename="hero" />
 		<waypoint x="109.9" y="-1.4" z="0.0" pitch="0.0" roll="0.0" yaw="0.0" />
 		<waypoint x="110.0" y="-23.3" z="0.0" pitch="0.0" roll="0.0" yaw="0.0" />
 		<waypoint x="66.7" y="-68.0" z="0.0" pitch="0.0" roll="0.0" yaw="-90.0" />
