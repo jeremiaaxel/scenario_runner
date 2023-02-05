@@ -15,14 +15,15 @@
 		<waypoint x="-113.8" y="-4.8" z="0.0" pitch="0.0" roll="0.0" yaw="180.0" />
 	</route>
 	<route id="1" town="Town10HD">
+		<vehicle id="0" model="tram" rolename="hero" />
 		<waypoint x="109.9" y="-1.4" z="0.0" pitch="0.0" roll="0.0" yaw="0.0" />
 		<waypoint x="110.0" y="-23.3" z="0.0" pitch="0.0" roll="0.0" yaw="0.0" />
-		<waypoint x="66.7" y="-68.0" z="0.0" pitch="0.0" roll="0.0" yaw="-90.0" />
-		<waypoint x="-24.2" y="-68.3" z="0.0" pitch="0.0" roll="0.0" yaw="-89.0" />
-		<waypoint x="-52.1" y="-43.9" z="0.0" pitch="0.0" roll="0.0" yaw="180.0" />
-		<waypoint x="-52.4" y="-3.9" z="0.0" pitch="0.0" roll="0.0" yaw="179.0" />
-		<waypoint x="-28.9" y="28.2" z="0.0" pitch="0.0" roll="0.0" yaw="90.0" />
-		<waypoint x="81.7" y="28.4" z="0.0" pitch="0.0" roll="0.0" yaw="91.0" />
+		<waypoint x="65.5" y="-64.5" z="0.0" pitch="0.0" roll="0.0" yaw="-90.0" />
+		<waypoint x="-24.2" y="-64.9" z="0.0" pitch="0.0" roll="0.0" yaw="-89.0" />
+		<waypoint x="-48.7" y="-43.7" z="0.0" pitch="0.0" roll="0.0" yaw="180.0" />
+		<waypoint x="-48.9" y="-3.5" z="0.0" pitch="0.0" roll="0.0" yaw="179.0" />
+		<waypoint x="-29.0" y="24.6" z="0.0" pitch="0.0" roll="0.0" yaw="90.0" />
+		<waypoint x="81.3" y="24.8" z="0.0" pitch="0.0" roll="0.0" yaw="91.0" />
 	</route>
 	<route id="2" town="Town10HD">
 		<vehicle id="0" model="vehicle.tesla.cybertruck" rolename="hero" />
