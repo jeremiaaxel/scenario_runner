@@ -4,12 +4,12 @@
 
 import time
 
-from utils.manual_control_global_funcs import get_actor_display_name
+from multisensors.utils.manual_control_global_funcs import get_actor_display_name
 
-from sensors.CollisionSensor import CollisionSensor
-from sensors.LaneInvasionSensor import LaneInvasionSensor
-from sensors.IMUSensor import IMUSensor
-from displays.World import World
+from multisensors.sensors.CollisionSensor import CollisionSensor
+from multisensors.sensors.LaneInvasionSensor import LaneInvasionSensor
+from multisensors.sensors.IMUSensor import IMUSensor
+from multisensors.displays.World import World
 
 class WorldSR(World):
     restarted = False

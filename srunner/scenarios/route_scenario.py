@@ -212,7 +212,7 @@ class RouteScenario(BasicScenario):
         elevate_transform.location.z += 0.5
 
         model = 'vehicle.lincoln.mkz_2017'
-        if self.config.ego_vehicles:
+        if len(self.config.ego_vehicles) > 0:
             model = self.config.ego_vehicles[0].model
 
         ego_vehicle = CarlaDataProvider.request_new_actor(model,

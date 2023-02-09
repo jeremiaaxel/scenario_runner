@@ -8,12 +8,14 @@ import carla
 import pygame 
 import datetime
 
-from utils.manual_control_global_funcs import get_actor_display_name
-from displays.FadingText import FadingText
-from displays.HelpText import HelpText
+from multisensors.displays.FadingText import FadingText
+from multisensors.displays.HelpText import HelpText
+from multisensors.utils.manual_control_global_funcs import get_actor_display_name
 
 
 class HUD(object):
+    grid_size = 1
+
     def __init__(self, width, height, grid_size=None):
         pygame.init()
         pygame.font.init()
@@ -21,7 +23,8 @@ class HUD(object):
         self.display = pygame.display.set_mode((width, height), pygame.HWSURFACE | pygame.DOUBLEBUF)
 
         self.dim = (width, height)
-        self.grid_size = grid_size
+        if grid_size is not None:
+            self.grid_size = grid_size
         self.window_size = self.dim
         self.sensor_list = []
 

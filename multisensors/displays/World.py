@@ -5,16 +5,14 @@
 import sys, time, random
 
 import carla
-from carla import ColorConverter as cc
-from carla import AttachmentType
 
-from utils.manual_control_global_funcs import find_weather_presets, get_actor_blueprints, get_actor_display_name
-from sensors.CollisionSensor import CollisionSensor
-from sensors.LaneInvasionSensor import LaneInvasionSensor
-from sensors.GnssSensor import GnssSensor
-from sensors.IMUSensor import IMUSensor
-from sensors.RadarSensor import RadarSensor 
-from displays.SensorManager import SensorManager
+from multisensors.utils.manual_control_global_funcs import find_weather_presets, get_actor_blueprints, get_actor_display_name
+from multisensors.sensors.CollisionSensor import CollisionSensor
+from multisensors.sensors.LaneInvasionSensor import LaneInvasionSensor
+from multisensors.sensors.GnssSensor import GnssSensor
+from multisensors.sensors.IMUSensor import IMUSensor
+from multisensors.sensors.RadarSensor import RadarSensor 
+from multisensors.displays.SensorManager import SensorManager
 
 
 class World(object):

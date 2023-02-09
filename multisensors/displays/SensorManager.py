@@ -8,12 +8,12 @@
 import carla
 import pygame
 import numpy as np
-from sensors.GnssSensor import GnssSensor
-from sensors.RadarSensor import RadarSensor
-
-from utils.CustomTimer import CustomTimer
-
 from typing import Union, Tuple
+
+from multisensors.sensors.GnssSensor import GnssSensor
+from multisensors.sensors.RadarSensor import RadarSensor
+from multisensors.utils.CustomTimer import CustomTimer
+
 
 class SensorManager:
     def __init__(self, world, hud, sensor_type, name, transform_dict, attached, sensor_options, display_pos):

@@ -3,7 +3,7 @@ import weakref
 import math
 import collections
 
-from utils.manual_control_global_funcs import get_actor_display_name
+from multisensors.utils.manual_control_global_funcs import get_actor_display_name
 
 # ==============================================================================
 # -- CollisionSensor -----------------------------------------------------------

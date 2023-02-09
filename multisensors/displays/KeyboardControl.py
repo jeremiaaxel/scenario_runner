@@ -2,16 +2,9 @@
 # -- KeyboardControl -----------------------------------------------------------
 # ==============================================================================
 
-import sys
 import carla
-import random
 
-from utils.manual_control_global_funcs import find_weather_presets, get_actor_blueprints, get_actor_display_name
-from sensors.CollisionSensor import CollisionSensor
-from sensors.LaneInvasionSensor import LaneInvasionSensor
-from sensors.GnssSensor import GnssSensor
-from sensors.IMUSensor import IMUSensor
-from sensors.RadarSensor import RadarSensor 
+from multisensors.utils.manual_control_global_funcs import find_weather_presets, get_actor_blueprints, get_actor_display_name
 
 try:
     import pygame
