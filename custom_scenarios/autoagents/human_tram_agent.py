@@ -17,6 +17,10 @@ from multisensors.utils.get_sensors_json import get_sensors_json
 
 try:
     import pygame
+    # modifiers
+    from pygame.locals import KMOD_CTRL
+    # keys
+    from pygame.locals import K_ESCAPE # escape, quit
     from pygame.locals import K_DOWN, K_s # decceleration
     from pygame.locals import K_UP, K_w # acceleration
     from pygame.locals import K_LEFT, K_a # left
@@ -47,7 +51,7 @@ class HumanInterface(object):
         pygame.font.init()
         self._clock = pygame.time.Clock()
         self._display = pygame.display.set_mode((self._width, self._height), pygame.HWSURFACE | pygame.DOUBLEBUF)
-        pygame.display.set_caption("Human Agent")
+        pygame.display.set_caption("Tram Agent")
 
     def run_interface(self, input_data):
         """
@@ -113,7 +117,7 @@ class HumanTramAgent(NpcAgent):
 
         """
         sensors = [
-            {'id': 'Center', 'type': 'sensor.camera.rgb', 'x': 0.7, 'y': 0.0, 'z': 1.60, 'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
+            {'id': 'Center', 'type': 'sensor.camera.rgb', 'x': 4.5, 'y': 0.0, 'z': 1.60, 'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
                     'width': 800, 'height': 600, 'fov': 100},
             {'id': 'GNSS', 'type': 'sensor.other.gnss', 'x': 0.7, 'y': -0.4, 'z': 1.60, 'id': 'GNSS'}
         ]
@@ -222,10 +226,15 @@ class KeyboardControl(object):
         """
         Calculate new vehicle controls based on input keys
         """
+        def _is_quit_shortcut(key):
+            return (key == K_ESCAPE) or (key == K_q and pygame.key.get_mods() & KMOD_CTRL)
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
             elif event.type == pygame.KEYUP:
+                if _is_quit_shortcut(event.key):
+                    return True
                 if event.key == K_q:
                     self._control.gear = 1 if self._control.reverse else -1
                     self._control.reverse = self._control.gear < 0
@@ -235,17 +244,17 @@ class KeyboardControl(object):
         else:
             self._control.throttle = 0.0
 
-        steer_increment = 3e-4 * milliseconds
         self._steer_cache = 0.0
-        if self._mode == "normal":
-            if keys[K_LEFT] or keys[K_a]:
-                self._steer_cache -= steer_increment
-            elif keys[K_RIGHT] or keys[K_d]:
-                self._steer_cache += steer_increment
-            else:
-                self._steer_cache = 0.0
+        # steer_increment = 3e-4 * milliseconds
+        # if self._mode == "normal":
+        #     if keys[K_LEFT] or keys[K_a]:
+        #         self._steer_cache -= steer_increment
+        #     elif keys[K_RIGHT] or keys[K_d]:
+        #         self._steer_cache += steer_increment
+        #     else:
+        #         self._steer_cache = 0.0
 
-        self._steer_cache = min(0.95, max(-0.95, self._steer_cache))
+        # self._steer_cache = min(0.95, max(-0.95, self._steer_cache))
         self._control.steer = round(self._steer_cache, 1)
         self._control.brake = 1.0 if keys[K_DOWN] or keys[K_s] else 0.0
         self._control.hand_brake = keys[K_SPACE]
