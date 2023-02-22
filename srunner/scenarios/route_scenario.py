@@ -187,6 +187,7 @@ class RouteScenario(BasicScenario):
         gps_route, route = interpolate_trajectory(world, config.trajectory)
 
         potential_scenarios_definitions, _ = RouteParser.scan_route_for_scenarios(config.town, route, world_annotations)
+        print(f"Potential scenarios: {len(potential_scenarios_definitions)}")
 
         self.route = route
         CarlaDataProvider.set_ego_vehicle_route(convert_transform_to_location(self.route))

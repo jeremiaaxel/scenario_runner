@@ -184,26 +184,58 @@ class RouteParser(object):
             world_location:
             route_description:
         """
+        def get_dpos(waypoint1, wtransform):
+            dx = float(waypoint1['x']) - wtransform.location.x
+            dy = float(waypoint1['y']) - wtransform.location.y
+            dz = float(waypoint1['z']) - wtransform.location.z
+            return math.sqrt(dx * dx + dy * dy + dz * dz)
+        
+        def get_dyaw(waypoint1, wtransform):
+            return (float(waypoint1['yaw']) - wtransform.rotation.yaw) % 360
+
+
         def match_waypoints(waypoint1, wtransform):
             """
             Check if waypoint1 and wtransform are similar
             """
-            dx = float(waypoint1['x']) - wtransform.location.x
-            dy = float(waypoint1['y']) - wtransform.location.y
-            dz = float(waypoint1['z']) - wtransform.location.z
-            dpos = math.sqrt(dx * dx + dy * dy + dz * dz)
-
-            dyaw = (float(waypoint1['yaw']) - wtransform.rotation.yaw) % 360
+            dpos = get_dpos(waypoint1, wtransform)
+            dyaw = get_dyaw(waypoint1, wtransform)
 
             return dpos < TRIGGER_THRESHOLD \
                 and (dyaw < TRIGGER_ANGLE_THRESHOLD or dyaw > (360 - TRIGGER_ANGLE_THRESHOLD))
 
         match_position = 0
+        closest_wp = {
+            "dpos": 999,
+            "dyaw": 360,
+            "match_position": -1
+        }
         # TODO this function can be optimized to run on Log(N) time
         for route_waypoint in route_description:
+            # DEBUGGING PURPOSE
+            dpos = get_dpos(world_location, route_waypoint[0])
+            dyaw = get_dyaw(world_location, route_waypoint[0])
+            if closest_wp.get("match_position") == -1 \
+                or (dpos < closest_wp["dpos"] and dyaw < closest_wp["dyaw"]):
+                closest_wp["dpos"] = dpos
+                closest_wp["dyaw"] = dyaw
+                closest_wp["match_position"] = match_position
+
+            if 70 < route_waypoint[0].location.x < 72 and 25 < route_waypoint[0].location.y < 26:
+                print(f"\t{route_waypoint[0]}")
+
             if match_waypoints(world_location, route_waypoint[0]):
                 return match_position
             match_position += 1
+        
+        print("Closest:")
+        if closest_wp.get("match_position") > -1:
+            dpos = closest_wp.get("dpos")            
+            dyaw = closest_wp.get("dyaw")
+            match_position = closest_wp.get("match_position")
+            route_waypoint = route_description[match_position]
+            print(f"\tdpos: {dpos}\tdyaw: {dyaw}\tmatch_position: {match_position}")
+            print(f"\t{route_waypoint[0]}")
 
         return None
 
@@ -317,7 +349,7 @@ class RouteParser(object):
                 for event in scenario["available_event_configurations"]:
                     waypoint = event['transform']  # trigger point of this scenario
                     RouteParser.convert_waypoint_float(waypoint)
-                    # We match trigger point to the  route, now we need to check if the route affects
+                    # We match trigger point to the route, now we need to check if the route affects
                     match_position = RouteParser.match_world_location_to_route(
                         waypoint, trajectory)
                     if match_position is not None:

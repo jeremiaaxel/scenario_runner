@@ -44,7 +44,7 @@ class World(object):
         self._actor_filter = args.filter
         self._actor_generation = args.generation
         self._gamma = args.gamma
-        self.scenario_mode = args.scenario_mode
+        self.scenario_mode = args.scenario_mode if args.scenario_mode is not None else False
         self.restart()
         self.world.on_tick(hud.on_world_tick)
         self.recording_enabled = False

@@ -414,6 +414,7 @@ class ScenarioRunner(object):
                 self.client.start_recorder(recorder_name, True)
 
             # Load scenario and run it
+            self.agent_instance.set_egovehicle(scenario.ego_vehicles[0])
             self.manager.load_scenario(scenario, self.agent_instance)
             self.manager.run_scenario()
 

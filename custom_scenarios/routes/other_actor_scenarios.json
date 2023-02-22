@@ -1,0 +1,42 @@
+{
+"available_scenarios": [
+    {
+        "Town10HD_Opt": [
+            {
+                "available_event_configurations": [
+                    {
+                        "other_actors": {
+                            "left": [
+                                {
+                                    "pitch": "0.0",
+                                    "x": "-42.662",
+                                    "y": "-6.521",
+                                    "yaw": "0.000031",
+                                    "z": "1.0"
+                                }
+                            ],
+                            "right": [
+                                {
+                                    "pitch": "0.0",
+                                    "x": "-44.002",
+                                    "y": "-10.000",
+                                    "yaw": "180.000015",
+                                    "z": "1.0"
+                                }
+                            ]
+                        },
+                        "transform": {
+                            "pitch": "0",
+                            "x": "-48.841572",
+                            "y": "-10.190259",
+                            "yaw": "89.679260",
+                            "z": "0.0"
+                        }
+                    }
+                ],
+                "scenario_type": "Scenario1"
+            }
+        ]
+    }
+]
+}

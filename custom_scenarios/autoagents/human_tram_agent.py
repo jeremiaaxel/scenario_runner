@@ -23,8 +23,6 @@ try:
     from pygame.locals import K_ESCAPE # escape, quit
     from pygame.locals import K_DOWN, K_s # decceleration
     from pygame.locals import K_UP, K_w # acceleration
-    from pygame.locals import K_LEFT, K_a # left
-    from pygame.locals import K_RIGHT, K_d # right
     from pygame.locals import K_q   # quit
     from pygame.locals import K_SPACE # hand brake
 except ImportError:
@@ -32,15 +30,21 @@ except ImportError:
 
 import carla
 import json
+import os
+import math
 
 from srunner.autoagents.autonomous_agent import AutonomousAgent
 from srunner.autoagents.npc_agent import NpcAgent
+from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
 class HumanInterface(object):
 
     """
     Class to control a vehicle manually for debugging purposes
     """
+    _info_text = []
+    _show_info = True
+    ego_vehicle = None
 
     def __init__(self):
         self._width = 800
@@ -48,10 +52,93 @@ class HumanInterface(object):
         self._surface = None
 
         pygame.init()
-        pygame.font.init()
+        pygame.font.init()        
+        font_name = 'courier' if os.name == 'nt' else 'mono'
+        fonts = [x for x in pygame.font.get_fonts() if font_name in x]
+        default_font = 'ubuntumono'
+        mono = default_font if default_font in fonts else fonts[0]
+        mono = pygame.font.match_font(mono)
+        self._font_mono = pygame.font.Font(mono, 12 if os.name == 'nt' else 14)
         self._clock = pygame.time.Clock()
         self._display = pygame.display.set_mode((self._width, self._height), pygame.HWSURFACE | pygame.DOUBLEBUF)
         pygame.display.set_caption("Tram Agent")
+
+    def update_info(self, imu_data, gnss_data): 
+        def get_heading(compass):
+            heading = 'N' if compass > 270.5 or compass < 89.5 else ''
+            heading += 'S' if 90.5 < compass < 269.5 else ''
+            heading += 'E' if 0.5 < compass < 179.5 else ''
+            heading += 'W' if 180.5 < compass < 359.5 else ''
+            return heading
+
+        def array_to_string(arr):
+            result = f""
+            for idx, item in enumerate(arr):
+                result += f"{item:2f}"
+                if idx != len(arr) - 1:
+                    result += f","
+            return result
+
+        # See sensor_interface for index reference
+        accelerometer = imu_data[0:3]
+        gyroscope = imu_data[3:6]
+        compass = imu_data[6] 
+        lat, lon = gnss_data[0:2]
+
+        if self.ego_vehicle is not None:
+            t = self.ego_vehicle.get_transform()
+
+        heading = get_heading(compass)
+        self._info_text = [
+            # 'Speed:   % 15.0f km/h' % (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)),
+            f'Compass: {compass:2f}\N{DEGREE SIGN} {heading}',
+            f'Accelero: {array_to_string(accelerometer)}',
+            f'Gyroscop: {array_to_string(gyroscope)}',
+            f'GNSS: {lat:2f} {lon:2f}',
+            '']
+        
+        if t:
+            self._info_text.extend(
+                [
+                    'Location:% 20s' % ('(% 5.1f, % 5.1f)' % (t.location.x, t.location.y)),
+                    'Height:  % 18.0f m' % t.location.z,
+                ]
+            )
+    
+    def render_info(self):
+        info_surface = pygame.Surface((220, self._height))
+        info_surface.set_alpha(100)
+        self._display.blit(info_surface, (0, 0))
+        v_offset = 4
+        bar_h_offset = 100
+        bar_width = 106
+        for item in self._info_text:
+            if v_offset + 18 > self._height:
+                break
+            if isinstance(item, list):
+                if len(item) > 1:
+                    points = [(x + 8, v_offset + 8 + (1.0 - y) * 30) for x, y in enumerate(item)]
+                    pygame.draw.lines(self._display, (255, 136, 0), False, points, 2)
+                item = None
+                v_offset += 18
+            elif isinstance(item, tuple):
+                if isinstance(item[1], bool):
+                    rect = pygame.Rect((bar_h_offset, v_offset + 8), (6, 6))
+                    pygame.draw.rect(self._display, (255, 255, 255), rect, 0 if item[1] else 1)
+                else:
+                    rect_border = pygame.Rect((bar_h_offset, v_offset + 8), (bar_width, 6))
+                    pygame.draw.rect(self._display, (255, 255, 255), rect_border, 1)
+                    f = (item[1] - item[2]) / (item[3] - item[2])
+                    if item[2] < 0.0:
+                        rect = pygame.Rect((bar_h_offset + f * (bar_width - 6), v_offset + 8), (6, 6))
+                    else:
+                        rect = pygame.Rect((bar_h_offset, v_offset + 8), (f * bar_width, 6))
+                    pygame.draw.rect(self._display, (255, 255, 255), rect)
+                item = item[0]
+            if item:  # At this point has to be a str.
+                surface = self._font_mono.render(item, True, (255, 255, 255))
+                self._display.blit(surface, (8, v_offset))
+            v_offset += 18
 
     def run_interface(self, input_data):
         """
@@ -59,11 +146,15 @@ class HumanInterface(object):
         """
         # process sensor data
         image_center = input_data['Center'][1][:, :, -2::-1]
+        gnss_data = input_data['GNSS'][1]
+        imu_data = input_data['IMU'][1]
 
         # display image
         self._surface = pygame.surfarray.make_surface(image_center.swapaxes(0, 1))
         if self._surface is not None:
             self._display.blit(self._surface, (0, 0))
+        self.update_info(imu_data, gnss_data)
+        self.render_info()
         pygame.display.flip()
 
     def quit_interface(self):
@@ -71,6 +162,9 @@ class HumanInterface(object):
         Stops the pygame window
         """
         pygame.quit()
+
+    def set_egovehicle(self, egovehicle):
+        self.ego_vehicle = egovehicle
 
 class HumanTramAgent(NpcAgent):
 
@@ -83,8 +177,7 @@ class HumanTramAgent(NpcAgent):
     prev_timestamp = 0
     width = 800
     height = 600
-    client = carla.Client('localhost', 2000)
-    client.set_timeout(20.0)
+    ego_vehicle = None
 
     def setup(self, path_to_conf_file=None):
         """
@@ -92,8 +185,6 @@ class HumanTramAgent(NpcAgent):
         """
 
         super().setup(path_to_conf_file)
-        self.agent_engaged = False
-        self.prev_timestamp = 0
         self._hic = HumanInterface()
         self._controller = KeyboardControl(path_to_conf_file)
 
@@ -119,7 +210,8 @@ class HumanTramAgent(NpcAgent):
         sensors = [
             {'id': 'Center', 'type': 'sensor.camera.rgb', 'x': 4.5, 'y': 0.0, 'z': 1.60, 'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
                     'width': 800, 'height': 600, 'fov': 100},
-            {'id': 'GNSS', 'type': 'sensor.other.gnss', 'x': 0.7, 'y': -0.4, 'z': 1.60, 'id': 'GNSS'}
+            {'id': 'GNSS', 'type': 'sensor.other.gnss', 'x': 0.7, 'y': -0.4, 'z': 1.60, 'id': 'GNSS'},
+            {'id': 'IMU', 'type': 'sensor.other.imu', 'x': 0.7, 'y': -0.4, 'z': 1.60, 'id': 'IMU'}
         ]
 
         return sensors
@@ -141,6 +233,10 @@ class HumanTramAgent(NpcAgent):
         self.prev_timestamp = timestamp
 
         return control
+
+    def set_egovehicle(self, egovehicle):
+        self.ego_vehicle = egovehicle
+        self._hic.set_egovehicle(egovehicle)
 
     def destroy(self):
         """
@@ -234,7 +330,7 @@ class KeyboardControl(object):
                 return
             elif event.type == pygame.KEYUP:
                 if _is_quit_shortcut(event.key):
-                    return True
+                    return 
                 if event.key == K_q:
                     self._control.gear = 1 if self._control.reverse else -1
                     self._control.reverse = self._control.gear < 0
@@ -245,16 +341,6 @@ class KeyboardControl(object):
             self._control.throttle = 0.0
 
         self._steer_cache = 0.0
-        # steer_increment = 3e-4 * milliseconds
-        # if self._mode == "normal":
-        #     if keys[K_LEFT] or keys[K_a]:
-        #         self._steer_cache -= steer_increment
-        #     elif keys[K_RIGHT] or keys[K_d]:
-        #         self._steer_cache += steer_increment
-        #     else:
-        #         self._steer_cache = 0.0
-
-        # self._steer_cache = min(0.95, max(-0.95, self._steer_cache))
         self._control.steer = round(self._steer_cache, 1)
         self._control.brake = 1.0 if keys[K_DOWN] or keys[K_s] else 0.0
         self._control.hand_brake = keys[K_SPACE]
