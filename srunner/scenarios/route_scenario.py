@@ -39,7 +39,13 @@ from srunner.scenarios.object_crash_intersection import VehicleTurningRoute
 from srunner.scenarios.other_leading_vehicle import OtherLeadingVehicle
 from srunner.scenarios.maneuver_opposite_direction import ManeuverOppositeDirection
 from srunner.scenarios.junction_crossing_route import SignalJunctionCrossingRoute, NoSignalJunctionCrossingRoute
-from srunner.scenarios.cut_in import CutIn
+from srunner.scenarios.background_activity import BackgroundActivity
+
+from custom_scenarios.scenarios.WeatherMidRainyNoon import WeatherMidRainyNoonRoute
+from custom_scenarios.scenarios.WeatherHardRainNight import WeatherHardRainNightRoute
+from custom_scenarios.scenarios.WeatherWetNoon import WeatherWetNoonRoute
+from custom_scenarios.scenarios.WeatherClearSunset import WeatherClearSunsetRoute
+from custom_scenarios.scenarios.SpawnAngkot import SpawnAngkot
 
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import (CollisionTest,
                                                                      InRouteTest,
@@ -62,7 +68,13 @@ NUMBER_CLASS_TRANSLATION = {
     "Scenario8": SignalJunctionCrossingRoute,
     "Scenario9": SignalJunctionCrossingRoute,
     "Scenario10": NoSignalJunctionCrossingRoute,
-    "Scenario11": CutIn
+
+    "WetNoon": WeatherWetNoonRoute,
+    "MidRainyNoon": WeatherMidRainyNoonRoute,
+    "HardRainNight": WeatherHardRainNightRoute,
+    "ClearSunset": WeatherClearSunsetRoute,
+
+    "SpawnAngkot": SpawnAngkot
 }
 
 
@@ -189,7 +201,10 @@ class RouteScenario(BasicScenario):
         gps_route, route = interpolate_trajectory(world, config.trajectory)
 
         potential_scenarios_definitions, _ = RouteParser.scan_route_for_scenarios(config.town, route, world_annotations)
-        print(f"Potential scenarios: {len(potential_scenarios_definitions)}")
+        if debug_mode:
+            print(f"Potential scenarios: {len(potential_scenarios_definitions)}")
+            for x in potential_scenarios_definitions:
+                print(f"\t{x}:\t{potential_scenarios_definitions[x]}")
 
         self.route = route
         CarlaDataProvider.set_ego_vehicle_route(convert_transform_to_location(self.route))

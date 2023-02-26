@@ -230,7 +230,7 @@ class HumanTramAgent(NpcAgent):
         """
         sensors = [
             {'id': 'Center', 'type': 'sensor.camera.rgb', 
-             'x': 4.5, 'y': 0.0, 'z': 1.60, 
+             'x': 5.5, 'y': 0.0, 'z': 2.3, 
              'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
              'width': 800, 'height': 600, 'fov': 100},
             {'id': 'GNSS', 'type': 'sensor.other.gnss', 

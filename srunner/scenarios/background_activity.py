@@ -35,7 +35,7 @@ class BackgroundActivity(BasicScenario):
         'Town10': 120,
     }
 
-    def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60):
+    def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False):
         """
         Setup all relevant parameters and create scenario
         """
@@ -50,7 +50,7 @@ class BackgroundActivity(BasicScenario):
                                                  world,
                                                  debug_mode,
                                                  terminate_on_failure=True,
-                                                 criteria_enable=True)
+                                                 criteria_enable=criteria_enable)
 
     def _initialize_actors(self, config):
 

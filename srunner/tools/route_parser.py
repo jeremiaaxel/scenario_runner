@@ -225,20 +225,20 @@ class RouteParser(object):
                 closest_wp["dyaw"] = dyaw
                 closest_wp["match_position"] = match_position
 
-            debug_waypoint(world_location, route_waypoint[0])
+            # debug_waypoint(world_location, route_waypoint[0])
 
             if match_waypoints(world_location, route_waypoint[0]):
                 return match_position
             match_position += 1
         
-        print("Closest:")
-        if closest_wp.get("match_position") > -1:
-            dpos = closest_wp.get("dpos")            
-            dyaw = closest_wp.get("dyaw")
-            match_position = closest_wp.get("match_position")
-            route_waypoint = route_description[match_position]
-            print(f"\tdpos: {dpos}\tdyaw: {dyaw}\tmatch_position: {match_position}")
-            print(f"\t{route_waypoint[0]}")
+        # print("Closest:")
+        # if closest_wp.get("match_position") > -1:
+        #     dpos = closest_wp.get("dpos")            
+        #     dyaw = closest_wp.get("dyaw")
+        #     match_position = closest_wp.get("match_position")
+        #     route_waypoint = route_description[match_position]
+        #     print(f"\tdpos: {dpos}\tdyaw: {dyaw}\tmatch_position: {match_position}")
+        #     print(f"\t{route_waypoint[0]}")
 
         return None
 

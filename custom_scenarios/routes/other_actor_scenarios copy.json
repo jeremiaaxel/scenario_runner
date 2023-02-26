@@ -97,6 +97,40 @@
             {
                 "available_event_configurations": [
                     {
+                        "other_actors": {
+                            "left": [
+                                {
+                                    "pitch": "0.0",
+                                    "x": "114.6",
+                                    "y": "18.5",
+                                    "yaw": "0.0",
+                                    "z": "1.0"
+                                }
+                            ],
+                            "right": [
+                                {
+                                    "pitch": "0.0",
+                                    "x": "104.0",
+                                    "y": "18.0",
+                                    "yaw": "0.0",
+                                    "z": "1.0"
+                                }
+                            ]
+                        },
+                        "transform": {
+                            "pitch": "0",
+                            "x": "75.9",
+                            "y": "24.9",
+                            "yaw": "0.0",
+                            "z": "0.0"
+                        }
+                    }
+                ],
+                "scenario_type": "SpawnAngkot"
+            },
+            {
+                "available_event_configurations": [
+                    {
                         "transform": {
                             "pitch": "0",
                             "x": "66.9",
