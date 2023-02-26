@@ -80,9 +80,9 @@ class HumanInterface(object):
             return result
 
         # See sensor_interface for index reference
-        accelerometer = imu_data[0:3]
-        gyroscope = imu_data[3:6]
-        compass = imu_data[6] 
+        accelerometer = imu_data.get('accelerometer')
+        gyroscope = imu_data.get('gyroscope')
+        compass = imu_data.get('compass')
         lat, lon = gnss_data[0:2]
 
         if self.ego_vehicle is not None:
@@ -140,14 +140,35 @@ class HumanInterface(object):
                 self._display.blit(surface, (8, v_offset))
             v_offset += 18
 
+    @staticmethod
+    def parse_imu_data(imu_data):
+        limits = (-99.9, 99.9)
+        def parse_accelerometer(accelerometer):
+            return (max(limits[0], min(limits[1], accelerometer[0])),
+                max(limits[0], min(limits[1], accelerometer[1])),
+                max(limits[0], min(limits[1], accelerometer[2])))
+        def parse_gyroscope(gyroscope):
+            return (max(limits[0], min(limits[1], gyroscope[0])),
+                max(limits[0], min(limits[1], gyroscope[1])),
+                max(limits[0], min(limits[1], gyroscope[2])))
+        def parse_compass(compass):
+            return math.degrees(compass)
+
+        accelerometer = imu_data[0:3]
+        gyroscope = imu_data[3:6]
+        compass = imu_data[6]
+        return {'accelerometer': parse_accelerometer(accelerometer), 
+            'gyroscope': parse_gyroscope(gyroscope), 
+            'compass': parse_compass(compass)}
+
     def run_interface(self, input_data):
         """
         Run the GUI
         """
         # process sensor data
         image_center = input_data['Center'][1][:, :, -2::-1]
+        imu_data = HumanInterface.parse_imu_data(input_data['IMU'][1])
         gnss_data = input_data['GNSS'][1]
-        imu_data = input_data['IMU'][1]
 
         # display image
         self._surface = pygame.surfarray.make_surface(image_center.swapaxes(0, 1))
@@ -208,10 +229,16 @@ class HumanTramAgent(NpcAgent):
 
         """
         sensors = [
-            {'id': 'Center', 'type': 'sensor.camera.rgb', 'x': 4.5, 'y': 0.0, 'z': 1.60, 'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
-                    'width': 800, 'height': 600, 'fov': 100},
-            {'id': 'GNSS', 'type': 'sensor.other.gnss', 'x': 0.7, 'y': -0.4, 'z': 1.60, 'id': 'GNSS'},
-            {'id': 'IMU', 'type': 'sensor.other.imu', 'x': 0.7, 'y': -0.4, 'z': 1.60, 'id': 'IMU'}
+            {'id': 'Center', 'type': 'sensor.camera.rgb', 
+             'x': 4.5, 'y': 0.0, 'z': 1.60, 
+             'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
+             'width': 800, 'height': 600, 'fov': 100},
+            {'id': 'GNSS', 'type': 'sensor.other.gnss', 
+             'x': 0.7, 'y': -0.4, 'z': 1.60,
+             'roll': 0.0, 'pitch': 0.0, 'yaw': 90.0},
+            {'id': 'IMU', 'type': 'sensor.other.imu', 
+             'x': 0.7, 'y': -0.4, 'z': 1.60,
+             'roll': 0.0, 'pitch': 0.0, 'yaw': 90.0},
         ]
 
         return sensors
