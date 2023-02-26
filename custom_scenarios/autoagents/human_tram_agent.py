@@ -152,7 +152,7 @@ class HumanInterface(object):
                 max(limits[0], min(limits[1], gyroscope[1])),
                 max(limits[0], min(limits[1], gyroscope[2])))
         def parse_compass(compass):
-            return math.degrees(compass)
+            return (math.degrees(compass) - 90) % 360
 
         accelerometer = imu_data[0:3]
         gyroscope = imu_data[3:6]
@@ -238,7 +238,7 @@ class HumanTramAgent(NpcAgent):
              'roll': 0.0, 'pitch': 0.0, 'yaw': 90.0},
             {'id': 'IMU', 'type': 'sensor.other.imu', 
              'x': 0.7, 'y': -0.4, 'z': 1.60,
-             'roll': 0.0, 'pitch': 0.0, 'yaw': 90.0},
+             'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0},
         ]
 
         return sensors

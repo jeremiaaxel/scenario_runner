@@ -193,7 +193,6 @@ class RouteParser(object):
         def get_dyaw(waypoint1, wtransform):
             return (float(waypoint1['yaw']) - wtransform.rotation.yaw) % 360
 
-
         def match_waypoints(waypoint1, wtransform):
             """
             Check if waypoint1 and wtransform are similar
@@ -203,6 +202,11 @@ class RouteParser(object):
 
             return dpos < TRIGGER_THRESHOLD \
                 and (dyaw < TRIGGER_ANGLE_THRESHOLD or dyaw > (360 - TRIGGER_ANGLE_THRESHOLD))
+
+        def debug_waypoint(waypoint1, wtransform):
+            if waypoint1['x'] - TRIGGER_THRESHOLD < wtransform.location.x < waypoint1['x'] + TRIGGER_THRESHOLD \
+                and waypoint1['y'] - TRIGGER_THRESHOLD < wtransform.location.y < world_location['y'] + 5:
+                print(f"Nearby waypoints:\t{route_waypoint[0]}")
 
         match_position = 0
         closest_wp = {
@@ -221,8 +225,7 @@ class RouteParser(object):
                 closest_wp["dyaw"] = dyaw
                 closest_wp["match_position"] = match_position
 
-            if 70 < route_waypoint[0].location.x < 72 and 25 < route_waypoint[0].location.y < 26:
-                print(f"\t{route_waypoint[0]}")
+            debug_waypoint(world_location, route_waypoint[0])
 
             if match_waypoints(world_location, route_waypoint[0]):
                 return match_position

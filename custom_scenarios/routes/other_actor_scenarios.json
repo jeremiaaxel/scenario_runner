@@ -9,6 +9,31 @@
                             "left": [
                                 {
                                     "pitch": "0.0",
+                                    "x": "28.0",
+                                    "y": "-64.4",
+                                    "yaw": "180.0",
+                                    "z": "0.0"
+                                }
+                            ]
+                        },
+                        "transform": {
+                            "pitch": "0",
+                            "x": "41.5",
+                            "y": "-64.4",
+                            "yaw": "180.0",
+                            "z": "0.0"
+                        }
+                    }
+                ],
+                "scenario_type": "Scenario3"
+            },
+            {
+                "available_event_configurations": [
+                    {
+                        "other_actors": {
+                            "left": [
+                                {
+                                    "pitch": "0.0",
                                     "x": "-42.662",
                                     "y": "-6.521",
                                     "yaw": "0.000031",
@@ -27,14 +52,28 @@
                         },
                         "transform": {
                             "pitch": "0",
-                            "x": "-48.841572",
-                            "y": "-10.190259",
-                            "yaw": "89.679260",
+                            "x": "-48.8",
+                            "y": "-23.8",
+                            "yaw": "90.0",
                             "z": "0.0"
                         }
                     }
                 ],
-                "scenario_type": "Scenario1"
+                "scenario_type": "Scenario4"
+            },
+            {
+                "available_event_configurations": [
+                    {
+                        "transform": {
+                            "pitch": "0",
+                            "x": "-48.8",
+                            "y": "-23.8",
+                            "yaw": "90.0",
+                            "z": "0.0"
+                        }
+                    }
+                ],
+                "scenario_type": "Scenario11"
             }
         ]
     }
