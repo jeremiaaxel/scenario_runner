@@ -22,10 +22,11 @@ class AutonomousAgent(object):
     Autonomous agent base class. All user agents have to be derived from this class
     """
 
-    def __init__(self, path_to_conf_file):
+    def __init__(self, path_to_conf_file, is_print_log=True):
         #  current global plans to reach a destination
         self._global_plan = None
         self._global_plan_world_coord = None
+        self.is_print_log = is_print_log
 
         # this data structure will contain all sensor data
         self.sensor_interface = SensorInterface()
@@ -90,7 +91,8 @@ class AutonomousAgent(object):
 
         timestamp = GameTime.get_time()
         wallclock = GameTime.get_wallclocktime()
-        print('======[Agent] Wallclock_time = {} / Sim_time = {}'.format(wallclock, timestamp))
+        if self.is_print_log:
+            print('======[Agent] Wallclock_time = {} / Sim_time = {}'.format(wallclock, timestamp))
 
         control = self.run_step(input_data, timestamp)
         control.manual_gear_shift = False
