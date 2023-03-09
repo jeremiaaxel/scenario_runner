@@ -46,7 +46,7 @@ from custom_scenarios.scenarios.WeatherMidRainyNoon import WeatherMidRainyNoonRo
 from custom_scenarios.scenarios.WeatherHardRainNight import WeatherHardRainNightRoute
 from custom_scenarios.scenarios.WeatherWetNoon import WeatherWetNoonRoute
 from custom_scenarios.scenarios.WeatherClearSunset import WeatherClearSunsetRoute
-from custom_scenarios.scenarios.SpawnAngkot import SpawnAngkot
+from custom_scenarios.scenarios.SpawnAngkot import SpawnAngkot, SpawnAngkotOnTrigger
 
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import (CollisionTest,
                                                                      InRouteTest,
@@ -75,7 +75,8 @@ NUMBER_CLASS_TRANSLATION = {
     "HardRainNight": WeatherHardRainNightRoute,
     "ClearSunset": WeatherClearSunsetRoute,
 
-    "SpawnAngkot": SpawnAngkot
+    "SpawnAngkot": SpawnAngkot,
+    "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger
 }
 
 logger = logging.getLogger(__name__)

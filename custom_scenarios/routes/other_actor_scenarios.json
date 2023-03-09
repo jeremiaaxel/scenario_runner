@@ -124,14 +124,14 @@
                         {
                             "transform": {
                                 "pitch": "0",
-                                "x": "66.9",
-                                "y": "24.9",
-                                "yaw": "0.0",
+                                "x": "67.2",
+                                "y": "-63.8",
+                                "yaw": "180.0",
                                 "z": "0.0"
                             }
                         }
                     ],
-                    "scenario_type": "SpawnAngkot"
+                    "scenario_type": "SpawnAngkotOnTrigger"
                 },
                 {
                     "available_event_configurations": [

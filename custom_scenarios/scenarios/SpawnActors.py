@@ -31,6 +31,7 @@ class SpawnActors(BackgroundActivity):
     """
 
     default_model_name = 'vehicle.tesla.model3'
+    amount = 50
 
     def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False, model_name='vehicle.tesla.model3'):
         """
@@ -43,6 +44,7 @@ class SpawnActors(BackgroundActivity):
         self._ego_route = CarlaDataProvider.get_ego_vehicle_route()
         self._reference_waypoint = self._wmap.get_waypoint(config.trigger_points[0].location)
         self._trigger_location = config.trigger_points[0].location
+        logger.debug_s(self._trigger_location)
 
         self.timeout = timeout  # Timeout of scenario in seconds
 
@@ -61,7 +63,7 @@ class SpawnActors(BackgroundActivity):
             self.model_name = self.default_model_name
 
         new_actors = CarlaDataProvider.request_new_batch_actors(self.model_name,
-                                                                50,
+                                                                self.amount,
                                                                 carla.Transform(),
                                                                 autopilot=True,
                                                                 random_location=True,
