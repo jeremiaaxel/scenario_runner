@@ -29,6 +29,7 @@ import sys
 import time
 import json
 import pkg_resources
+import logging, logging.config
 
 import carla
 
@@ -44,6 +45,15 @@ from srunner.tools.route_parser import RouteParser
 # Version of scenario_runner
 VERSION = '0.9.12'
 
+
+# adding new logging level
+logging.DEBUG_SCENARIO = logging.DEBUG + 1 # one level lower than DEBUG
+logging.addLevelName(logging.DEBUG_SCENARIO, "DEBUG_SCENARIO")
+def debug_s(self, message, *args, **kws):
+    if self.isEnabledFor(logging.DEBUG_SCENARIO):
+        self._log(logging.DEBUG_SCENARIO, message, args, **kws)
+setattr(logging, "DEBUG_SCENARIO", logging.DEBUG_SCENARIO)
+setattr(logging.getLoggerClass(), "debug_s", debug_s)
 
 class ScenarioRunner(object):
 
@@ -364,7 +374,9 @@ class ScenarioRunner(object):
         if self._args.agent:
             agent_class_name = self.module_agent.__name__.title().replace('_', '')
             try:
-                self.agent_instance = getattr(self.module_agent, agent_class_name)(self._args.agentConfig)
+                # don't print Agent's log if debug scenario
+                is_print_log = False if self._args.debug_scenario else True
+                self.agent_instance = getattr(self.module_agent, agent_class_name)(self._args.agentConfig, is_print_log=is_print_log)
                 config.agent = self.agent_instance
             except Exception as e:          # pylint: disable=broad-except
                 traceback.print_exc()
@@ -571,6 +583,7 @@ def main():
     parser.add_argument('--additionalScenario', default='', help='Provide additional scenario implementations (*.py)')
 
     parser.add_argument('--debug', action="store_true", help='Run with debug output')
+    parser.add_argument('--debug-scenario', action="store_true", help='Run with debug output')
     parser.add_argument('--reloadWorld', action="store_true",
                         help='Reload the CARLA world before starting a scenario (default=True)')
     parser.add_argument('--record', type=str, default='',
@@ -614,6 +627,16 @@ def main():
 
     if arguments.agent:
         arguments.sync = True
+
+    log_level = logging.INFO
+    if arguments.debug:
+        log_level = logging.DEBUG
+    elif arguments.debug_scenario:
+        log_level = logging.DEBUG_SCENARIO
+
+    logging.basicConfig(stream=sys.stdout, format='[%(asctime)s | %(levelname)s | %(name)s]: %(message)s', level=log_level)
+    logger = logging.getLogger(__name__)
+    logger.info(f"Logging with level: {log_level}")
 
     scenario_runner = None
     result = True

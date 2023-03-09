@@ -12,6 +12,7 @@ This module provides Challenge routes as standalone scenarios
 from __future__ import print_function
 
 import math
+import logging
 import traceback
 import xml.etree.ElementTree as ET
 from numpy import random
@@ -77,6 +78,7 @@ NUMBER_CLASS_TRANSLATION = {
     "SpawnAngkot": SpawnAngkot
 }
 
+logger = logging.getLogger(__name__)
 
 def convert_json_to_transform(actor_dict):
     """
@@ -201,10 +203,13 @@ class RouteScenario(BasicScenario):
         gps_route, route = interpolate_trajectory(world, config.trajectory)
 
         potential_scenarios_definitions, _ = RouteParser.scan_route_for_scenarios(config.town, route, world_annotations)
-        if debug_mode:
-            print(f"Potential scenarios: {len(potential_scenarios_definitions)}")
+
+        if logging.getLogger().isEnabledFor(logging.DEBUG_SCENARIO)\
+            or logging.getLogger().isEnabledFor(logging.DEBUG):
+            debug_potential_scenarios = f"Potential scenarios: {len(potential_scenarios_definitions)}\n"
             for x in potential_scenarios_definitions:
-                print(f"\t{x}:\t{potential_scenarios_definitions[x]}")
+                debug_potential_scenarios += f"\t{x}:\t{potential_scenarios_definitions[x]}\n"
+            logger.debug_s(debug_potential_scenarios)
 
         self.route = route
         CarlaDataProvider.set_ego_vehicle_route(convert_transform_to_location(self.route))
