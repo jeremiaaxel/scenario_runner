@@ -17,7 +17,7 @@ from multisensors.utils.manual_control_global_funcs import get_actor_display_nam
 from srunner.scenarios.background_activity import BackgroundActivity
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import CollisionTest
-from srunner.scenariomanager.scenarioatomics.atomic_behaviors import ChangeAutoPilot, ActorTransformSetter, KeepVelocity, ActorDestroy, HandBrakeVehicle
+from srunner.scenariomanager.scenarioatomics.atomic_behaviors import ChangeAutoPilot, ActorTransformSetter, KeepLongitudinalGap, KeepVelocity, ActorDestroy, HandBrakeVehicle
 from srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import DriveDistance, InTimeToArrivalToVehicle, InTriggerDistanceToLocationAlongRoute
 
 logger = logging.getLogger(__name__)
@@ -158,7 +158,6 @@ class SpawnActorsOnTrigger(SpawnActors):
                 continue
             
             actor_dn = SpawnActors.actor_displayname(other_actor)
-            logger.debug_s(f"Actor {actor_dn} spawns on the same lane with trigger location")
             distance = location.distance(self._trigger_location)
             if distance < distance_threshold:
                 # batch_delete.append(actor.id)
@@ -203,7 +202,6 @@ class SpawnActorsOnTrigger(SpawnActors):
                                                        self.other_actors[0],
                                                        self._time_to_reach)
 
-        angkots_velocity = []
         angkots_remove = []
         angkots_transform = []
         angkots_brake_on = []
@@ -230,7 +228,6 @@ class SpawnActorsOnTrigger(SpawnActors):
             angkots_brake_on.append(HandBrakeVehicle(other_actor, True))
             angkots_brake_off.append(HandBrakeVehicle(other_actor, False))
             angkots_remove.append(actor_remove)
-            angkots_velocity.append(actor_velocity)
             
         end_condition = DriveDistance(self.ego_vehicles[0],
                                     self._ego_vehicle_distance_driven,
@@ -238,7 +235,7 @@ class SpawnActorsOnTrigger(SpawnActors):
 
         # non leaf nodes
         scenario_sequence = py_trees.composites.Sequence()
-        keep_velocity_angkots = py_trees.composites.Parallel(
+        angkots_autopilot_nodes = py_trees.composites.Parallel(
                 policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE, name="keep velocity angkots")
 
         # building tree
@@ -247,11 +244,10 @@ class SpawnActorsOnTrigger(SpawnActors):
         scenario_sequence.add_children(angkots_brake_on)
         scenario_sequence.add_child(start_condition)
         scenario_sequence.add_children(angkots_brake_off)
-        scenario_sequence.add_child(keep_velocity_angkots)
+        scenario_sequence.add_child(angkots_autopilot_nodes)
         scenario_sequence.add_children(angkots_remove)
         scenario_sequence.add_child(end_condition)
 
-        keep_velocity_angkots.add_children(angkots_autopilot)
-        keep_velocity_angkots.add_children(angkots_velocity)
+        angkots_autopilot_nodes.add_children(angkots_autopilot)
 
         return root
