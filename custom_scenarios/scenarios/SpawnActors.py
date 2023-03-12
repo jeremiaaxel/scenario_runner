@@ -30,10 +30,9 @@ class SpawnActors(BackgroundActivity):
     This is a single ego vehicle scenario
     """
 
-    default_model_name = 'vehicle.tesla.model3'
     amount = 50
 
-    def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False, model_name='vehicle.tesla.model3'):
+    def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False, model_name='vehicle.*'):
         """
         Setup all relevant parameters and create scenario
         """
@@ -57,11 +56,8 @@ class SpawnActors(BackgroundActivity):
                                             criteria_enable=criteria_enable)
 
     def _initialize_actors(self, config):
+        destroy_distance = 3
         logger.debug_s("Initializing actor")
-
-        if self.model_name not in CarlaDataProvider._blueprint_library:
-            self.model_name = self.default_model_name
-
         new_actors = CarlaDataProvider.request_new_batch_actors(self.model_name,
                                                                 self.amount,
                                                                 carla.Transform(),
@@ -71,6 +67,12 @@ class SpawnActors(BackgroundActivity):
 
         if new_actors is None:
             raise Exception("Error: Unable to add the background activity, all spawn points were occupied")
+
+        # avoid spawning on the ego vehicle location
+        for actor in new_actors:
+            if actor.get_location().distance(self._trigger_location) < destroy_distance:
+                logger.debug_s(f"{actor.id} is too close ma man")
+                CarlaDataProvider.remove_actor_by_id(actor.id)
 
         print(f"{self.model_name} spawned: {len(new_actors)}")
         self.other_actors.extend(new_actors)

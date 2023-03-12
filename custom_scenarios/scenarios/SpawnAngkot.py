@@ -38,7 +38,7 @@ class SpawnAngkot(SpawnActors):
                                             config,
                                             debug_mode=debug_mode,
                                             criteria_enable=criteria_enable,
-                                            model_name='angkot')
+                                            model_name='vehicle.angkot.angkot')
 
 
 class SpawnAngkotOnTrigger(SpawnAngkot):
