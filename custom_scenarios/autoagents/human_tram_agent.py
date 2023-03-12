@@ -9,6 +9,7 @@ Steering is done automatically by the vehicle to follow the route that's been se
 """
 
 from __future__ import print_function
+from multisensors.displays.FadingText import FadingText
 
 from multisensors.displays.HUD import HUD
 from multisensors.displays.KeyboardControl import KeyboardControl
@@ -52,7 +53,7 @@ class HumanInterface(object):
         self._surface = None
 
         pygame.init()
-        pygame.font.init()        
+        pygame.font.init()
         font_name = 'courier' if os.name == 'nt' else 'mono'
         fonts = [x for x in pygame.font.get_fonts() if font_name in x]
         default_font = 'ubuntumono'
@@ -62,6 +63,9 @@ class HumanInterface(object):
         self._clock = pygame.time.Clock()
         self._display = pygame.display.set_mode((self._width, self._height), pygame.HWSURFACE | pygame.DOUBLEBUF)
         pygame.display.set_caption("Tram Agent")
+        
+        font = pygame.font.Font(pygame.font.get_default_font(), 20)
+        self._notifications = FadingText(font, (self._width, 40), (0, self._height - 40))
 
     def update_info(self, imu_data, gnss_data): 
         def get_heading(compass):
@@ -238,7 +242,7 @@ class HumanTramAgent(NpcAgent):
              'roll': 0.0, 'pitch': 0.0, 'yaw': 90.0},
             {'id': 'IMU', 'type': 'sensor.other.imu', 
              'x': 0.7, 'y': -0.4, 'z': 1.60,
-             'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0},
+             'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0}
         ]
 
         return sensors
@@ -247,16 +251,13 @@ class HumanTramAgent(NpcAgent):
         """
         Execute one step of navigation.
         """
-        control = super().run_step(input_data, timestamp)
-        steering = control.steer
-        del control
+        # Change steering: Steering from NPC Agent
+        control_super = super().run_step(input_data, timestamp)
+        control = self._controller.parse_events(timestamp - self.prev_timestamp)
+        control.steer = control_super.steer
         
         self.agent_engaged = True
         self._hic.run_interface(input_data)
-
-        control = self._controller.parse_events(timestamp - self.prev_timestamp)
-        # take control of steering
-        control.steer = steering
         self.prev_timestamp = timestamp
 
         return control
