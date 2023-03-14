@@ -22,6 +22,8 @@ import py_trees
 import carla
 
 from agents.navigation.local_planner import RoadOption
+from custom_scenarios.scenarios.SpawnBike import SpawnBike, SpawnBikeOnTrigger
+from custom_scenarios.scenarios.SpawnPedestrian import SpawnPedestrian, SpawnPedestrianOnTrigger
 
 # pylint: disable=line-too-long
 from srunner.scenarioconfigs.scenario_configuration import ScenarioConfiguration, ActorConfigurationData
@@ -76,7 +78,13 @@ NUMBER_CLASS_TRANSLATION = {
     "ClearSunset": WeatherClearSunsetRoute,
 
     "SpawnAngkot": SpawnAngkot,
-    "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger
+    "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger,
+    
+    "SpawnBike": SpawnBike,
+    "SpawnBikeOnTrigger": SpawnBikeOnTrigger,
+
+    "SpawnPedestrian": SpawnPedestrian,
+    "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
 }
 
 logger = logging.getLogger(__name__)

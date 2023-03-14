@@ -138,6 +138,33 @@
                         {
                             "transform": {
                                 "pitch": "0",
+                                "x": "36.2",
+                                "y": "-63.8",
+                                "yaw": "180.0",
+                                "z": "0.0"
+                            }
+                        }
+                    ],
+                    "scenario_type": "SpawnBikeOnTrigger"
+                },{
+                    "available_event_configurations": [
+                        {
+                            "transform": {
+                                "pitch": "0",
+                                "x": "30.2",
+                                "y": "-63.8",
+                                "yaw": "180.0",
+                                "z": "0.0"
+                            }
+                        }
+                    ],
+                    "scenario_type": "SpawnPedestrianOnTrigger"
+                },
+                {
+                    "available_event_configurations": [
+                        {
+                            "transform": {
+                                "pitch": "0",
                                 "x": "106.21",
                                 "y": "-4.09",
                                 "yaw": "0.0",

@@ -12,10 +12,9 @@ import logging
 from custom_scenarios.scenarios.SpawnActor import SpawnActor, SpawnActorOnTrigger
 
 logger = logging.getLogger(__name__)
-angkot_model_name = 'vehicle.angkot.angkot'
-total_amount = 10
+model_names = ['vehicle.carlamotors.firetruck', 'vehicle.tesla.cybertruck', ]
 
-class SpawnAngkot(SpawnActor):
+class SpawnMixed(SpawnActor):
 
     """
     Implementation of a scenario to spawn a set of background actors,
@@ -28,25 +27,23 @@ class SpawnAngkot(SpawnActor):
         """
         Setup all relevant parameters and create scenario
         """
-        super(SpawnAngkot, self).__init__(world,
+        super(SpawnMixed, self).__init__(world,
                                             ego_vehicles,
                                             config,
                                             randomize,
                                             debug_mode=debug_mode,
                                             timeout=timeout,
                                             criteria_enable=criteria_enable,
-                                            model_names=[angkot_model_name],
-                                            total_amount=total_amount)
+                                            model_names=model_names)
 
 
-class SpawnAngkotOnTrigger(SpawnActorOnTrigger):
+class SpawnMixedOnTrigger(SpawnActorOnTrigger):
     def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False):
-        super(SpawnAngkotOnTrigger, self).__init__(world,
+        super(SpawnMixedOnTrigger, self).__init__(world,
                                             ego_vehicles,
                                             config,
                                             randomize,
                                             debug_mode=debug_mode,
                                             timeout=timeout,
                                             criteria_enable=criteria_enable,
-                                            model_names=[angkot_model_name],
-                                            total_amount=total_amount)
+                                            model_names=model_names)
