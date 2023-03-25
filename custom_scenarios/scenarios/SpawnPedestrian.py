@@ -43,10 +43,16 @@ class SpawnPedestrian(SpawnActor):
                                             criteria_enable=criteria_enable,
                                             model_names=pedestrian_modelnames,
                                             total_amount=total_amount)
+        self._attach_ai_controller()
     
-    # def _attach_ai_controller(self):
-    #     for pedestrian in self.other_actors:
-    #         carlaSpawnActor(pedestrian_ai_controller, pedestrian.get_transform(), pedestrian).then(lambda aiControl: aiControl.start())
+    def _attach_ai_controller(self):
+        pedestrians_location = [actor.get_transform() for actor in self.other_actors]
+        pedestrians_amount = len(self.other_actors)
+        self.ai_controllers = CarlaDataProvider.request_new_batch_actors(pedestrian_ai_controller[0],
+                                                                         pedestrians_amount,
+                                                                         pedestrians_location,
+                                                                         random_location=False,
+                                                                         rolename="ai_walker")
 
 class SpawnPedestrianOnTrigger(SpawnActorOnTrigger):
     def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False):
