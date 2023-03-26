@@ -19,7 +19,8 @@ total_amount = 20
 pedestrian_modelnames = ["walker.*"]
 pedestrian_ai_controller = ["controller.ai.walker"]
 carlaSpawnActor = carla.command.SpawnActor
-
+percentage_pedestrians_running = 0.0      # how many pedestrians will run
+percentage_pedestrians_crossing = 0.0     # how many pedestrians will walk through the road
 
 class SpawnPedestrian(SpawnActor):
 
@@ -34,6 +35,8 @@ class SpawnPedestrian(SpawnActor):
         """
         Setup all relevant parameters and create scenario
         """
+        self.other_actors = []
+        logger.debug_s(f"ego: {ego_vehicles}")
         super(SpawnPedestrian, self).__init__(world,
                                             ego_vehicles,
                                             config,
@@ -46,13 +49,16 @@ class SpawnPedestrian(SpawnActor):
         self._attach_ai_controller()
     
     def _attach_ai_controller(self):
+        logger.debug_s(f"Spawning and attaching ai controllers to pedestrians")
         pedestrians_location = [actor.get_transform() for actor in self.other_actors]
         pedestrians_amount = len(self.other_actors)
-        self.ai_controllers = CarlaDataProvider.request_new_batch_actors(pedestrian_ai_controller[0],
-                                                                         pedestrians_amount,
-                                                                         pedestrians_location,
-                                                                         random_location=False,
-                                                                         rolename="ai_walker")
+        logger.debug_s(f"Pedestrian amount: {pedestrians_amount}")
+        batch = []
+        walker_controller_bp = CarlaDataProvider.get_world().get_blueprint_library().find('controller.ai.walker')
+        for i in range(pedestrians_amount):
+            batch.append(carlaSpawnActor(walker_controller_bp, self.other_actors[i].get_transform(), self.other_actors[i].id))
+        self.ai_controllers = batch
+        CarlaDataProvider.handle_actor_batch(batch, True)
 
 class SpawnPedestrianOnTrigger(SpawnActorOnTrigger):
     def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False):

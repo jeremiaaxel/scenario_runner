@@ -89,6 +89,7 @@ class HumanInterface(object):
         compass = imu_data.get('compass')
         lat, lon = gnss_data[0:2]
 
+        t = None
         if self.ego_vehicle is not None:
             t = self.ego_vehicle.get_transform()
 

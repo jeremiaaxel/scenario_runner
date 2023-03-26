@@ -393,8 +393,11 @@ class ScenarioRunner(object):
         # Prepare scenario
         print("Preparing scenario: " + config.name)
         try:
-            # self._prepare_ego_vehicles(config.ego_vehicles)
-            self._prepare_ego_vehicles([])
+            if self._args.route:
+                self._prepare_ego_vehicles([])
+            else:
+                self._prepare_ego_vehicles(config.ego_vehicles)
+                
             if self._args.openscenario:
                 scenario = OpenScenario(world=self.world,
                                         ego_vehicles=self.ego_vehicles,
@@ -426,7 +429,8 @@ class ScenarioRunner(object):
                 self.client.start_recorder(recorder_name, True)
 
             # Load scenario and run it
-            self.agent_instance.set_egovehicle(scenario.ego_vehicles[0])
+            if hasattr(self.agent_instance, "set_egovehicle"):
+                self.agent_instance.set_egovehicle(scenario.ego_vehicles[0])
             self.manager.load_scenario(scenario, self.agent_instance)
             self.manager.run_scenario()
 

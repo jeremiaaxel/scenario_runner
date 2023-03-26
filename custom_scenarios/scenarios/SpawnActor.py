@@ -76,6 +76,7 @@ class SpawnActor(BackgroundActivity):
                 
             total_amount -= amount
 
+            print(f"Spawning model: {model_name} with amount: {amount}")
             new_actors = CarlaDataProvider.request_new_batch_actors(model_name,
                                                                     amount,
                                                                     carla.Transform(),

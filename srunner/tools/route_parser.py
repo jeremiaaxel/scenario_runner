@@ -70,10 +70,14 @@ class RouteParser(object):
             new_config.scenario_file = scenario_file
 
             waypoint_list = []  # the list of waypoints that can be found on this route
+            waypoint_rotation_list = []
             for waypoint in route.iter('waypoint'):
                 waypoint_list.append(carla.Location(x=float(waypoint.attrib['x']),
                                                     y=float(waypoint.attrib['y']),
                                                     z=float(waypoint.attrib['z'])))
+                waypoint_rotation_list.append(carla.Rotation(pitch=float(waypoint.attrib['pitch']),
+                                                    yaw=float(waypoint.attrib['yaw']),
+                                                    roll=float(waypoint.attrib['roll'])))
 
             new_config.trajectory = waypoint_list
 
@@ -82,7 +86,8 @@ class RouteParser(object):
             ego_vehicles = []
             other_vehicles = []
             for idx, vehicle in enumerate(vehicles):
-                vehicle.transform = waypoint_list[idx]
+                vehicle.transform = carla.Transform(waypoint_list[idx],
+                                                    waypoint_rotation_list[idx])
                 if vehicle.rolename == "hero":
                     ego_vehicles.append(vehicle)
                 else:
@@ -104,8 +109,7 @@ class RouteParser(object):
         for vehicle in route.iter('vehicle'):
             vehicles.append(Vehicle(model=vehicle.attrib['model'], 
                                 rolename=vehicle.attrib['rolename'],
-                                transform=None
-                                ))
+                                category=vehicle.attrib['category']))
         return vehicles
 
     @staticmethod

@@ -1,4 +1,5 @@
 *.pyc
+__pycache__/
 srunner/autoagents/*.pyc
 srunner/autoagents/__pycache__/
 srunner/scenariomanager/*.pyc

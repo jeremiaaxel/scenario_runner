@@ -42,7 +42,6 @@ from srunner.scenarios.object_crash_intersection import VehicleTurningRoute
 from srunner.scenarios.other_leading_vehicle import OtherLeadingVehicle
 from srunner.scenarios.maneuver_opposite_direction import ManeuverOppositeDirection
 from srunner.scenarios.junction_crossing_route import SignalJunctionCrossingRoute, NoSignalJunctionCrossingRoute
-from srunner.scenarios.background_activity import BackgroundActivity
 
 from custom_scenarios.scenarios.WeatherMidRainyNoon import WeatherMidRainyNoonRoute
 from custom_scenarios.scenarios.WeatherHardRainNight import WeatherHardRainNightRoute
@@ -180,7 +179,6 @@ class RouteScenario(BasicScenario):
         self._update_route(world, config, debug_mode)
 
         ego_vehicle = self._update_ego_vehicle()
-
         self.list_scenarios = self._build_scenario_instances(world,
                                                              ego_vehicle,
                                                              self.sampled_scenarios_definitions,
@@ -245,12 +243,15 @@ class RouteScenario(BasicScenario):
         elevate_transform.location.z += 0.5
 
         model = 'vehicle.lincoln.mkz_2017'
+        actor_category = 'car'
         if len(self.config.ego_vehicles) > 0:
             model = self.config.ego_vehicles[0].model
+            actor_category = self.config.ego_vehicles[0].category
 
         ego_vehicle = CarlaDataProvider.request_new_actor(model,
                                                         elevate_transform,
-                                                        rolename='hero')
+                                                        rolename='hero',
+                                                        actor_category=actor_category)
 
         return ego_vehicle
 

@@ -1,0 +1,22 @@
+{
+    "available_scenarios": [
+        {
+            "Town10HD_Opt": [
+                {
+                    "available_event_configurations": [
+                        {
+                            "transform": {
+                                "pitch": "0",
+                                "x": "-46.7",
+                                "y": "9.9",
+                                "yaw": "78.8",
+                                "z": "0.0"
+                            }
+                        }
+                    ],
+                    "scenario_type": "Scenario10"
+                }
+            ]
+        }
+    ]
+}

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <routes>
 	<route id="1" town="Town10HD_Opt">
-		<vehicle model="tram" rolename="hero" />
+		<vehicle model="vehicle.tram.tram" category="car" rolename="hero" />
 		<waypoint x="106.3629150390625" y="-7.453525066375732" z="0.0" pitch="0.0" roll="0.0" yaw="270.9253500800502136"/>
 		<waypoint x="-23.97303009033203" y="-64.77361297607422" z="0.0" pitch="0.0" roll="0.0" yaw="180.2967860630607"/>
 		<waypoint x="-49.0252685546875" y="-3.709759473800659" z="0.0" pitch="0.0" roll="0.0" yaw="90.1065422996302"/>
@@ -12,7 +12,7 @@
 		<waypoint x="-11.30272388458252" y="-64.73238372802734" z="0.0" pitch="0.0" roll="0.0" yaw="180.42303527967925"/>
 	</route>
 	<route id="2" town="Town10HD_Opt">	
-		<vehicle model="tram" rolename="hero" />
+		<vehicle model="vehicle.tram.tram" category="car" rolename="hero" />
 		<waypoint x="106.40349578857422" y="-5.520599365234375" z="0.0" pitch="0.0" roll="0.0" yaw="270.23406796817454"/>
 		<waypoint x="60.15979766845703" y="-64.65705871582031" z="0.0" pitch="0.0" roll="0.0" yaw="179.58742993661986"/>
 		<waypoint x="-68.05529022216797" y="-65.3099365234375" z="0.0" pitch="0.0" roll="0.0" yaw="181.08949781813243"/>
