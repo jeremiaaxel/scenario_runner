@@ -11,10 +11,7 @@ Steering is done automatically by the vehicle to follow the route that's been se
 from __future__ import print_function
 from multisensors.displays.FadingText import FadingText
 
-from multisensors.displays.HUD import HUD
 from multisensors.displays.KeyboardControl import KeyboardControl
-from multisensors.displays.WorldSR import WorldSR
-from multisensors.utils.get_sensors_json import get_sensors_json
 
 try:
     import pygame
