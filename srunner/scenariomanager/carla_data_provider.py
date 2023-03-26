@@ -808,3 +808,26 @@ class CarlaDataProvider(object):  # pylint: disable=too-many-public-methods
         CarlaDataProvider._spawn_points = None
         CarlaDataProvider._spawn_index = 0
         CarlaDataProvider._rng = random.RandomState(CarlaDataProvider._random_seed)
+
+    @staticmethod
+    def insert_spawned_actor(actor):
+        """
+        Insert externally/manually spawned actor into the CarlaDataProvider
+        returns actor's id if success
+        """
+        if actor is None:
+            print("Actor is None")
+            return None
+        
+        CarlaDataProvider._carla_actor_pool[actor.id] = actor
+        CarlaDataProvider.register_actor(actor)
+        return actor.id
+    
+    @staticmethod
+    def insert_spawned_actors(actors):
+        actors_id = []
+        for actor in actors:
+            id = CarlaDataProvider.insert_spawned_actor(actor)
+            if id:
+                actors_id.append(id)
+        return actors_id

@@ -32,6 +32,7 @@ class SpawnActor(BackgroundActivity):
         Setup all relevant parameters and create scenario
         """
         logger.debug_s("Initializing scenario")
+        self.other_actors = []
         self._wmap = CarlaDataProvider.get_map()
         self.config = config
         self.debug = debug_mode
@@ -69,11 +70,7 @@ class SpawnActor(BackgroundActivity):
         amount_round_down = total_amount // len(self.model_names)
 
         for idx, model_name in enumerate(self.model_names):
-            if idx == len(self.model_names) - 1:
-                amount = total_amount
-            else:
-                amount = amount_round_down
-                
+            amount = total_amount if idx == len(self.model_names) - 1 else amount_round_down
             total_amount -= amount
 
             print(f"Spawning model: {model_name} with amount: {amount}")
