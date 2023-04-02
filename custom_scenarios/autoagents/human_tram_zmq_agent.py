@@ -9,6 +9,8 @@ Steering is done automatically by the vehicle to follow the route that's been se
 """
 
 from __future__ import print_function
+from dataclasses import dataclass
+from typing import Tuple
 from multisensors.displays.FadingText import FadingText
 
 from multisensors.displays.KeyboardControl import KeyboardControl
@@ -30,6 +32,8 @@ import carla
 import json
 import os
 import math
+import zmq
+import logging
 
 from srunner.autoagents.autonomous_agent import AutonomousAgent
 from srunner.autoagents.npc_agent import NpcAgent
@@ -59,7 +63,7 @@ class HumanInterface(object):
         self._font_mono = pygame.font.Font(mono, 12 if os.name == 'nt' else 14)
         self._clock = pygame.time.Clock()
         self._display = pygame.display.set_mode((self._width, self._height), pygame.HWSURFACE | pygame.DOUBLEBUF)
-        pygame.display.set_caption("Human Tram Keyboard Agent")
+        pygame.display.set_caption("Human Tram ZMQ Agent")
         
         font = pygame.font.Font(pygame.font.get_default_font(), 20)
         self._notifications = FadingText(font, (self._width, 40), (0, self._height - 40))
@@ -189,10 +193,70 @@ class HumanInterface(object):
     def set_egovehicle(self, egovehicle):
         self.ego_vehicle = egovehicle
 
-class HumanTramAgent(NpcAgent):
+# TODO: move to another location
+ADDR = "127.0.0.1"
+PUB_PORT = "8080"
+SUB_PORT = "8000"
+
+CAMERA_TOPIC = b"" # TODO: standardize
+CONTROL_TOPIC = b"carla/ego_vehicle/control"
+
+class ZmqControl(object):
+    """
+    Sends: all sensors data
+    Receives: acceleration and brake
+    """
+    
+    def __init__(self, pub_addr: str = f"{ADDR}:{PUB_PORT}", sub_addr: str = f"{ADDR}:{SUB_PORT}") -> None:
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("Initializing ZMQ control")
+
+        self.pub_addr = pub_addr
+        self.sub_addr = sub_addr
+
+        context = zmq.Context()
+        pub_socket = context.socket(zmq.PUB)
+        pub_socket.bind(self.pub_addr)
+
+        sub_socket = context.socket(zmq.SUB)
+        sub_socket.bind(self.sub_addr)
+
+        self.pub_socket = pub_socket
+        self.sub_socket = sub_socket
+
+    def send_sensors(self, sensors_data) -> bool:
+        ""
+        # TODO: send sensor via ZMQ
+        pass
+
+    def receive_control_raw(self) -> str:
+        """
+        Receive control as string 
+        """
+        # TODO: receive sensor via ZMQ
+        topic, msg = self.sub_socket.recv_multipart()
+        if topic != CONTROL_TOPIC:
+            return
+
+        topic, msg = topic.decode('utf-8'), msg.decode('utf-8')
+        self.logger.info(f"Received:\n\ttopic: {topic}\n\tmessage: {msg}")
+        return msg
+
+    def receive_control(self) -> carla.VehicleControl:
+        msg = self.receive_control_raw()
+        return ZmqControl.to_vehicle_control(msg)
+
+    @staticmethod
+    def to_vehicle_control(string: str) -> carla.VehicleControl:
+        vehicle_control = carla.VehicleControl()
+        # TODO: standardize string format
+        return vehicle_control
+
+
+class HumanTramZmqAgent(NpcAgent):
 
     """
-    Human tram agent to control the ego vehicle via keyboard
+    Human tram agent to control the ego vehicle via zmq
     """
 
     current_control = None
@@ -210,6 +274,7 @@ class HumanTramAgent(NpcAgent):
         super().setup(path_to_conf_file)
         self._hic = HumanInterface()
         self._controller = KeyboardControl(path_to_conf_file)
+        self._zmqcontroller = ZmqControl()
 
     def sensors(self):
         """
@@ -248,16 +313,37 @@ class HumanTramAgent(NpcAgent):
     def run_step(self, input_data, timestamp):
         """
         Execute one step of navigation.
+        Steering: NPC agent
+        Acceleration: From ZMQ
         """
-        # Change steering: Steering from NPC Agent
+        # TODO: publish sensors data via ZMQ
+        self._zmqcontroller.send_sensors(input_data)
+
+        # acceleration: from ZMQ
+        # TODO: subscribe acceleration data via ZMQ
+        control = self._zmqcontroller.receive_control()
+
+        # steering: from NPC agent
         control_super = super().run_step(input_data, timestamp)
-        control = self._controller.parse_events(timestamp - self.prev_timestamp)
         control.steer = control_super.steer
+
+        # override control by keyboard control (if any control)
+        """
+        Overriden controls by keyboards:
+          - throttle
+          - brake
+          - hand_brake
+        """
+        is_control_keyboard, control_keyboard = self._controller.parse_events(timestamp - self.prev_timestamp)
+        if is_control_keyboard:
+            control.throttle = control_keyboard.throttle
+            control.brake = control_keyboard.brake
+            control.hand_brake = control_keyboard.hand_brake
         
         self.agent_engaged = True
         self._hic.run_interface(input_data)
-        self.prev_timestamp = timestamp
 
+        self.prev_timestamp = timestamp
         return control
 
     def set_egovehicle(self, egovehicle):
@@ -319,6 +405,7 @@ class KeyboardControl(object):
 
         # transform strs into VehicleControl commands
         for entry in self._records['records']:
+            is_control = entry['control']['is_control']
             control = carla.VehicleControl(throttle=entry['control']['throttle'],
                                            steer=entry['control']['steer'],
                                            brake=entry['control']['brake'],
@@ -326,9 +413,9 @@ class KeyboardControl(object):
                                            reverse=entry['control']['reverse'],
                                            manual_gear_shift=entry['control']['manual_gear_shift'],
                                            gear=entry['control']['gear'])
-            self._control_list.append(control)
+            self._control_list.append((is_control, control))
 
-    def parse_events(self, timestamp):
+    def parse_events(self, timestamp) -> Tuple[bool, carla.VehicleControl]:
         """
         Parse the keyboard events and set the vehicle controls accordingly
         """
@@ -336,13 +423,14 @@ class KeyboardControl(object):
         if self._mode == "playback":
             self._parse_json_control()
         else:
-            self._parse_vehicle_keys(pygame.key.get_pressed(), timestamp * 1000)
+            keys_pressed = pygame.key.get_pressed()
+            self._parse_vehicle_keys(keys_pressed, timestamp * 1000)
 
         # Record the control
         if self._mode == "log":
             self._record_control()
 
-        return self._control
+        return self._is_control, self._control
 
     def _parse_vehicle_keys(self, keys, milliseconds):
         """
@@ -350,7 +438,7 @@ class KeyboardControl(object):
         """
         def _is_quit_shortcut(key):
             return (key == K_ESCAPE) or (key == K_q and pygame.key.get_mods() & KMOD_CTRL)
-        
+ 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
@@ -358,6 +446,7 @@ class KeyboardControl(object):
                 if _is_quit_shortcut(event.key):
                     return 
                 if event.key == K_q:
+                    self._is_control = True
                     self._control.gear = 1 if self._control.reverse else -1
                     self._control.reverse = self._control.gear < 0
 
@@ -366,10 +455,11 @@ class KeyboardControl(object):
         else:
             self._control.throttle = 0.0
 
-        self._steer_cache = 0.0
-        self._control.steer = round(self._steer_cache, 1)
         self._control.brake = 1.0 if keys[K_DOWN] or keys[K_s] else 0.0
         self._control.hand_brake = keys[K_SPACE]
+
+        if len(keys) > 0:
+            self._is_control = True
 
     def _parse_json_control(self):
         """
@@ -377,7 +467,7 @@ class KeyboardControl(object):
         """
 
         if self._index < len(self._control_list):
-            self._control = self._control_list[self._index]
+            self._is_control, self._control = self._control_list[self._index][1]
             self._index += 1
         else:
             print("JSON file has no more entries")
@@ -389,6 +479,7 @@ class KeyboardControl(object):
 
         new_record = {
             'control': {
+                'is_control': self._is_control,
                 'throttle': self._control.throttle,
                 'steer': self._control.steer,
                 'brake': self._control.brake,
