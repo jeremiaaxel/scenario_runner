@@ -1,0 +1,9 @@
+# Powershell
+$CARLA_VERSION = "0.9.12"
+$PYTHON_VERSION = "3.7"
+$env:CARLA_ROOT = "C:\Users\jerem\SchoolProjects\carla"
+$env:SCENARIO_RUNNER_ROOT = "C:\Users\jerem\SchoolProjects\scenario_runner-$CARLA_VERSION"
+$env:PYTHONPATH += ";$env:CARLA_ROOT\PythonAPI\"
+$env:PYTHONPATH += ";$env:CARLA_ROOT\PythonAPI\carla"
+$env:PYTHONPATH += ";$env:CARLA_ROOT\PythonAPI\carla\agents"
+$env:PYTHONPATH += ";$env:CARLA_ROOT\PythonAPI\carla\dist\carla-$CARLA_VERSION-py$PYTHON_VERSION-win-amd64.egg"

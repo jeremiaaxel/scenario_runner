@@ -1,0 +1,8 @@
+# Linux
+CARLA_VERSION=0.9.12
+PYTHON_VERSION=3.7
+export CARLA_ROOT=${HOME}/SchoolProjects/CARLA_$CARLA_VERSION
+export SCENARIO_RUNNER_ROOT=${HOME}/SchoolProjects/scenario_runner-custom
+export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla
+export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla/dist
+export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla/dist/carla-${CARLA_VERSION}-py${PYTHON_VERSION}-linux-x86_64.egg
