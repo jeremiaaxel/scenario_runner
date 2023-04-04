@@ -13,9 +13,9 @@ class HumanInterface(object):
     _show_info = True
     ego_vehicle = None
 
-    def __init__(self):
-        self._width = 800
-        self._height = 600
+    def __init__(self, width = 800, height = 600):
+        self._width = width
+        self._height = height
         self._surface = None
 
         pygame.init()
