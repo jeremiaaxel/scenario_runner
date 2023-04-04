@@ -10,10 +10,10 @@ Steering is done automatically by the vehicle to follow the route that's been se
 
 from __future__ import print_function
 
-from custom_scenarios.autoagents.zmq_agent.ZmqControl import ZmqControl
-from custom_scenarios.autoagents.components.HumanInterface import HumanInterface
-from custom_scenarios.autoagents.components.KeyboardControl import KeyboardControl
-from custom_scenarios.autoagents.human_tram_agent import HumanTramAgent
+from customs.autoagents.zmq_agent.ZmqControl import ZmqControl
+from customs.autoagents.components.HumanInterface import HumanInterface
+from customs.autoagents.components.KeyboardControl import KeyboardControl
+from customs.autoagents.human_tram_agent import HumanTramAgent
 
 class HumanTramZmqAgent(HumanTramAgent):
     """

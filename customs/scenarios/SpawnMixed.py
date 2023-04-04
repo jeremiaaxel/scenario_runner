@@ -9,7 +9,7 @@ Scenario spawning elements to make the town dynamic and interesting
 """
 
 import logging
-from custom_scenarios.scenarios.SpawnActor import SpawnActor, SpawnActorOnTrigger
+from customs.scenarios.SpawnActor import SpawnActor, SpawnActorOnTrigger
 
 logger = logging.getLogger(__name__)
 model_names = ['vehicle.carlamotors.firetruck', 'vehicle.tesla.cybertruck', ]

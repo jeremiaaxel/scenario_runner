@@ -22,8 +22,6 @@ import py_trees
 import carla
 
 from agents.navigation.local_planner import RoadOption
-from custom_scenarios.scenarios.SpawnBike import SpawnBike, SpawnBikeOnTrigger
-from custom_scenarios.scenarios.SpawnPedestrian import SpawnPedestrian, SpawnPedestrianOnTrigger
 
 # pylint: disable=line-too-long
 from srunner.scenarioconfigs.scenario_configuration import ScenarioConfiguration, ActorConfigurationData
@@ -43,11 +41,13 @@ from srunner.scenarios.other_leading_vehicle import OtherLeadingVehicle
 from srunner.scenarios.maneuver_opposite_direction import ManeuverOppositeDirection
 from srunner.scenarios.junction_crossing_route import SignalJunctionCrossingRoute, NoSignalJunctionCrossingRoute
 
-from custom_scenarios.scenarios.WeatherMidRainyNoon import WeatherMidRainyNoonRoute
-from custom_scenarios.scenarios.WeatherHardRainNight import WeatherHardRainNightRoute
-from custom_scenarios.scenarios.WeatherWetNoon import WeatherWetNoonRoute
-from custom_scenarios.scenarios.WeatherClearSunset import WeatherClearSunsetRoute
-from custom_scenarios.scenarios.SpawnAngkot import SpawnAngkot, SpawnAngkotOnTrigger
+from customs.scenarios.WeatherMidRainyNoon import WeatherMidRainyNoonRoute
+from customs.scenarios.WeatherHardRainNight import WeatherHardRainNightRoute
+from customs.scenarios.WeatherWetNoon import WeatherWetNoonRoute
+from customs.scenarios.WeatherClearSunset import WeatherClearSunsetRoute
+from customs.scenarios.SpawnAngkot import SpawnAngkot, SpawnAngkotOnTrigger
+from customs.scenarios.SpawnBike import SpawnBike, SpawnBikeOnTrigger
+from customs.scenarios.SpawnPedestrian import SpawnPedestrian, SpawnPedestrianOnTrigger
 
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import (CollisionTest,
                                                                      InRouteTest,

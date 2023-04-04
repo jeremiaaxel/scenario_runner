@@ -2,7 +2,7 @@ import pygame
 import math
 import os
 
-from custom_scenarios.autoagents.components.FadingText import FadingText
+from customs.autoagents.components.FadingText import FadingText
 
 class HumanInterface(object):
 

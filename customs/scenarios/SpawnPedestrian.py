@@ -11,8 +11,8 @@ import random
 import carla
 
 import logging
-from custom_scenarios.helpers.blueprints import get_actor_blueprints
-from custom_scenarios.scenarios.SpawnActor import SpawnActor, SpawnActorOnTrigger
+from customs.helpers.blueprints import get_actor_blueprints
+from customs.scenarios.SpawnActor import SpawnActor, SpawnActorOnTrigger
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
 logger = logging.getLogger(__name__)

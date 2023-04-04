@@ -1,8 +1,8 @@
 #!/bin/sh
 
-tram_route_file="./custom_scenarios/routes/tram_routes.xml"
-scenarios_file="./custom_scenarios/routes/full_scenarios.json"
-agent_file="./custom_scenarios/autoagents/human_tram_agent.py"
+tram_route_file="./customs/routes/tram_routes.xml"
+scenarios_file="./customs/routes/test_scenarios.json"
+agent_file="./customs/autoagents/human_tram_agent.py"
 route_number=$1
 is_debug=$2
 

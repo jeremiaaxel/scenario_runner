@@ -10,9 +10,9 @@ Steering is done automatically by the vehicle to follow the route that's been se
 
 from __future__ import print_function
 
-from custom_scenarios.autoagents.components.HumanInterface import HumanInterface
-from custom_scenarios.autoagents.components.KeyboardControl import KeyboardControl
-from custom_scenarios.autoagents.tram_agent import TramAgent
+from customs.autoagents.components.HumanInterface import HumanInterface
+from customs.autoagents.components.KeyboardControl import KeyboardControl
+from customs.autoagents.tram_agent import TramAgent
 
 class HumanTramAgent(TramAgent):
     """

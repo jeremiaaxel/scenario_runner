@@ -1,20 +1,9 @@
 from __future__ import print_function
 
-import math
-import py_trees
-
 import carla
 
-from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
-from srunner.scenariomanager.scenarioatomics.atomic_behaviors import (ActorTransformSetter,
-                                                                      ActorDestroy,
-                                                                      KeepVelocity,
-                                                                      HandBrakeVehicle)
-from srunner.scenariomanager.scenarioatomics.atomic_criteria import CollisionTest
-
-
-from custom_scenarios.scenarios.WeatherBasic import WeatherBasicRoute
 from srunner.scenariomanager.weather_sim import Weather
+from customs.scenarios.WeatherBasic import WeatherBasicRoute
 
 class WeatherWetNoonRoute(WeatherBasicRoute):
     """

@@ -3,7 +3,6 @@ from __future__ import print_function
 import py_trees
 
 import carla
-import re
 
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import CollisionTest
