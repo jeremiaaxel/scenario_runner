@@ -204,6 +204,7 @@ class SpawnActorOnTrigger(SpawnActor):
         """
 
         dist_to_trigger = 20
+        horn_distance = 20
         # leaf nodes
         if self._ego_route is not None:
             start_condition = InTriggerDistanceToLocationAlongRoute(self.ego_vehicles[0],
@@ -224,7 +225,7 @@ class SpawnActorOnTrigger(SpawnActor):
         other_actors_transform = []
         other_actors_brake_on = []
         other_actors_brake_off = []
-        other_actors_autopilot = []
+        other_actors_autopilot_on = []
         other_actors_behaviors = []
         other_actors_remove = []
         for idx, other_actor in enumerate(self.other_actors):
@@ -234,32 +235,39 @@ class SpawnActorOnTrigger(SpawnActor):
                                                                                         transform.location.y,
                                                                                         transform.location.z + self.underground_z), 
                                                                          transform.rotation),
-                                                         name=f"TransformSetterActor_{idx}",
+                                                         name=f"TransformSetterActor {other_actor.id}",
                                                          physics=True)
             
-            other_actor_remove = ActorDestroy(other_actor, name="Destroy actor")
+            other_actor_remove = ActorDestroy(other_actor, name=f"Destroy actor {other_actor.id}")
             other_actor_horn_distance = InHornDistanceTrigger(self.ego_vehicles[0],
                                                         other_actor,
-                                                        name="Ego horn distance")
+                                                        trigger_distance=horn_distance,
+                                                        name=f"Ego horn distance {other_actor.id}")
             
-            other_actor_brake_on = HandBrakeVehicle(other_actor, True)
-            other_actor_brake_off = HandBrakeVehicle(other_actor, False)
-            other_actor_autopilot = ChangeAutoPilot(other_actor, True)
+            other_actor_brake_on = HandBrakeVehicle(other_actor, True, name=f"Brake on {other_actor.id}")
+            other_actor_brake_off = HandBrakeVehicle(other_actor, False, name=f"Brake off {other_actor.id}")
+            other_actor_autopilot_on = ChangeAutoPilot(other_actor, True, name=f"Autopilot on {other_actor.id}")
+            other_actor_autopilot_off = ChangeAutoPilot(other_actor, False, name=f"Autopilot off {other_actor.id}")
 
             # building other actor tree
-            other_actor_behavior = py_trees.composites.Parallel(name="Other actor behavior",
-                                                                policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE)
+            # if in horn: in_horn_behavior; else: out_horn_behavior
+            other_actor_behavior = py_trees.composites.Parallel(name="Other actor behavior", policy=ParallelPolicy.SUCCESS_ON_ONE)
             in_horn_behavior = py_trees.composites.Sequence(name="In horn distance behavior")
+            # this is automatically success, so change to running so that in horn can prevail if it is true (success)
+            out_horn_behavior = py_trees.meta.success_is_running(py_trees.composites.Sequence)(name="Not in horn distance behavior")
             
+            other_actor_behavior.add_child(out_horn_behavior)
             other_actor_behavior.add_child(in_horn_behavior)
 
-            in_horn_behavior.add_child(other_actor_horn_distance)
-            in_horn_behavior.add_child(other_actor_brake_on)
+            # if horned at: actor autopilot off, brake on
+            in_horn_behavior.add_children([other_actor_horn_distance, other_actor_autopilot_off, other_actor_brake_on])
+            # else: actor autopilot on, brake off
+            out_horn_behavior.add_children([other_actor_autopilot_on, other_actor_brake_off])
 
             other_actors_transform.append(other_actor_transform)
             other_actors_brake_on.append(other_actor_brake_on)
             other_actors_brake_off.append(other_actor_brake_off)
-            other_actors_autopilot.append(other_actor_autopilot)           
+            other_actors_autopilot_on.append(other_actor_autopilot_on)           
             other_actors_behaviors.append(other_actor_behavior)
             other_actors_remove.append(other_actor_remove)
 
@@ -270,7 +278,7 @@ class SpawnActorOnTrigger(SpawnActor):
                                                                name="Other actors brake on")
         other_actors_brake_off_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
                                                                name="Other actors brake off")
-        other_actors_autopilot_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
+        other_actors_autopilot_on_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
                                                                name="Other actors autopilot")
         other_actors_behavior_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL,
                                                                 name="Other actors behavior")
@@ -280,7 +288,7 @@ class SpawnActorOnTrigger(SpawnActor):
         other_actors_transform_parallel.add_children(other_actors_transform)
         other_actors_brake_on_parallel.add_children(other_actors_brake_on)
         other_actors_brake_off_parallel.add_children(other_actors_brake_off)
-        other_actors_autopilot_parallel.add_children(other_actors_autopilot)
+        other_actors_autopilot_on_parallel.add_children(other_actors_autopilot_on)
         other_actors_behavior_parallel.add_children(other_actors_behaviors)
         other_actors_remove_parallel.add_children(other_actors_remove)
 
@@ -297,7 +305,7 @@ class SpawnActorOnTrigger(SpawnActor):
 
         # on start: other actors: brake off
         onstart = Sequence(name="Onstart")
-        onstart.add_children([other_actors_autopilot_parallel, other_actors_brake_off_parallel])
+        onstart.add_children([other_actors_autopilot_on_parallel, other_actors_brake_off_parallel])
         root.add_child(onstart)
 
         # main: other actors: behavior until end condition triggered
