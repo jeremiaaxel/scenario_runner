@@ -126,7 +126,7 @@ class SpawnActorOnTrigger(SpawnActor):
 
     underground_z = 500
     _other_actor_target_velocity = 5
-    _ego_vehicle_distance_driven = 50
+    _ego_vehicle_distance_driven = -1 # set value <= 0 to make the scenario endless
     do_print = True
 
     def _put_other_actors_under(self):
@@ -215,10 +215,11 @@ class SpawnActorOnTrigger(SpawnActor):
                                                        self.other_actors[0],
                                                        self._time_to_reach)
 
-            
-        end_condition = DriveDistance(self.ego_vehicles[0],
-                                    self._ego_vehicle_distance_driven,
-                                    name="End condition ego drive distance")
+        end_condition = None
+        if self._ego_vehicle_distance_driven > 0:
+            end_condition = DriveDistance(self.ego_vehicles[0],
+                                        self._ego_vehicle_distance_driven,
+                                        name="End condition ego drive distance")
         
         other_actors_transform = []
         other_actors_brake_on = []
@@ -301,7 +302,9 @@ class SpawnActorOnTrigger(SpawnActor):
 
         # main: other actors: behavior until end condition triggered
         main = Parallel(name="Main", policy=ParallelPolicy.SUCCESS_ON_ONE)
-        main.add_children([other_actors_behavior_parallel, end_condition])
+        main.add_child(other_actors_behavior_parallel)
+        if end_condition:
+            main.add_child(end_condition)
         root.add_child(main)
 
         end = Sequence(name="End")
