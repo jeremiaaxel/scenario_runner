@@ -2,7 +2,6 @@
 import operator
 import py_trees
 
-from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import AtomicCondition, InTriggerDistanceToVehicle, WaitForBlackboardVariable
 
 class InHornDistanceTrigger(AtomicCondition):

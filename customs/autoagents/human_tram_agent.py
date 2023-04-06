@@ -10,6 +10,8 @@ Steering is done automatically by the vehicle to follow the route that's been se
 
 from __future__ import print_function
 
+import py_trees
+
 from customs.autoagents.components.HumanInterface import HumanInterface
 from customs.autoagents.components.KeyboardControl import KeyboardControl
 from customs.autoagents.tram_agent import TramAgent
@@ -42,6 +44,8 @@ class HumanTramAgent(TramAgent):
         # Change steering: Steering from NPC Agent
         control_super = super().run_step(input_data, timestamp)
         _, control = self._controller.parse_events(timestamp - self.prev_timestamp)
+        is_horn = self._controller._horn
+        py_trees.blackboard.Blackboard().set("is_ego_vehicle_horn", is_horn, overwrite=True)
         control.steer = control_super.steer
         
         self.agent_engaged = True

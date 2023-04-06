@@ -10,6 +10,7 @@ from pygame.locals import K_DOWN, K_s # decceleration
 from pygame.locals import K_UP, K_w # acceleration
 from pygame.locals import K_q   # quit
 from pygame.locals import K_SPACE # hand brake
+from pygame.locals import K_h   # horn
 
 from typing import Tuple
 
@@ -24,6 +25,7 @@ class KeyboardControl(object):
         Init
         """
         self._control = carla.VehicleControl()
+        self._horn = False
         self._steer_cache = 0.0
         self._clock = pygame.time.Clock()
 
@@ -111,6 +113,8 @@ class KeyboardControl(object):
             self._control.throttle = 0.6
         else:
             self._control.throttle = 0.0
+
+        self._horn = True if keys[K_h] else False
 
         self._control.brake = 1.0 if keys[K_DOWN] or keys[K_s] else 0.0
         self._control.hand_brake = keys[K_SPACE]
