@@ -45,11 +45,14 @@ class HumanTramAgent(TramAgent):
         control_super = super().run_step(input_data, timestamp)
         _, control = self._controller.parse_events(timestamp - self.prev_timestamp)
         is_horn = self._controller._horn
+        other_data = {
+            'is_horn': is_horn
+        }
         py_trees.blackboard.Blackboard().set("is_ego_vehicle_horn", is_horn, overwrite=True)
         control.steer = control_super.steer
         
         self.agent_engaged = True
-        self._hic.run_interface(input_data)
+        self._hic.run_interface(input_data, other_data)
         self.prev_timestamp = timestamp
 
         return control

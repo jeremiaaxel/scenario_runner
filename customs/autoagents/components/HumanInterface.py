@@ -33,7 +33,7 @@ class HumanInterface(object):
         font = pygame.font.Font(pygame.font.get_default_font(), 20)
         self._notifications = FadingText(font, (self._width, 40), (0, self._height - 40))
 
-    def update_info(self, imu_data, gnss_data): 
+    def update_info(self, imu_data, gnss_data, other_data): 
         def get_heading(compass):
             heading = 'N' if compass > 270.5 or compass < 89.5 else ''
             heading += 'S' if 90.5 < compass < 269.5 else ''
@@ -66,6 +66,8 @@ class HumanInterface(object):
             f'Accelero: {array_to_string(accelerometer)}',
             f'Gyroscop: {array_to_string(gyroscope)}',
             f'GNSS: {lat:2f} {lon:2f}',
+            '',
+            f'Is horn: {other_data.get("is_horn", False)}',
             '']
         
         if t:
@@ -132,7 +134,7 @@ class HumanInterface(object):
             'gyroscope': parse_gyroscope(gyroscope), 
             'compass': parse_compass(compass)}
 
-    def run_interface(self, input_data):
+    def run_interface(self, input_data, other_data):
         """
         Run the GUI
         """
@@ -145,7 +147,7 @@ class HumanInterface(object):
         self._surface = pygame.surfarray.make_surface(image_center.swapaxes(0, 1))
         if self._surface is not None:
             self._display.blit(self._surface, (0, 0))
-        self.update_info(imu_data, gnss_data)
+        self.update_info(imu_data, gnss_data, other_data)
         self.render_info()
         pygame.display.flip()
 
