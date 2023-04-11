@@ -22,6 +22,7 @@ import py_trees
 import carla
 
 from agents.navigation.local_planner import RoadOption
+from customs.scenarios.WeatherRainyDay import WeatherRainyDayRoute
 
 # pylint: disable=line-too-long
 from srunner.scenarioconfigs.scenario_configuration import ScenarioConfiguration, ActorConfigurationData
@@ -84,6 +85,8 @@ NUMBER_CLASS_TRANSLATION = {
 
     "SpawnPedestrian": SpawnPedestrian,
     "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
+
+    "WeatherRainyDay": WeatherRainyDayRoute,
 }
 
 logger = logging.getLogger(__name__)

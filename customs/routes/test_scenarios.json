@@ -14,7 +14,7 @@
                             }
                         }
                     ],
-                    "scenario_type": "SpawnAngkot"
+                    "scenario_type": "WeatherRainyDay"
                 }
             ]
         }
