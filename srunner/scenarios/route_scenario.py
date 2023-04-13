@@ -61,21 +61,26 @@ from srunner.scenariomanager.scenarioatomics.atomic_criteria import (CollisionTe
 SECONDS_GIVEN_PER_METERS = 0.4
 
 NUMBER_CLASS_TRANSLATION = {
-    "Scenario1": ControlLoss,
-    "Scenario2": FollowLeadingVehicle,
-    "Scenario3": DynamicObjectCrossing,
-    "Scenario4": VehicleTurningRoute,
-    "Scenario5": OtherLeadingVehicle,
-    "Scenario6": ManeuverOppositeDirection,
-    "Scenario7": SignalJunctionCrossingRoute,
-    "Scenario8": SignalJunctionCrossingRoute,
-    "Scenario9": SignalJunctionCrossingRoute,
-    "Scenario10": NoSignalJunctionCrossingRoute,
+    # "Scenario1": ControlLoss,
+    # "Scenario2": FollowLeadingVehicle,
+    # "Scenario3": DynamicObjectCrossing,
+    # "Scenario4": VehicleTurningRoute,
+    # "Scenario5": OtherLeadingVehicle,
+    # "Scenario6": ManeuverOppositeDirection,
+    # "Scenario7": SignalJunctionCrossingRoute,
+    # "Scenario8": SignalJunctionCrossingRoute,
+    # "Scenario9": SignalJunctionCrossingRoute,
+    # "Scenario10": NoSignalJunctionCrossingRoute,
 
+    # Built in
+    "PedestrianCrossing": DynamicObjectCrossing,
+
+    # Custom made
     "WetNoon": WeatherWetNoonRoute,
     "MidRainyNoon": WeatherMidRainyNoonRoute,
     "HardRainNight": WeatherHardRainNightRoute,
     "ClearSunset": WeatherClearSunsetRoute,
+    "WeatherRainyDay": WeatherRainyDayRoute,
 
     "SpawnAngkot": SpawnAngkot,
     "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger,
@@ -86,7 +91,6 @@ NUMBER_CLASS_TRANSLATION = {
     "SpawnPedestrian": SpawnPedestrian,
     "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
 
-    "WeatherRainyDay": WeatherRainyDayRoute,
 }
 
 logger = logging.getLogger(__name__)

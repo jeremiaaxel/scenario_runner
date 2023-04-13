@@ -17,3 +17,4 @@ results*.txt
 *.dot
 setup-env.sh
 setup-env.ps1
+out/
