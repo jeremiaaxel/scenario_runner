@@ -3,6 +3,8 @@ Created by [jeremiaaxel](https://github.com/jeremiaaxel), modified from [Scenari
 
 ## How to Run - Specific for RISPRO 2023
 > :information_source: In commands, `[]` means optional and `()` means required
+
+> :information_source: **Ordered list means command order** while **unordered list means optional to choose one** of the commands.
 1. Use SILS computer.
 2. Open terminal.
 3. Change directory to the project folder
