@@ -12,16 +12,18 @@ import py_trees
 from py_trees.common import ParallelPolicy
 from py_trees.composites import Sequence, Parallel
 
+import os
 import carla
-
 import logging
+
+from customs.configs.config import OUT_DIR
 from customs.triggers.horn_trigger import InHornDistanceTrigger
 from multisensors.utils.manual_control_global_funcs import get_actor_display_name
 
 from srunner.scenarios.background_activity import BackgroundActivity
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import CollisionTest
-from srunner.scenariomanager.scenarioatomics.atomic_behaviors import ChangeAutoPilot, ActorTransformSetter, Idle, KeepLongitudinalGap, KeepVelocity, ActorDestroy, HandBrakeVehicle
+from srunner.scenariomanager.scenarioatomics.atomic_behaviors import ChangeAutoPilot, ActorTransformSetter, Idle, KeepLongitudinalGap, KeepVelocity, ActorDestroy, HandBrakeVehicle, StopVehicle
 from srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import DriveDistance, InTimeToArrivalToVehicle, InTriggerDistanceToLocationAlongRoute
 
 logger = logging.getLogger(__name__)
@@ -38,6 +40,7 @@ class SpawnActor(BackgroundActivity):
     _other_actor_target_velocity = 5
     _ego_vehicle_distance_driven = -1 # set value <= 0 to make the scenario endless
     do_print = True
+    _ego_route = None
 
     def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False, model_names=['vehicle.*'], total_amount=50):
         """
@@ -48,7 +51,6 @@ class SpawnActor(BackgroundActivity):
         self._wmap = CarlaDataProvider.get_map()
         self.config = config
         self.debug = debug_mode
-        self._ego_route = None
         self._reference_waypoint = self._wmap.get_waypoint(config.trigger_points[0].location)
         self._trigger_location = config.trigger_points[0].location
         logger.debug_s(f"Trigger location: {self._trigger_location}")
@@ -85,7 +87,7 @@ class SpawnActor(BackgroundActivity):
             amount = total_amount if idx == len(self.model_names) - 1 else amount_round_down
             total_amount -= amount
 
-            print(f"Spawning model: {model_name} with amount: {amount}")
+            report_string = f"Spawning model: {model_name} with amount: {amount} "
             new_actors = CarlaDataProvider.request_new_batch_actors(model_name,
                                                                     amount,
                                                                     carla.Transform(),
@@ -96,7 +98,9 @@ class SpawnActor(BackgroundActivity):
             if new_actors is None:
                 raise Exception("Error: Unable to add the background activity, all spawn points were occupied")
 
-            print(f"{model_name} spawned: {len(new_actors)}")
+
+            report_string += f"amount spawned: {len(new_actors)}"
+            print(report_string)
             self.other_actors.extend(new_actors)
 
     def _create_behavior(self):
@@ -121,8 +125,8 @@ class SpawnActor(BackgroundActivity):
                                         name="End condition ego drive distance")
         
         other_actors_transform = []
-        other_actors_brake_on = []
-        other_actors_brake_off = []
+        other_actors_stop_on = []
+        other_actors_stop_off = []
         other_actors_autopilot_on = []
         other_actors_behaviors = []
         other_actors_remove = []
@@ -142,10 +146,13 @@ class SpawnActor(BackgroundActivity):
                                                         trigger_distance=self._horn_distance,
                                                         name=f"Ego horn distance {other_actor.id}")
             
-            other_actor_brake_on = HandBrakeVehicle(other_actor, True, name=f"Brake on {other_actor.id}")
-            other_actor_brake_off = HandBrakeVehicle(other_actor, False, name=f"Brake off {other_actor.id}")
-            other_actor_autopilot_on = ChangeAutoPilot(other_actor, True, name=f"Autopilot on {other_actor.id}")
-            other_actor_autopilot_off = ChangeAutoPilot(other_actor, False, name=f"Autopilot off {other_actor.id}")
+
+            other_actor_stop_on = StopVehicle(other_actor, 1, name=f"Stop on {other_actor.id}")
+            other_actor_stop_off = StopVehicle(other_actor, 0, name=f"Stop off {other_actor.id}")
+            
+            if isinstance(other_actor, carla.Vehicle):
+                other_actor_autopilot_on = ChangeAutoPilot(other_actor, True, name=f"Autopilot on {other_actor.id}")
+                other_actor_autopilot_off = ChangeAutoPilot(other_actor, False, name=f"Autopilot off {other_actor.id}")
 
             # building other actor tree
             # if in horn: in_horn_behavior; else: out_horn_behavior
@@ -157,25 +164,36 @@ class SpawnActor(BackgroundActivity):
             other_actor_behavior.add_child(out_horn_behavior)
             other_actor_behavior.add_child(in_horn_behavior)
 
-            # if horned at: actor autopilot off, brake on
-            in_horn_behavior.add_children([other_actor_horn_distance, other_actor_autopilot_off, other_actor_brake_on])
-            # else: actor autopilot on, brake off
-            out_horn_behavior.add_children([other_actor_autopilot_on, other_actor_brake_off])
+            # if horned at: 
+            #   vehicle: stop on, autopilot off
+            #   walker: stop on
+            in_horn_behavior.add_child(other_actor_horn_distance)
+            in_horn_behavior.add_child(other_actor_stop_on)
+            if isinstance(other_actor, carla.Vehicle):
+                in_horn_behavior.add_child(other_actor_autopilot_off)
+            # else: 
+            #   vehicle:stop off, autopilot on
+            #   walker:stop off
+            out_horn_behavior.add_child(other_actor_stop_off)
+            if isinstance(other_actor, carla.Vehicle):
+                out_horn_behavior.add_child(other_actor_autopilot_on)
 
             other_actors_transform.append(other_actor_transform)
-            other_actors_brake_on.append(other_actor_brake_on)
-            other_actors_brake_off.append(other_actor_brake_off)
-            other_actors_autopilot_on.append(other_actor_autopilot_on)           
             other_actors_behaviors.append(other_actor_behavior)
             other_actors_remove.append(other_actor_remove)
+
+            if isinstance(other_actor, carla.Vehicle):
+                other_actors_stop_on.append(other_actor_stop_on)
+                other_actors_stop_off.append(other_actor_stop_off)
+                other_actors_autopilot_on.append(other_actor_autopilot_on)           
 
         # non leaf nodes
         other_actors_transform_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
                                                                name="Other actors transform")
-        other_actors_brake_on_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
-                                                               name="Other actors brake on")
-        other_actors_brake_off_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
-                                                               name="Other actors brake off")
+        other_actors_stop_on_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
+                                                               name="Other actors stop on")
+        other_actors_stop_off_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
+                                                               name="Other actors stop off")
         other_actors_autopilot_on_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
                                                                name="Other actors autopilot")
         other_actors_behavior_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL,
@@ -184,8 +202,8 @@ class SpawnActor(BackgroundActivity):
                                                                 name="Other actors remove")
         
         other_actors_transform_parallel.add_children(other_actors_transform)
-        other_actors_brake_on_parallel.add_children(other_actors_brake_on)
-        other_actors_brake_off_parallel.add_children(other_actors_brake_off)
+        other_actors_stop_on_parallel.add_children(other_actors_stop_on)
+        other_actors_stop_off_parallel.add_children(other_actors_stop_off)
         other_actors_autopilot_on_parallel.add_children(other_actors_autopilot_on)
         other_actors_behavior_parallel.add_children(other_actors_behaviors)
         other_actors_remove_parallel.add_children(other_actors_remove)
@@ -196,7 +214,7 @@ class SpawnActor(BackgroundActivity):
             # init: other actors: make visible, brake on
             initialization = Sequence(name="Initialization")
             initialization.add_child(other_actors_transform_parallel)
-            initialization.add_child(other_actors_brake_on_parallel)
+            initialization.add_child(other_actors_stop_on_parallel)
             root.add_child(initialization)
 
             # pre start: other actors: idle until start condition triggered
@@ -206,7 +224,7 @@ class SpawnActor(BackgroundActivity):
 
         # on start: other actors: brake off
         onstart = Sequence(name="Onstart")
-        onstart.add_children([other_actors_autopilot_on_parallel, other_actors_brake_off_parallel])
+        onstart.add_children([other_actors_autopilot_on_parallel, other_actors_stop_off_parallel])
         root.add_child(onstart)
 
         # main: other actors: behavior until end condition triggered
@@ -221,7 +239,7 @@ class SpawnActor(BackgroundActivity):
         root.add_child(end)
 
         if self.do_print:
-            py_trees.display.render_dot_tree(root)
+            py_trees.display.render_dot_tree(root, name=os.path.join(OUT_DIR, __class__.__name__))
             self.do_print = False
 
         return root
@@ -244,16 +262,16 @@ class SpawnActor(BackgroundActivity):
         Remove all actors upon deletion
         """
         logger.debug_s("Deleting")
-
         self.remove_all_actors()
+
 
 class SpawnActorOnTrigger(SpawnActor):
     """
     Spawn batch actor(s) with single model on a trigger location
     """
     def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False, model_names=['vehicle.*'], total_amount=50):
-        super().__init__(world, ego_vehicles, config, randomize=randomize, debug_mode=debug_mode, timeout=timeout, criteria_enable=criteria_enable, model_names=model_names, total_amount=total_amount)
         self._ego_route = CarlaDataProvider.get_ego_vehicle_route()
+        super().__init__(world, ego_vehicles, config, randomize=randomize, debug_mode=debug_mode, timeout=timeout, criteria_enable=criteria_enable, model_names=model_names, total_amount=total_amount)
 
     def _put_other_actors_under(self):
         def _freeze_vehicle(vehicle):
@@ -263,10 +281,12 @@ class SpawnActorOnTrigger(SpawnActor):
         for other_actor in self.other_actors:
             location = other_actor.get_location()
             uground_location = carla.Location(location.x,
-                                location.y,
-                                location.z - self.underground_z)
+                                              location.y,
+                                              location.z - self.underground_z)
             other_actor.set_location(uground_location)
-            _freeze_vehicle(other_actor)
+
+            if isinstance(other_actor, carla.Vehicle):
+                _freeze_vehicle(other_actor)
 
     def _move_actors_in_trigger_location(self):
         def new_transform_in_same_lane(transform, trigger_location):

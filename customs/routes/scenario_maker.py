@@ -1,16 +1,20 @@
+import os
+import json
+import carla
 import random
+import logging
+
+from datetime import datetime
+from argparse import ArgumentParser
+
+from customs.configs.config import OUT_DIR
 from customs.routes.available_scenarios import AvailableScenarios
+
 from srunner.tools.route_parser import RouteParser
 from srunner.tools.route_manipulation import interpolate_trajectory
 
-from argparse import ArgumentParser
-from datetime import datetime
-
-import logging
-import carla
-import json
-import os
-
+fullfilename = os.path.join(OUT_DIR, "scenario_maker.log")
+logging.basicConfig(filename=fullfilename, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class ScenarioMaker(object):
@@ -111,6 +115,7 @@ class ScenarioMaker(object):
         fullfilename = os.path.join(outdir, filename)
         with open(fullfilename, "w") as jsonfile:
             jsonfile.write(json.dumps(constructed_scenario_dict, indent=4))
+            logger.info(f"Created scenario: {fullfilename}")
 
         return result
             
@@ -133,6 +138,7 @@ if __name__ == "__main__":
                         help="Result scenario filename (default to the same directory as this file)", default=None)
     parser.add_argument('--number-of-scenario-types', default=5,
                         help='Number of scenario types going to be implemented in a single route scenario')
+    
     arguments = parser.parse_args()
     scenario_maker = ScenarioMaker(arguments)
     scenario_maker.generate_scenario()

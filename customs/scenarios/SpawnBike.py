@@ -11,6 +11,7 @@ Scenario spawning elements to make the town dynamic and interesting
 import logging
 from customs.helpers.blueprints import create_blueprints_by_attribute
 from customs.scenarios.SpawnActor import SpawnActor, SpawnActorOnTrigger
+from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
 logger = logging.getLogger(__name__)
 
