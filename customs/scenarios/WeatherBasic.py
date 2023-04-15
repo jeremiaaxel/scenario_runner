@@ -26,15 +26,16 @@ class RoadFriction(Enum):
 
 class WeatherBasicRoute(BasicScenario):
     """
-    This class holds everything required for a simple weather change:
-        clear, cloudy, raining
+    To make scenario changing weather/time, specify properties on weather_config dictionary:
+    https://carla.readthedocs.io/en/0.9.12/python_api/#carlaweatherparameters
     """
+    weather_config: dict = {}
+
     def __init__(self, world, ego_vehicles, config, debug_mode=False, criteria_enable=True,
                  timeout=60):
         """
         Setup all relevant parameters and create scenario
         """
-
         self._wmap = CarlaDataProvider.get_map()
         self._reference_waypoint = self._wmap.get_waypoint(config.trigger_points[0].location)
         self._trigger_location = config.trigger_points[0].location
@@ -60,10 +61,10 @@ class WeatherBasicRoute(BasicScenario):
         return criteria
     
     def _weather(self):
-        weather = carla.WeatherParameters()
-        weather.precipitation = 0.0
-        weather.wetness = 0.0
-        weather.cloudiness = 0.0
+        weather = self._world.get_weather()
+        print(self.__class__.weather_config.items())
+        for property, value in self.__class__.weather_config.items():
+            setattr(weather, property, value)
         return Weather(weather)
     
     def _road_friction(self) -> Union[RoadFriction, float]:

@@ -2,6 +2,8 @@ from customs.scenarios.SpawnAngkot import SpawnAngkotOnTrigger
 from customs.scenarios.SpawnBike import SpawnBikeOnTrigger
 from customs.scenarios.SpawnPedestrian import SpawnPedestrianOnTrigger
 from customs.scenarios.WeatherClearSunset import WeatherClearSunsetRoute
+from customs.scenarios.Time import TimeDay, TimeNight, TimeSunrise
+from customs.scenarios.Weather import WeatherClear, WeatherHardRain
 from customs.scenarios.WeatherHardRainNight import WeatherHardRainNightRoute
 from customs.scenarios.WeatherMidRainyNoon import WeatherMidRainyNoonRoute
 from customs.scenarios.WeatherRainyDay import WeatherRainyDayRoute
@@ -11,21 +13,27 @@ from srunner.scenarios.object_crash_vehicle import DynamicObjectCrossing
 
 class AvailableScenarios(object):
     WEATHER_SCENARIOS = {
-        "WetNoon": WeatherWetNoonRoute,
-        "MidRainyNoon": WeatherMidRainyNoonRoute,
-        "HardRainNight": WeatherHardRainNightRoute,
-        "ClearSunset": WeatherClearSunsetRoute,
-        "WeatherRainyDay": WeatherRainyDayRoute,
+        # "WetNoon": WeatherWetNoonRoute,
+        # "MidRainyNoon": WeatherMidRainyNoonRoute,
+        # "HardRainNight": WeatherHardRainNightRoute,
+        # "ClearSunset": WeatherClearSunsetRoute,
+        # "WeatherRainyDay": WeatherRainyDayRoute,
+        
+        "Clear": WeatherClear,
+        "HardRain": WeatherHardRain,
     }
 
     TIME_SCENARIOS = {
+        "Night": TimeNight,
+        "Day": TimeDay,
+        "Sunrise": TimeSunrise,
     }
 
     OTHER_SCENARIOS = {
-        "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger,
-        "SpawnBikeOnTrigger": SpawnBikeOnTrigger,
-        "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
-        "PedestrianCrossing": DynamicObjectCrossing,
+        # "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger,
+        # "SpawnBikeOnTrigger": SpawnBikeOnTrigger,
+        # "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
+        # "PedestrianCrossing": DynamicObjectCrossing,
     }
 
     @staticmethod

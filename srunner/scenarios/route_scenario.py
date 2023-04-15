@@ -22,6 +22,8 @@ import py_trees
 import carla
 
 from agents.navigation.local_planner import RoadOption
+from customs.scenarios.Time import TimeDay, TimeNight, TimeSunrise
+from customs.scenarios.Weather import WeatherClear, WeatherHardRain, WeatherOvercast
 from customs.scenarios.WeatherRainyDay import WeatherRainyDayRoute
 
 # pylint: disable=line-too-long
@@ -76,12 +78,24 @@ NUMBER_CLASS_TRANSLATION = {
     "PedestrianCrossing": DynamicObjectCrossing,
 
     # Custom made
+    ## Weather
+    ### Presets
     "WetNoon": WeatherWetNoonRoute,
     "MidRainyNoon": WeatherMidRainyNoonRoute,
     "HardRainNight": WeatherHardRainNightRoute,
     "ClearSunset": WeatherClearSunsetRoute,
     "WeatherRainyDay": WeatherRainyDayRoute,
 
+    ### Custom
+    "Clear": WeatherClear,
+    "Overcast": WeatherOvercast,
+    "HardRain": WeatherHardRain,
+
+    "Night": TimeNight,
+    "Day": TimeDay,
+    "Sunrise": TimeSunrise,
+
+    ## Actors 
     "SpawnAngkot": SpawnAngkot,
     "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger,
     
