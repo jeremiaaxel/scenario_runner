@@ -23,8 +23,10 @@ import carla
 
 from agents.navigation.local_planner import RoadOption
 from customs.scenarios.Time import TimeDay, TimeNight, TimeSunrise
-from customs.scenarios.Weather import WeatherClear, WeatherHardRain, WeatherOvercast
-from customs.scenarios.WeatherRainyDay import WeatherRainyDayRoute
+from customs.scenarios.Weather import (
+    WeatherClear, WeatherHardRain, WeatherOvercast,
+    WeatherClearSunsetRoute, WeatherWetNoonRoute, WeatherHardRainNightRoute, WeatherRainyDayRoute, WeatherMidRainyNoonRoute
+)
 
 # pylint: disable=line-too-long
 from srunner.scenarioconfigs.scenario_configuration import ScenarioConfiguration, ActorConfigurationData
@@ -44,10 +46,6 @@ from srunner.scenarios.other_leading_vehicle import OtherLeadingVehicle
 from srunner.scenarios.maneuver_opposite_direction import ManeuverOppositeDirection
 from srunner.scenarios.junction_crossing_route import SignalJunctionCrossingRoute, NoSignalJunctionCrossingRoute
 
-from customs.scenarios.WeatherMidRainyNoon import WeatherMidRainyNoonRoute
-from customs.scenarios.WeatherHardRainNight import WeatherHardRainNightRoute
-from customs.scenarios.WeatherWetNoon import WeatherWetNoonRoute
-from customs.scenarios.WeatherClearSunset import WeatherClearSunsetRoute
 from customs.scenarios.SpawnAngkot import SpawnAngkot, SpawnAngkotOnTrigger
 from customs.scenarios.SpawnBike import SpawnBike, SpawnBikeOnTrigger
 from customs.scenarios.SpawnPedestrian import SpawnPedestrian, SpawnPedestrianOnTrigger
@@ -65,8 +63,8 @@ SECONDS_GIVEN_PER_METERS = 0.4
 NUMBER_CLASS_TRANSLATION = {
     # "Scenario1": ControlLoss,
     # "Scenario2": FollowLeadingVehicle,
-    # "Scenario3": DynamicObjectCrossing,
-    # "Scenario4": VehicleTurningRoute,
+    "Scenario3": DynamicObjectCrossing,
+    "Scenario4": VehicleTurningRoute,
     # "Scenario5": OtherLeadingVehicle,
     # "Scenario6": ManeuverOppositeDirection,
     # "Scenario7": SignalJunctionCrossingRoute,
