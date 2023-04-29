@@ -1,9 +1,9 @@
-from customs.scenarios.SpawnAngkot import SpawnAngkotOnTrigger
-from customs.scenarios.SpawnBike import SpawnBikeOnTrigger
-from customs.scenarios.SpawnPedestrian import SpawnPedestrianOnTrigger
-from customs.scenarios.Time import TimeDay, TimeNight, TimeSunrise
+from customs.scenarios.spawn_angkot import SpawnAngkotOnTrigger
+from customs.scenarios.spawn_bike import SpawnBikeOnTrigger
+from customs.scenarios.spawn_pedestrian import SpawnPedestrianOnTrigger
+from customs.scenarios.time import TimeDay, TimeNight, TimeSunrise
 
-from customs.scenarios.Weather import (
+from customs.scenarios.weather import (
     WeatherClear, WeatherHardRain, WeatherOvercast,
     # Presets
     WeatherClearSunsetRoute, WeatherWetNoonRoute, WeatherHardRainNightRoute, WeatherRainyDayRoute, WeatherMidRainyNoonRoute

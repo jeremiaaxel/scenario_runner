@@ -1,4 +1,4 @@
-from customs.scenarios.Weather import WeatherBasicRoute
+from customs.scenarios.weather import WeatherBasicRoute
 
 class TimeNight(WeatherBasicRoute):
     weather_config = {

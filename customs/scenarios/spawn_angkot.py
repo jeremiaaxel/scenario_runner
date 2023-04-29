@@ -9,15 +9,13 @@ Scenario spawning elements to make the town dynamic and interesting
 """
 
 import logging
-from customs.helpers.blueprints import create_blueprints_by_attribute
-from customs.scenarios.SpawnActor import SpawnActor, SpawnActorOnTrigger
-from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
+from customs.scenarios.spawn_actor import SpawnActor, SpawnActorOnTrigger
 
 logger = logging.getLogger(__name__)
+angkot_model_name = 'vehicle.angkot.angkot'
+total_amount = 10
 
-total_amount = 30
-
-class SpawnBike(SpawnActor):
+class SpawnAngkot(SpawnActor):
 
     """
     Implementation of a scenario to spawn a set of background actors,
@@ -30,30 +28,25 @@ class SpawnBike(SpawnActor):
         """
         Setup all relevant parameters and create scenario
         """
-        two_wheel_blueprints = create_blueprints_by_attribute("number_of_wheels", 2)
-        two_wheel_modelnames = [bp.id for bp in two_wheel_blueprints]
-        logger.debug_s(two_wheel_modelnames)
-        super(SpawnBike, self).__init__(world,
+        super(SpawnAngkot, self).__init__(world,
                                             ego_vehicles,
                                             config,
                                             randomize,
                                             debug_mode=debug_mode,
                                             timeout=timeout,
                                             criteria_enable=criteria_enable,
-                                            model_names=two_wheel_modelnames,
+                                            model_names=[angkot_model_name],
                                             total_amount=total_amount)
 
-class SpawnBikeOnTrigger(SpawnActorOnTrigger):
+
+class SpawnAngkotOnTrigger(SpawnActorOnTrigger):
     def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False):
-        two_wheel_blueprints = create_blueprints_by_attribute("number_of_wheels", 2)
-        two_wheel_modelnames = [bp.id for bp in two_wheel_blueprints]
-        logger.debug_s(two_wheel_modelnames)
-        super(SpawnBikeOnTrigger, self).__init__(world,
+        super(SpawnAngkotOnTrigger, self).__init__(world,
                                             ego_vehicles,
                                             config,
                                             randomize,
                                             debug_mode=debug_mode,
                                             timeout=timeout,
                                             criteria_enable=criteria_enable,
-                                            model_names=two_wheel_modelnames,
+                                            model_names=[angkot_model_name],
                                             total_amount=total_amount)

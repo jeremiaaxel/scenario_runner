@@ -22,8 +22,8 @@ import py_trees
 import carla
 
 from agents.navigation.local_planner import RoadOption
-from customs.scenarios.Time import TimeDay, TimeNight, TimeSunrise
-from customs.scenarios.Weather import (
+from customs.scenarios.time import TimeDay, TimeNight, TimeSunrise
+from customs.scenarios.weather import (
     WeatherClear, WeatherHardRain, WeatherOvercast,
     WeatherClearSunsetRoute, WeatherWetNoonRoute, WeatherHardRainNightRoute, WeatherRainyDayRoute, WeatherMidRainyNoonRoute
 )
@@ -46,9 +46,9 @@ from srunner.scenarios.other_leading_vehicle import OtherLeadingVehicle
 from srunner.scenarios.maneuver_opposite_direction import ManeuverOppositeDirection
 from srunner.scenarios.junction_crossing_route import SignalJunctionCrossingRoute, NoSignalJunctionCrossingRoute
 
-from customs.scenarios.SpawnAngkot import SpawnAngkot, SpawnAngkotOnTrigger
-from customs.scenarios.SpawnBike import SpawnBike, SpawnBikeOnTrigger
-from customs.scenarios.SpawnPedestrian import SpawnPedestrian, SpawnPedestrianOnTrigger
+from customs.scenarios.spawn_angkot import SpawnAngkot, SpawnAngkotOnTrigger
+from customs.scenarios.spawn_bike import SpawnBike, SpawnBikeOnTrigger
+from customs.scenarios.spawn_pedestrian import SpawnPedestrian, SpawnPedestrianOnTrigger
 
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import (CollisionTest,
                                                                      InRouteTest,

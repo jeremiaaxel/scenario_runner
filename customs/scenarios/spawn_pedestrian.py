@@ -12,7 +12,7 @@ import carla
 
 import logging
 from customs.helpers.blueprints import get_actor_blueprints
-from customs.scenarios.SpawnActor import SpawnActor, SpawnActorOnTrigger
+from customs.scenarios.spawn_actor import SpawnActor, SpawnActorOnTrigger
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
 logger = logging.getLogger(__name__)
