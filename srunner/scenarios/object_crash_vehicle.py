@@ -11,6 +11,7 @@ moving along the road and encountering a cyclist ahead.
 from __future__ import print_function
 
 import math
+from typing import Union
 import py_trees
 import carla
 
@@ -141,8 +142,17 @@ class DynamicObjectCrossing(BasicScenario):
     This is a single ego vehicle scenario
     """
 
-    def __init__(self, world, ego_vehicles, config, randomize=False,
-                 debug_mode=False, criteria_enable=True, adversary_type=False, timeout=60):
+    def __init__(self, 
+                 world, 
+                 ego_vehicles, 
+                 config, 
+                 randomize=False,
+                 debug_mode=False, 
+                 criteria_enable=True, 
+                 adversary_type=False, 
+                 spawn_blocker: bool=True,
+                 name: Union[str, None]=None,
+                 timeout=60):
         """
         Setup all relevant parameters and create scenario
         """
@@ -167,9 +177,10 @@ class DynamicObjectCrossing(BasicScenario):
         # Number of attempts made so far
         self._spawn_attempted = 0
 
+        self.spawn_blocker = spawn_blocker # spawn adversary blocker or not
         self._ego_route = CarlaDataProvider.get_ego_vehicle_route()
 
-        super(DynamicObjectCrossing, self).__init__("DynamicObjectCrossing",
+        super(DynamicObjectCrossing, self).__init__("DynamicObjectCrossing" if name is None else name,
                                                     ego_vehicles,
                                                     config,
                                                     world,
@@ -206,10 +217,14 @@ class DynamicObjectCrossing(BasicScenario):
             self._walker_yaw = orientation_yaw
             self._other_actor_target_velocity = 3 + (0.4 * self._num_lane_changes)
             walker = CarlaDataProvider.request_new_actor('walker.*', transform)
+            if walker is None:
+                raise RuntimeError(f'Cannot spawn {"walker.*"} at {self.transform}')
             adversary = walker
         else:
             self._other_actor_target_velocity = self._other_actor_target_velocity * self._num_lane_changes
             first_vehicle = CarlaDataProvider.request_new_actor('vehicle.diamondback.century', transform)
+            if first_vehicle is None:
+                raise RuntimeError(f'Cannot spawn {"vehicle.diamonback.century"} at {self.transform}')
             first_vehicle.set_simulate_physics(enabled=False)
             adversary = first_vehicle
 
@@ -269,7 +284,8 @@ class DynamicObjectCrossing(BasicScenario):
                 self.transform, orientation_yaw = self._calculate_base_transform(_start_distance, waypoint)
                 first_vehicle = self._spawn_adversary(self.transform, orientation_yaw)
 
-                blocker = self._spawn_blocker(self.transform, orientation_yaw)
+                if self.spawn_blocker:
+                    blocker = self._spawn_blocker(self.transform, orientation_yaw)
 
                 break
             except RuntimeError as r:
@@ -287,18 +303,20 @@ class DynamicObjectCrossing(BasicScenario):
                            self.transform.location.z - 500),
             self.transform.rotation)
 
-        prop_disp_transform = carla.Transform(
-            carla.Location(self.transform2.location.x,
-                           self.transform2.location.y,
-                           self.transform2.location.z - 500),
-            self.transform2.rotation)
-
         first_vehicle.set_transform(disp_transform)
-        blocker.set_transform(prop_disp_transform)
         first_vehicle.set_simulate_physics(enabled=False)
-        blocker.set_simulate_physics(enabled=False)
         self.other_actors.append(first_vehicle)
-        self.other_actors.append(blocker)
+
+        if self.spawn_blocker:
+            prop_disp_transform = carla.Transform(
+                carla.Location(self.transform2.location.x,
+                            self.transform2.location.y,
+                            self.transform2.location.z - 500),
+                self.transform2.rotation)
+
+            blocker.set_transform(prop_disp_transform)
+            blocker.set_simulate_physics(enabled=False)
+            self.other_actors.append(blocker)
 
     def _create_behavior(self):
         """
@@ -346,8 +364,10 @@ class DynamicObjectCrossing(BasicScenario):
                                          name="ego vehicle passed prop")
         actor_remove = ActorDestroy(self.other_actors[0],
                                     name="Destroying walker")
-        static_remove = ActorDestroy(self.other_actors[1],
-                                     name="Destroying Prop")
+
+        if self.spawn_blocker:
+            static_remove = ActorDestroy(self.other_actors[1],
+                                        name="Destroying Prop")
         end_condition = DriveDistance(self.ego_vehicles[0],
                                       self._ego_vehicle_distance_driven,
                                       name="End condition ego drive distance")
@@ -365,8 +385,9 @@ class DynamicObjectCrossing(BasicScenario):
         root.add_child(scenario_sequence)
         scenario_sequence.add_child(ActorTransformSetter(self.other_actors[0], self.transform,
                                                          name='TransformSetterTS3walker'))
-        scenario_sequence.add_child(ActorTransformSetter(self.other_actors[1], self.transform2,
-                                                         name='TransformSetterTS3coca', physics=False))
+        if self.spawn_blocker:
+            scenario_sequence.add_child(ActorTransformSetter(self.other_actors[1], self.transform2,
+                                                            name='TransformSetterTS3coca', physics=False))
         scenario_sequence.add_child(HandBrakeVehicle(self.other_actors[0], True))
         scenario_sequence.add_child(start_condition)
         scenario_sequence.add_child(HandBrakeVehicle(self.other_actors[0], False))
@@ -374,7 +395,8 @@ class DynamicObjectCrossing(BasicScenario):
         scenario_sequence.add_child(keep_velocity_other)
         scenario_sequence.add_child(actor_stop_crossed_lane)
         scenario_sequence.add_child(actor_remove)
-        scenario_sequence.add_child(static_remove)
+        if self.spawn_blocker:
+            scenario_sequence.add_child(static_remove)
         scenario_sequence.add_child(end_condition)
 
         keep_velocity.add_child(actor_velocity)

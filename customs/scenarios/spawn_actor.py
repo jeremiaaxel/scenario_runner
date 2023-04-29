@@ -15,6 +15,7 @@ from py_trees.composites import Sequence, Parallel
 import os
 import carla
 import logging
+from customs.behaviors.horn_behavior import HornBehavior
 
 from customs.configs.config import OUT_DIR
 from customs.triggers.horn_trigger import InHornDistanceTrigger
@@ -141,45 +142,19 @@ class SpawnActor(BackgroundActivity):
                                                          physics=True)
             
             other_actor_remove = ActorDestroy(other_actor, name=f"Destroy actor {other_actor.id}")
-            other_actor_horn_distance = InHornDistanceTrigger(self.ego_vehicles[0],
-                                                        other_actor,
-                                                        trigger_distance=self._horn_distance,
-                                                        name=f"Ego horn distance {other_actor.id}")
-            
-
             other_actor_stop_on = StopVehicle(other_actor, 1, name=f"Stop on {other_actor.id}")
             other_actor_stop_off = StopVehicle(other_actor, 0, name=f"Stop off {other_actor.id}")
             
             if isinstance(other_actor, carla.Vehicle):
                 other_actor_autopilot_on = ChangeAutoPilot(other_actor, True, name=f"Autopilot on {other_actor.id}")
-                other_actor_autopilot_off = ChangeAutoPilot(other_actor, False, name=f"Autopilot off {other_actor.id}")
 
             # building other actor tree
-            # if in horn: in_horn_behavior; else: out_horn_behavior
-            other_actor_behavior = py_trees.composites.Parallel(name="Other actor behavior", policy=ParallelPolicy.SUCCESS_ON_ONE)
-            in_horn_behavior = py_trees.composites.Sequence(name="In horn distance behavior")
-            # this is automatically success, so change to running so that in horn can prevail if it is true (success)
-            out_horn_behavior = py_trees.meta.success_is_running(py_trees.composites.Sequence)(name="Not in horn distance behavior")
-            
-            other_actor_behavior.add_child(out_horn_behavior)
-            other_actor_behavior.add_child(in_horn_behavior)
-
-            # if horned at: 
-            #   vehicle: stop on, autopilot off
-            #   walker: stop on
-            in_horn_behavior.add_child(other_actor_horn_distance)
-            in_horn_behavior.add_child(other_actor_stop_on)
-            if isinstance(other_actor, carla.Vehicle):
-                in_horn_behavior.add_child(other_actor_autopilot_off)
-            # else: 
-            #   vehicle:stop off, autopilot on
-            #   walker:stop off
-            out_horn_behavior.add_child(other_actor_stop_off)
-            if isinstance(other_actor, carla.Vehicle):
-                out_horn_behavior.add_child(other_actor_autopilot_on)
+            horn_behavior = HornBehavior(self.ego_vehicles[0],
+                                         other_actor,
+                                         name=f"Horn behavior {other_actor.id}") # using default in horn and out horn behavior
 
             other_actors_transform.append(other_actor_transform)
-            other_actors_behaviors.append(other_actor_behavior)
+            other_actors_behaviors.append(horn_behavior)
             other_actors_remove.append(other_actor_remove)
 
             if isinstance(other_actor, carla.Vehicle):
@@ -208,7 +183,7 @@ class SpawnActor(BackgroundActivity):
         other_actors_behavior_parallel.add_children(other_actors_behaviors)
         other_actors_remove_parallel.add_children(other_actors_remove)
 
-        root = Sequence(name=__class__.__name__)
+        root = Sequence(name=self.__class__.__name__)
 
         if self._ego_route is not None:
             # init: other actors: make visible, brake on

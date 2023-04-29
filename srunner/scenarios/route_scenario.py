@@ -40,7 +40,7 @@ from srunner.tools.py_trees_port import oneshot_behavior
 
 from srunner.scenarios.control_loss import ControlLoss
 from srunner.scenarios.follow_leading_vehicle import FollowLeadingVehicle
-from srunner.scenarios.object_crash_vehicle import DynamicObjectCrossing
+from srunner.scenarios.object_crash_vehicle import DynamicObjectCrossing, StationaryObjectCrossing
 from srunner.scenarios.object_crash_intersection import VehicleTurningRoute
 from srunner.scenarios.other_leading_vehicle import OtherLeadingVehicle
 from srunner.scenarios.maneuver_opposite_direction import ManeuverOppositeDirection
@@ -49,6 +49,10 @@ from srunner.scenarios.junction_crossing_route import SignalJunctionCrossingRout
 from customs.scenarios.spawn_angkot import SpawnAngkot, SpawnAngkotOnTrigger
 from customs.scenarios.spawn_bike import SpawnBike, SpawnBikeOnTrigger
 from customs.scenarios.spawn_pedestrian import SpawnPedestrian, SpawnPedestrianOnTrigger
+from customs.scenarios.pedestrian_crossing import (
+    PedestrianCrossing, PedestrianWalkCrossing,
+    CyclistCrossing, CyclistSlowCrossing
+)
 
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import (CollisionTest,
                                                                      InRouteTest,
@@ -71,9 +75,6 @@ NUMBER_CLASS_TRANSLATION = {
     # "Scenario8": SignalJunctionCrossingRoute,
     # "Scenario9": SignalJunctionCrossingRoute,
     # "Scenario10": NoSignalJunctionCrossingRoute,
-
-    # Built in
-    "PedestrianCrossing": DynamicObjectCrossing,
 
     # Custom made
     ## Weather
@@ -103,6 +104,12 @@ NUMBER_CLASS_TRANSLATION = {
     "SpawnPedestrian": SpawnPedestrian,
     "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
 
+    ## Special Scenario
+    "PedestrianCrossing": PedestrianCrossing,
+    "PedestrianWalkCrossing": PedestrianWalkCrossing,
+    
+    "CyclistCrossing": CyclistCrossing,
+    "CyclistSlowCrossing": CyclistSlowCrossing,
 }
 
 logger = logging.getLogger(__name__)

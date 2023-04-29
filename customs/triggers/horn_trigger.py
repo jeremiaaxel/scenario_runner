@@ -9,13 +9,13 @@ class InHornDistanceTrigger(AtomicCondition):
     Trigger other vehicles in distance if horn is activated
     Implemented using InTriggerDistanceToVehicle and WaitForBlackboardVariable
     """
-    def __init__(self, actor, other_actor, trigger_distance = 5, name="InHornDistanceTrigger"):
+    def __init__(self, reference_actor, actor, trigger_distance = 5, name="InHornDistanceTrigger"):
         super().__init__(name)
+        self._reference_actor = reference_actor
         self._actor = actor
-        self._other_actor = other_actor
         self._trigger_distance = trigger_distance
-        self._in_trigger_distance_to_vehicle = InTriggerDistanceToVehicle(self._actor, 
-                                                                          self._other_actor,
+        self._in_trigger_distance_to_vehicle = InTriggerDistanceToVehicle(self._reference_actor, 
+                                                                          self._actor,
                                                                           self._trigger_distance,
                                                                           comparison_operator=operator.le)
         self._wait_for_blackboard_variable = WaitForBlackboardVariable("is_ego_vehicle_horn",
