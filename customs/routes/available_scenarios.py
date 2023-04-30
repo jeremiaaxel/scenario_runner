@@ -1,3 +1,5 @@
+from customs.scenarios.obstructing_vehicle import ObstructingVehicle
+from customs.scenarios.pedestrian_crossing import CyclistCrossing, CyclistSlowCrossing, PedestrianCrossing, PedestrianWalkCrossing
 from customs.scenarios.spawn_angkot import SpawnAngkotOnTrigger
 from customs.scenarios.spawn_bike import SpawnBikeOnTrigger
 from customs.scenarios.spawn_pedestrian import SpawnPedestrianOnTrigger
@@ -34,7 +36,13 @@ class AvailableScenarios(object):
         "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger,
         "SpawnBikeOnTrigger": SpawnBikeOnTrigger,
         "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
-        "PedestrianCrossing": DynamicObjectCrossing,
+
+        "PedestrianCrossing": PedestrianCrossing,
+        "PedestrianWalkCrossing": PedestrianWalkCrossing,
+        "CyclistCrossing": CyclistCrossing,
+        "CyclistSlowCrossing": CyclistSlowCrossing,
+
+        "ObstructingVehicle": ObstructingVehicle,
     }
 
     @classmethod

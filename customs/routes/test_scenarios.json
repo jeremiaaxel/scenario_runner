@@ -14,49 +14,7 @@
                             }
                         }
                     ],
-                    "scenario_type": "PedestrianCrossing"
-                },
-                {
-                    "available_event_configurations": [
-                        {
-                            "transform": {
-                                "pitch": "0",
-                                "x": "58.2",
-                                "y": "-63.8",
-                                "yaw": "180.0",
-                                "z": "0.0"
-                            }
-                        }
-                    ],
-                    "scenario_type": "PedestrianWalkCrossing"
-                },
-                {
-                    "available_event_configurations": [
-                        {
-                            "transform": {
-                                "pitch": "0",
-                                "x": "46.2",
-                                "y": "-63.8",
-                                "yaw": "180.0",
-                                "z": "0.0"
-                            }
-                        }
-                    ],
-                    "scenario_type": "CyclistCrossing"
-                },
-                {
-                    "available_event_configurations": [
-                        {
-                            "transform": {
-                                "pitch": "0",
-                                "x": "44.2",
-                                "y": "-63.8",
-                                "yaw": "180.0",
-                                "z": "0.0"
-                            }
-                        }
-                    ],
-                    "scenario_type": "CyclistSlowCrossing"
+                    "scenario_type": "ObstructingVehicle"
                 }
             ]
         }
