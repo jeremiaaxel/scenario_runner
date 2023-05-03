@@ -10,3 +10,4 @@ numpy
 matplotlib
 six
 simple-watchdog-timer
+hils-connector @ git+ssh://git@github.com/jspmarc/final-project-experiment.git@f7e64703b8bc725dfe86bcb05744c2207e169bd0#subdirectory=producer
