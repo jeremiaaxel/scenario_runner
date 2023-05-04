@@ -28,6 +28,7 @@ class KeyboardControl(object):
         self._horn = False
         self._steer_cache = 0.0
         self._clock = pygame.time.Clock()
+        self._is_control = False
 
         # Get the mode
         if path_to_conf_file:
@@ -119,8 +120,7 @@ class KeyboardControl(object):
         self._control.brake = 1.0 if keys[K_DOWN] or keys[K_s] else 0.0
         self._control.hand_brake = keys[K_SPACE]
 
-        if len(keys) > 0:
-            self._is_control = True
+        self._is_control = any(keys)
 
     def _parse_json_control(self):
         """
