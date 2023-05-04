@@ -12,17 +12,19 @@ from __future__ import print_function
 from typing import Callable
 import zmq
 import os
-
-from customs.autoagents.zmq_agent.ZmqControl import ZmqControl
-from customs.autoagents.components.HumanInterface import HumanInterface
-from customs.autoagents.components.KeyboardControl import KeyboardControl
-from customs.autoagents.human_tram_agent import HumanTramAgent
 from hils_connector.carla_handlers.outbound import (
     GnssHandler,
     LidarHandler,
     CameraHandler,
 )
 from hils_connector.carla_handlers.inbound import ControlHandler
+from threading import Event
+from carla import VehicleControl
+
+from customs.autoagents.zmq_agent.ZmqControl import ZmqControl
+from customs.autoagents.components.HumanInterface import HumanInterface
+from customs.autoagents.components.KeyboardControl import KeyboardControl
+from customs.autoagents.human_tram_agent import HumanTramAgent
 
 
 class HumanTramZmqAgent(HumanTramAgent):
@@ -41,6 +43,9 @@ class HumanTramZmqAgent(HumanTramAgent):
 
         super().setup(path_to_conf_file)
         self._zmqcontroller = ZmqControl()
+
+        self._vehicle_control_event = Event()
+        self._vehicle_control = VehicleControl()
 
         zmq_context = zmq.Context()
         zmq_host = os.getenv("ZMQ_HOST", "167.205.66.15")
@@ -74,12 +79,9 @@ class HumanTramZmqAgent(HumanTramAgent):
           - brake
           - hand_brake
         """
-        # TODO: publish sensors data via ZMQ
-        self._zmqcontroller.send_sensors(input_data)
+        self._vehicle_control_event.wait()
 
-        # acceleration: from ZMQ
-        # TODO: subscribe acceleration data via ZMQ
-        control = self._zmqcontroller.receive_control()
+        control = self._vehicle_control
 
         # steering: from NPC agent
         control_super = super().run_step(input_data, timestamp)
@@ -98,10 +100,16 @@ class HumanTramZmqAgent(HumanTramAgent):
         self._hic.run_interface(input_data, {})
 
         self.prev_timestamp = timestamp
+
+        self._vehicle_control_event.clear()
+
         return control
 
     def _on_vehicle_control(self, data: int):
-        pass
+        # TODO: implement dm
+        self._vehicle_control.steer = data
+        if not self._vehicle_control_event.is_set():
+            self._vehicle_control_event.set()
 
     def set_egovehicle(self, ego_vehicle):
         super().set_egovehicle(ego_vehicle)
