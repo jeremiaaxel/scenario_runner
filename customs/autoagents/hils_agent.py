@@ -18,18 +18,16 @@ from hils_connector.carla_handlers.outbound import (
     CameraHandler,
 )
 from hils_connector.carla_handlers.inbound import ControlHandler
-from hils_connector.dm import Controller2D, LocMap
+# from hils_connector.dm import Controller2D, LocMap
 from threading import Event
 from carla import VehicleControl
 
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
-from customs.autoagents.zmq_agent.ZmqControl import ZmqControl
-from customs.autoagents.components.HumanInterface import HumanInterface
-from customs.autoagents.components.KeyboardControl import KeyboardControl
 from customs.autoagents.human_tram_agent import HumanTramAgent
 
 # has to append PYTHONPATH with $HOME/Documents/khansa/rilis3
-from decision_maker import DecisionMaker
+from controller2d import Controller2D
+from lokalisasi import LocMap
 
 
 class Integer:
@@ -37,7 +35,7 @@ class Integer:
         self.val = value
 
 
-class HumanTramZmqAgent(HumanTramAgent):
+class HilsAgent(HumanTramAgent):
     """
     Human tram agent to control the ego vehicle via ZMQ
     """
@@ -52,21 +50,19 @@ class HumanTramZmqAgent(HumanTramAgent):
         """
 
         super().setup(path_to_conf_file)
-        self._zmqcontroller = ZmqControl()
 
         self._vehicle_control_event = Event()
 
         self._dm_command = Integer(0)
 
         self._setup_sensors()
-        self._setup_dm()
 
         self._is_dm_setup = False
 
 
     def _setup_sensors(self):
         zmq_context = zmq.Context()
-        zmq_host = os.getenv("ZMQ_HOST", "167.205.66.15")
+        zmq_host = os.getenv("ZMQ_HOST", "*")
 
         for sensor in self.sensors():
             if sensor["type"] == "sensor.camera.rgb":
@@ -79,8 +75,10 @@ class HumanTramZmqAgent(HumanTramAgent):
                 port = os.getenv("ZMQ_GNSS_PORT", 5557)
                 self._gnss_handler = GnssHandler(zmq_host, port, zmq_context)
             else:
-                raise TypeError("Invalid sensor type: {}".format(sensor["type"]))
+                return
+                # raise TypeError("Invalid sensor type: {}".format(sensor["type"]))
 
+        zmq_host = os.getenv("167.205.66.15", "*")
         port = os.getenv("ZMQ_CONTROL_PORT", 5556)
         self._control_receiver = ControlHandler(
             zmq_host, port, self._on_vehicle_control, zmq_context
@@ -99,15 +97,15 @@ class HumanTramZmqAgent(HumanTramAgent):
         args_lateral_dict = {"K_P": 1.02, "K_I": 0.001, "K_D": 0.2, "dt": dt}
         args_longitudinal_dict = {"K_P": 5, "K_I": 0.3, "K_D": 0.13, "dt": dt}
 
-        locmap = LocMap(map, self._ego_vehicle)
+        locmap = LocMap(carla_map, self.ego_vehicle)
         locmap.set_destination(
             start_location=route[0][0],
             end_location=route[-1][0],
         )
 
         self._dm_controller = Controller2D(
-            self._ego_vehicle,
-            map,
+            self.ego_vehicle,
+            carla_map,
             locmap.wpt,
             locmap.lateral_route,
             args_lateral_dict,
@@ -131,7 +129,7 @@ class HumanTramZmqAgent(HumanTramAgent):
 
         self._vehicle_control_event.wait()
 
-        throttle, steer, brake = self._translate_dm_command()
+        throttle, steer, brake = self._translate_dm_command(timestamp)
 
         # steering: from NPC agent
         #control_super = super().run_step(input_data, timestamp)
@@ -163,7 +161,7 @@ class HumanTramZmqAgent(HumanTramAgent):
 
         return control
 
-    def _translate_dm_command(self) -> Tuple[int, int, int]:
+    def _translate_dm_command(self, timestamp: int) -> Tuple[int, int, int]:
         dm_command = self._dm_command.val
 
         dm = self._dm_controller

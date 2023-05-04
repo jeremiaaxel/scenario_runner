@@ -13,7 +13,7 @@ from __future__ import print_function
 
 import carla
 
-from customs.autoagents.human_tram_zmq_agent import HumanTramZmqAgent
+from customs.autoagents.hils_agent import HilsAgent
 from srunner.autoagents.sensor_interface import CallBack
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
@@ -79,7 +79,7 @@ class AgentWrapper(object):
             sensor_transform = carla.Transform(sensor_location, sensor_rotation)
             sensor = CarlaDataProvider.get_world().spawn_actor(bp, sensor_transform, vehicle)
             # setup callback
-            if isinstance(self._agent, HumanTramZmqAgent):
+            if isinstance(self._agent, HilsAgent):
                 sensor.listen(self._agent.get_sensor_listener(sensor_spec['type']))
             else:
                 sensor.listen(CallBack(sensor_spec['id'], sensor, self._agent.sensor_interface))
