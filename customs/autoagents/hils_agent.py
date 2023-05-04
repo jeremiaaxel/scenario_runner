@@ -9,7 +9,7 @@ via keyboard. Steering is done automatically by the vehicle to follow the route 
 """
 
 from __future__ import print_function
-from typing import Callable
+from typing import Callable, Tuple
 import zmq
 import os
 from hils_connector.carla_handlers.outbound import (
@@ -18,13 +18,18 @@ from hils_connector.carla_handlers.outbound import (
     CameraHandler,
 )
 from hils_connector.carla_handlers.inbound import ControlHandler
+from hils_connector.dm import Controller2D, LocMap
 from threading import Event
 from carla import VehicleControl
 
+from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from customs.autoagents.zmq_agent.ZmqControl import ZmqControl
 from customs.autoagents.components.HumanInterface import HumanInterface
 from customs.autoagents.components.KeyboardControl import KeyboardControl
 from customs.autoagents.human_tram_agent import HumanTramAgent
+
+# has to append PYTHONPATH with $HOME/Documents/khansa/rilis3
+from decision_maker import DecisionMaker
 
 
 class Integer:
@@ -54,12 +59,12 @@ class HumanTramZmqAgent(HumanTramAgent):
         self._dm_command = Integer(0)
 
         self._setup_sensors()
+        self._setup_dm()
+
+        self._is_dm_setup = False
 
 
     def _setup_sensors(self):
-        """
-        setup helper
-        """
         zmq_context = zmq.Context()
         zmq_host = os.getenv("ZMQ_HOST", "167.205.66.15")
 
@@ -81,6 +86,35 @@ class HumanTramZmqAgent(HumanTramAgent):
             zmq_host, port, self._on_vehicle_control, zmq_context
         )
 
+    def _setup_dm(self):
+        """
+        setup helper
+        """
+        self._is_dm_setup = True
+        carla_map = CarlaDataProvider.get_map()
+        # set_egovehicle is called before run_step which calls _setup_dm
+        route = CarlaDataProvider.get_ego_vehicle_route()
+
+        dt = 1.0 / 20.0
+        args_lateral_dict = {"K_P": 1.02, "K_I": 0.001, "K_D": 0.2, "dt": dt}
+        args_longitudinal_dict = {"K_P": 5, "K_I": 0.3, "K_D": 0.13, "dt": dt}
+
+        locmap = LocMap(map, self._ego_vehicle)
+        locmap.set_destination(
+            start_location=route[0][0],
+            end_location=route[-1][0],
+        )
+
+        self._dm_controller = Controller2D(
+            self._ego_vehicle,
+            map,
+            locmap.wpt,
+            locmap.lateral_route,
+            args_lateral_dict,
+            args_longitudinal_dict,
+        )
+
+
     def run_step(self, input_data, timestamp):
         """
         Execute one step of navigation.
@@ -92,15 +126,21 @@ class HumanTramZmqAgent(HumanTramAgent):
           - brake
           - hand_brake
         """
+        if not self._is_dm_setup:
+            self._setup_dm()
+
         self._vehicle_control_event.wait()
 
+        throttle, steer, brake = self._translate_dm_command()
+
         # steering: from NPC agent
-        control_super = super().run_step(input_data, timestamp)
+        #control_super = super().run_step(input_data, timestamp)
 
         control = VehicleControl(
-            throttle=self._dm_command.val,
-            steer=control_super.steer,
-            brake=self._dm_command.val,
+            throttle=throttle,
+            #steer=control_super.steer,
+            steer=steer,
+            brake=brake,
             hand_brake=False,
             manual_gear_shift=False,
         )
@@ -123,6 +163,14 @@ class HumanTramZmqAgent(HumanTramAgent):
 
         return control
 
+    def _translate_dm_command(self) -> Tuple[int, int, int]:
+        dm_command = self._dm_command.val
+
+        dm = self._dm_controller
+        dm.masterControl(timestamp, dm_command)
+
+        return dm.get_commands()
+
     def _on_vehicle_control(self, data: int):
         if self._vehicle_control_event.is_set():
             # throw away data if previous data is not yet processed
@@ -134,7 +182,7 @@ class HumanTramZmqAgent(HumanTramAgent):
         super().set_egovehicle(ego_vehicle)
         self._gnss_handler.set_ego_vehicle(ego_vehicle)
 
-    def get_sensor_listener(self, sensor_type) -> Callable:
+    def get_sensor_listener(self, sensor_type) -> Callable[[int], None]:
         if sensor_type.startswith("sensor.camera"):
             return self._camera_handler.process_camera_sensor
 
