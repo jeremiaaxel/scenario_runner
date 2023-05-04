@@ -27,6 +27,11 @@ from customs.autoagents.components.KeyboardControl import KeyboardControl
 from customs.autoagents.human_tram_agent import HumanTramAgent
 
 
+class Integer:
+    def __init__(self, value: int):
+        self.val = value
+
+
 class HumanTramZmqAgent(HumanTramAgent):
     """
     Human tram agent to control the ego vehicle via ZMQ
@@ -45,8 +50,16 @@ class HumanTramZmqAgent(HumanTramAgent):
         self._zmqcontroller = ZmqControl()
 
         self._vehicle_control_event = Event()
-        self._vehicle_control = VehicleControl()
 
+        self._dm_command = Integer(0)
+
+        self._setup_sensors()
+
+
+    def _setup_sensors(self):
+        """
+        setup helper
+        """
         zmq_context = zmq.Context()
         zmq_host = os.getenv("ZMQ_HOST", "167.205.66.15")
 
@@ -81,11 +94,16 @@ class HumanTramZmqAgent(HumanTramAgent):
         """
         self._vehicle_control_event.wait()
 
-        control = self._vehicle_control
-
         # steering: from NPC agent
         control_super = super().run_step(input_data, timestamp)
-        control.steer = control_super.steer
+
+        control = VehicleControl(
+            throttle=self._dm_command.val,
+            steer=control_super.steer,
+            brake=self._dm_command.val,
+            hand_brake=False,
+            manual_gear_shift=False,
+        )
 
         # override control by keyboard control (if any control)
         is_control_keyboard, control_keyboard = self._controller.parse_events(
@@ -106,10 +124,11 @@ class HumanTramZmqAgent(HumanTramAgent):
         return control
 
     def _on_vehicle_control(self, data: int):
-        # TODO: implement dm
-        self._vehicle_control.steer = data
-        if not self._vehicle_control_event.is_set():
-            self._vehicle_control_event.set()
+        if self._vehicle_control_event.is_set():
+            # throw away data if previous data is not yet processed
+            return
+
+        self._dm_command.val = data
 
     def set_egovehicle(self, ego_vehicle):
         super().set_egovehicle(ego_vehicle)
