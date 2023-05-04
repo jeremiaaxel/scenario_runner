@@ -13,7 +13,8 @@ class HumanInterface(object):
     _show_info = True
     ego_vehicle = None
 
-    def __init__(self, width = 800, height = 600):
+    def __init__(self, title=None, width=800, height=600):
+        self._title = title
         self._width = width
         self._height = height
         self._surface = None
@@ -28,12 +29,12 @@ class HumanInterface(object):
         self._font_mono = pygame.font.Font(mono, 12 if os.name == 'nt' else 14)
         self._clock = pygame.time.Clock()
         self._display = pygame.display.set_mode((self._width, self._height), pygame.HWSURFACE | pygame.DOUBLEBUF)
-        pygame.display.set_caption("Human Tram Keyboard Agent")
+        pygame.display.set_caption(self._title)
         
         font = pygame.font.Font(pygame.font.get_default_font(), 20)
         self._notifications = FadingText(font, (self._width, 40), (0, self._height - 40))
 
-    def update_info(self, imu_data, gnss_data, other_data): 
+    def update_info(self, imu_data, gnss_data, other_data=None): 
         def get_heading(compass):
             heading = 'N' if compass > 270.5 or compass < 89.5 else ''
             heading += 'S' if 90.5 < compass < 269.5 else ''
@@ -49,6 +50,9 @@ class HumanInterface(object):
                     result += f","
             return result
 
+        if other_data is None:
+            other_data = dict()
+            
         # See sensor_interface for index reference
         accelerometer = imu_data.get('accelerometer')
         gyroscope = imu_data.get('gyroscope')
@@ -134,7 +138,7 @@ class HumanInterface(object):
             'gyroscope': parse_gyroscope(gyroscope), 
             'compass': parse_compass(compass)}
 
-    def run_interface(self, input_data, other_data):
+    def run_interface(self, input_data, other_data=None):
         """
         Run the GUI
         """

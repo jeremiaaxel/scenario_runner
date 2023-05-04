@@ -30,7 +30,7 @@ class HumanTramAgent(TramAgent):
         """
 
         super().setup(path_to_conf_file)
-        self._hic = HumanInterface()
+        self._hic = HumanInterface(title=self.__class__.__name__)
         self._controller = KeyboardControl(path_to_conf_file)
 
     # sensors are set by TramAgent
@@ -43,7 +43,7 @@ class HumanTramAgent(TramAgent):
         """
         # Change steering: Steering from NPC Agent
         control_super = super().run_step(input_data, timestamp)
-        _, control = self._controller.parse_events(timestamp - self.prev_timestamp)
+        self.is_keyboard_control, control = self._controller.parse_events(timestamp - self.prev_timestamp)
         is_horn = self._controller._horn
         other_data = {
             'is_horn': is_horn
