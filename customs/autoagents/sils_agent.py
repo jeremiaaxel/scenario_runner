@@ -19,11 +19,7 @@ from customs.autoagents.components.KeyboardControl import KeyboardControl
 from customs.autoagents.human_tram_agent import HumanTramAgent
 
 # has to append PYTHONPATH with $HOME/Documents/khansa/rilis3
-from controller2d import Controller2D 
-from perception_system import Perception
-from lokalisasi import LocMap as Localisasi
-from grs_dm_class import grs_tram_state, HLC_state, state_transition, dm_tram_state
-from grs_dm import getCommand, updateDmCommand
+from decision_maker import DecisionMaker
 
 class SilsAgent(HumanTramAgent):
     """
@@ -43,28 +39,20 @@ class SilsAgent(HumanTramAgent):
         super().setup(path_to_conf_file)
 
     def post_setup(self):
-        _dt = 1.0 / 20.0
-        _args_lateral_dict = {'K_P': 1.02, 'K_I': 0.001, 'K_D': 0.2, 'dt': _dt}
-        _args_longitudinal_dict = {'K_P': 5, 'K_I': 0.3, 'K_D': 0.13, 'dt': _dt}   
-
         world = CarlaDataProvider.get_world()
-        map = CarlaDataProvider.get_map()
+        wmap = CarlaDataProvider.get_map()
         route = CarlaDataProvider.get_ego_vehicle_route()
 
         start_point = route[0][0] # tuple(location, road type)
         destination = route[-1][0]
 
-        self.StateTransition = state_transition()
-        self.HLC = HLC_state()
-        self.tram = grs_tram_state()
-        self.DmTramState = dm_tram_state()
-        self.Dm_RailObstacleStates = []
-
-
-        self.perception = Perception(world)
-        self.localisasi = Localisasi(map, self.ego_vehicle)
-        self.localisasi.set_destination(start_point, destination)
-        self._controller2d = Controller2D(self.ego_vehicle, map, self.localisasi.wpt, self.localisasi.lateral_route, _args_lateral_dict, _args_longitudinal_dict)
+        # TODO: copy the contents of $HOME/Documents/khansa/rilis3/main.py's setup (before the main loop) to here
+        self.decision_maker = DecisionMaker(world, 
+                                            wmap, 
+                                            self.ego_vehicle, 
+                                            start_loc=start_point,
+                                            dest_loc=destination,
+                                            debug=False)
 
     # sensors are set by TramAgent
     def sensors(self):
@@ -87,27 +75,14 @@ class SilsAgent(HumanTramAgent):
             self.is_setup = True
 
         control_super = super().run_step(input_data, timestamp)
+        control = self.decision_maker.run_step(timestamp)
 
-        updateDmCommand(self.StateTransition, self.HLC, self.DmTramState.t, self.Dm_RailObstacleStates,
-                        self.tram.SpeedLimit, self.DmTramState.v,
-                        self.StateTransition.SafeEmergencyDistance + 15)
-        self.tram.ManualPower = getCommand(self.HLC)
-        self._controller2d.update_values(self.localisasi, timestamp - self.prev_timestamp)
-        self._controller2d.masterControl(timestamp - self.prev_timestamp, self.tram.ManualPower)
-        self._controller2d.update_controls()
-        throttle, _, brake = self._controller2d.get_commands()
-        print(f"Controller2d | Throttle: {throttle} | Brake: {brake}")
+        print(f"Controller2d | Throttle: {control.throttle} | Brake: {control.brake}")
 
         # Output controller command to CARLA server
-        control = carla.VehicleControl()
         control.steer = control_super.steer
-        control.throttle = throttle
-        control.brake = brake 
-        control.hand_brake = False
-        control.manual_gear_shift = False
 
         # override control by keyboard control (if any control)
-        print(f"Is keyboard: {self.is_keyboard_control}")
         if self.is_keyboard_control:
             control.throttle = control_super.throttle
             control.brake = control_super.brake
