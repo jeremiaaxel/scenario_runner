@@ -5,9 +5,9 @@ psutil
 xmlschema==1.0.18
 ephem
 tabulate
-opencv-python==4.2.0.32
+opencv-python
 numpy
 matplotlib
 six
 simple-watchdog-timer
-hils-connector @ git+ssh://git@github.com/jspmarc/final-project-experiment.git@f7e64703b8bc725dfe86bcb05744c2207e169bd0#subdirectory=producer
+hils-connector @ git+ssh://git@github.com/jspmarc/final-project-experiment.git@447cbdd7b7a7b9999fbddbb89dd28f938b88f1a8#subdirectory=producer
