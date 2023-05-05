@@ -46,7 +46,7 @@ class TramAgent(NpcAgent):
             {'id': 'Center', 'type': 'sensor.camera.rgb', 
              'x': 5.5, 'y': 0.0, 'z': 2.3, 
              'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
-             'width': 800, 'height': 600, 'fov': 100},
+             'width': 640, 'height': 403, 'fov': 110},
             {'id': 'GNSS', 'type': 'sensor.other.gnss', 
              'x': 0.7, 'y': -0.4, 'z': 1.60,
              'roll': 0.0, 'pitch': 0.0, 'yaw': 90.0},

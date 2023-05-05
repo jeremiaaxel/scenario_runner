@@ -2,7 +2,7 @@
 
 tram_route_file="./customs/routes/tram_routes.xml"
 scenarios_file="./customs/routes/full_scenarios.json"
-agent_file="./customs/autoagents/sils_agent.py"
+agent_file="./customs/autoagents/hils_agent.py"
 route_number=$1
 is_debug=$2
 

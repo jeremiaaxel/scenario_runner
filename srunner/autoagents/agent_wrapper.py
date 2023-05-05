@@ -47,6 +47,7 @@ class AgentWrapper(object):
         """
         bp_library = CarlaDataProvider.get_world().get_blueprint_library()
         for sensor_spec in self._agent.sensors():
+            print(sensor_spec)
             # These are the sensors spawned on the carla world
             bp = bp_library.find(str(sensor_spec['type']))
             if sensor_spec['type'].startswith('sensor.camera'):
@@ -79,10 +80,15 @@ class AgentWrapper(object):
             sensor_transform = carla.Transform(sensor_location, sensor_rotation)
             sensor = CarlaDataProvider.get_world().spawn_actor(bp, sensor_transform, vehicle)
             # setup callback
-            if isinstance(self._agent, HilsAgent):
-                sensor.listen(self._agent.get_sensor_listener(sensor_spec['type']))
+            is_hils_agent = hasattr(self._agent, "get_sensor_listener")
+            if is_hils_agent:
+                additional_sensor_process = self._agent.get_sensor_listener(sensor_spec['type'])
             else:
-                sensor.listen(CallBack(sensor_spec['id'], sensor, self._agent.sensor_interface))
+                additional_sensor_process = None
+            sensor.listen(CallBack(sensor_spec['id'],
+                          sensor,
+                          self._agent.sensor_interface,
+                          additional_sensor_process))
             self._sensors_list.append(sensor)
 
         # Tick once to spawn the sensors

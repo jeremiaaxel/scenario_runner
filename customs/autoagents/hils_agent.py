@@ -21,6 +21,7 @@ from hils_connector.carla_handlers.inbound import ControlHandler
 # from hils_connector.dm import Controller2D, LocMap
 from threading import Event
 from carla import VehicleControl
+import logging
 
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from customs.autoagents.human_tram_agent import HumanTramAgent
@@ -44,6 +45,8 @@ class HilsAgent(HumanTramAgent):
     prev_timestamp = 0
     ego_vehicle = None
 
+    _log = logging.getLogger("HILS agent")
+
     def setup(self, path_to_conf_file=None):
         """
         Setup the agent parameters
@@ -57,10 +60,10 @@ class HilsAgent(HumanTramAgent):
 
         self._setup_sensors()
 
-        self._is_dm_setup = False
-
+        self._is_first_run = True
 
     def _setup_sensors(self):
+        print("setup sensors called")
         zmq_context = zmq.Context()
         zmq_host = os.getenv("ZMQ_HOST", "*")
 
@@ -75,10 +78,11 @@ class HilsAgent(HumanTramAgent):
                 port = os.getenv("ZMQ_GNSS_PORT", 5557)
                 self._gnss_handler = GnssHandler(zmq_host, port, zmq_context)
             else:
-                return
+                self._log.warn("Sensor of type %s is not supported. Will be ignored.", sensor["type"])
+                continue
                 # raise TypeError("Invalid sensor type: {}".format(sensor["type"]))
 
-        zmq_host = os.getenv("167.205.66.15", "*")
+        zmq_host = os.getenv("ZMQ_SRC", "167.205.66.15")
         port = os.getenv("ZMQ_CONTROL_PORT", 5556)
         self._control_receiver = ControlHandler(
             zmq_host, port, self._on_vehicle_control, zmq_context
@@ -88,7 +92,6 @@ class HilsAgent(HumanTramAgent):
         """
         setup helper
         """
-        self._is_dm_setup = True
         carla_map = CarlaDataProvider.get_map()
         # set_egovehicle is called before run_step which calls _setup_dm
         route = CarlaDataProvider.get_ego_vehicle_route()
@@ -124,15 +127,25 @@ class HilsAgent(HumanTramAgent):
           - brake
           - hand_brake
         """
-        if not self._is_dm_setup:
+        if self._is_first_run:
+            self._is_first_run = False
             self._setup_dm()
+            # immediately return because no control yet
+            # AV is stopped at first run
+            return VehicleControl(
+                throttle=0,
+                steer=0,
+                brake=1,
+                hand_brake=True,
+                manual_gear_shift=False,
+            )
 
         self._vehicle_control_event.wait()
 
         throttle, steer, brake = self._translate_dm_command(timestamp)
 
         # steering: from NPC agent
-        #control_super = super().run_step(input_data, timestamp)
+        # control_super = super().run_step(input_data, timestamp)
 
         control = VehicleControl(
             throttle=throttle,
@@ -180,19 +193,37 @@ class HilsAgent(HumanTramAgent):
         super().set_egovehicle(ego_vehicle)
         self._gnss_handler.set_ego_vehicle(ego_vehicle)
 
-    def get_sensor_listener(self, sensor_type) -> Callable[[int], None]:
-        if sensor_type.startswith("sensor.camera"):
+    def get_sensor_listener(self, sensor_type: str) -> Callable[[int], None]:
+        if sensor_type == "sensor.camera.rgb":
             return self._camera_handler.process_camera_sensor
 
-        if sensor_type.startswith("sensor.lidar"):
+        if sensor_type == "sensor.lidar.ray_cast":
             return self._lidar_handler.process_lidar_sensor
 
-        # gnss
-        return self._gnss_handler.process_gnss_sensor
+        if sensor_type == "sensor.other.gnss":
+            return self._gnss_handler.process_gnss_sensor
+
+        self._log.warn("Sensor of type %s is not supported. Will be ignored.", sensor_type)
+        return self._nop
+
+    def _nop(self, _: int):
+        pass
 
     def destroy(self):
         super().destroy()
-        self._camera_handler.destroy()
-        self._lidar_handler.destroy()
-        self._gnss_handler.destory()
-        self._control_receiver.destroy()
+        try:
+            self._camera_handler.destroy()
+        except AttributeError:
+            pass
+        try:
+            self._lidar_handler.destroy()
+        except AttributeError:
+            pass
+        try:
+            self._gnss_handler.destory()
+        except AttributeError:
+            pass
+        try:
+            self._control_receiver.destroy()
+        except AttributeError:
+            pass
