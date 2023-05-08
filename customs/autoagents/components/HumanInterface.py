@@ -19,7 +19,6 @@ class HumanInterface(object):
         self._height = height
         self._surface = None
 
-        pygame.init()
         pygame.font.init()
         font_name = 'courier' if os.name == 'nt' else 'mono'
         fonts = [x for x in pygame.font.get_fonts() if font_name in x]

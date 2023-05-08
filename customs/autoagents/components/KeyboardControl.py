@@ -12,7 +12,7 @@ from pygame.locals import K_q   # quit
 from pygame.locals import K_SPACE # hand brake
 from pygame.locals import K_h   # horn
 
-from typing import Tuple
+from typing import Tuple, Union
 
 class KeyboardControl(object):
 
@@ -20,7 +20,7 @@ class KeyboardControl(object):
     Keyboard control for the human agent
     """
 
-    def __init__(self, path_to_conf_file=None):
+    def __init__(self, configs: Union[dict, None]=None):
         """
         Init
         """
@@ -31,12 +31,9 @@ class KeyboardControl(object):
         self._is_control = False
 
         # Get the mode
-        if path_to_conf_file:
-
-            with (open(path_to_conf_file, "r")) as f:
-                lines = f.read().split("\n")
-                self._mode = lines[0].split(" ")[1]
-                self._endpoint = lines[1].split(" ")[1]
+        if configs:
+            self._mode = configs.get("mode", "normal")
+            self._endpoint = configs.get("file", None)
 
             # Get the needed vars
             if self._mode == "log":

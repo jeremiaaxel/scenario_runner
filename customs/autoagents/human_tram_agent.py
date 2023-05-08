@@ -10,11 +10,13 @@ Steering is done automatically by the vehicle to follow the route that's been se
 
 from __future__ import print_function
 
+import pygame
 import py_trees
 
 from customs.autoagents.components.HumanInterface import HumanInterface
 from customs.autoagents.components.KeyboardControl import KeyboardControl
 from customs.autoagents.tram_agent import TramAgent
+from customs.helpers.json_to_dict import json_to_dict
 
 class HumanTramAgent(TramAgent):
     """
@@ -22,6 +24,7 @@ class HumanTramAgent(TramAgent):
     """
 
     agent_engaged = False
+    with_gui = True
     prev_timestamp = 0
 
     def setup(self, path_to_conf_file=None):
@@ -30,12 +33,14 @@ class HumanTramAgent(TramAgent):
         """
 
         super().setup(path_to_conf_file)
-        self._hic = HumanInterface(title=self.__class__.__name__)
-        self._controller = KeyboardControl(path_to_conf_file)
+        configs = json_to_dict(path_to_conf_file)
+        self.with_gui = configs.get("with_gui", self.with_gui)
+        keyboard_config = configs.get("keyboard", None)
 
-    # sensors are set by TramAgent
-    def sensors(self):
-        return super().sensors()
+        pygame.init()
+        if self.with_gui:
+            self._hic = HumanInterface(title=self.__class__.__name__)
+        self._controller = KeyboardControl(keyboard_config)
 
     def run_step(self, input_data, timestamp):
         """
@@ -52,17 +57,20 @@ class HumanTramAgent(TramAgent):
         control.steer = control_super.steer
         
         self.agent_engaged = True
-        self._hic.run_interface(input_data, other_data)
+        if self.with_gui:
+            self._hic.run_interface(input_data, other_data)
         self.prev_timestamp = timestamp
 
         return control
 
     def set_egovehicle(self, egovehicle):
         super().set_egovehicle(egovehicle)
-        self._hic.set_egovehicle(egovehicle)
+        if self.with_gui:
+            self._hic.set_egovehicle(egovehicle)
 
     def destroy(self):
         """
         Cleanup
         """
-        self._hic.quit_interface = True
+        if self.with_gui:
+            self._hic.quit_interface = True
