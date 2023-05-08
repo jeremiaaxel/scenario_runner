@@ -54,6 +54,7 @@ from customs.scenarios.pedestrian_crossing import (
     CyclistCrossing, CyclistSlowCrossing
 )
 from customs.scenarios.obstructing_vehicle import ObstructingVehicle
+from customs.routes.available_scenarios import AvailableScenarios
 
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import (CollisionTest,
                                                                      InRouteTest,
@@ -65,55 +66,7 @@ from srunner.scenariomanager.scenarioatomics.atomic_criteria import (CollisionTe
 
 SECONDS_GIVEN_PER_METERS = 0.4
 
-NUMBER_CLASS_TRANSLATION = {
-    # "Scenario1": ControlLoss,
-    # "Scenario2": FollowLeadingVehicle,
-    "Scenario3": DynamicObjectCrossing,
-    "Scenario4": VehicleTurningRoute,
-    # "Scenario5": OtherLeadingVehicle,
-    # "Scenario6": ManeuverOppositeDirection,
-    # "Scenario7": SignalJunctionCrossingRoute,
-    # "Scenario8": SignalJunctionCrossingRoute,
-    # "Scenario9": SignalJunctionCrossingRoute,
-    # "Scenario10": NoSignalJunctionCrossingRoute,
-
-    # Custom made
-    ## Weather
-    ### Presets
-    "WetNoon": WeatherWetNoonRoute,
-    "MidRainyNoon": WeatherMidRainyNoonRoute,
-    "HardRainNight": WeatherHardRainNightRoute,
-    "ClearSunset": WeatherClearSunsetRoute,
-    "WeatherRainyDay": WeatherRainyDayRoute,
-
-    ### Custom
-    "Clear": WeatherClear,
-    "Overcast": WeatherOvercast,
-    "HardRain": WeatherHardRain,
-
-    "Night": TimeNight,
-    "Day": TimeDay,
-    "Sunrise": TimeSunrise,
-
-    ## Actors 
-    "SpawnAngkot": SpawnAngkot,
-    "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger,
-    
-    "SpawnBike": SpawnBike,
-    "SpawnBikeOnTrigger": SpawnBikeOnTrigger,
-
-    "SpawnPedestrian": SpawnPedestrian,
-    "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
-
-    ## Special Scenario
-    "PedestrianCrossing": PedestrianCrossing,
-    "PedestrianWalkCrossing": PedestrianWalkCrossing,
-    
-    "CyclistCrossing": CyclistCrossing,
-    "CyclistSlowCrossing": CyclistSlowCrossing,
-
-    "ObstructingVehicle": ObstructingVehicle,
-}
+NUMBER_CLASS_TRANSLATION = AvailableScenarios.get_all_scenarios()
 
 logger = logging.getLogger(__name__)
 

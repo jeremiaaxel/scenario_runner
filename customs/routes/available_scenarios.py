@@ -1,17 +1,18 @@
 from customs.scenarios.obstructing_vehicle import ObstructingVehicle
 from customs.scenarios.pedestrian_crossing import CyclistCrossing, CyclistSlowCrossing, PedestrianCrossing, PedestrianWalkCrossing
-from customs.scenarios.spawn_angkot import SpawnAngkotOnTrigger
-from customs.scenarios.spawn_bike import SpawnBikeOnTrigger
-from customs.scenarios.spawn_pedestrian import SpawnPedestrianOnTrigger
+from customs.scenarios.spawn_angkot import SpawnAngkot, SpawnAngkotOnTrigger
+from customs.scenarios.spawn_bike import SpawnBike, SpawnBikeOnTrigger
+from customs.scenarios.spawn_pedestrian import SpawnPedestrian, SpawnPedestrianOnTrigger
 from customs.scenarios.time import TimeDay, TimeNight, TimeSunrise
-
 from customs.scenarios.weather import (
     WeatherClear, WeatherHardRain, WeatherOvercast,
     # Presets
-    WeatherClearSunsetRoute, WeatherWetNoonRoute, WeatherHardRainNightRoute, WeatherRainyDayRoute, WeatherMidRainyNoonRoute
+    WeatherClearSunsetRoute, WeatherWetNoonRoute, 
+    WeatherHardRainNightRoute, WeatherRainyDayRoute, 
+    WeatherMidRainyNoonRoute
 )
-from srunner.scenarios.object_crash_vehicle import DynamicObjectCrossing
 
+from srunner.scenarios.cut_in import CutIn
 
 class AvailableScenarios(object):
     WEATHER_SCENARIOS = {
@@ -33,16 +34,24 @@ class AvailableScenarios(object):
     }
 
     OTHER_SCENARIOS = {
+        # Spawning(s)
+        "SpawnAngkot": SpawnAngkot,
         "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger,
+        "SpawnBike": SpawnBike,
         "SpawnBikeOnTrigger": SpawnBikeOnTrigger,
+        "SpawnPedestrian": SpawnPedestrian,
         "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
 
+        # Crossings(s)
         "PedestrianCrossing": PedestrianCrossing,
         "PedestrianWalkCrossing": PedestrianWalkCrossing,
         "CyclistCrossing": CyclistCrossing,
         "CyclistSlowCrossing": CyclistSlowCrossing,
 
+        # Obstructing(s)
         "ObstructingVehicle": ObstructingVehicle,
+
+        "CutIn": CutIn
     }
 
     @classmethod

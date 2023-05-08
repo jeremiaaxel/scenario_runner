@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<scenarios>
-    <scenario name="TramRouting_1" type="TramRouting" town="Town10HD">
-        <ego_vehicle x="-114.4" y="57.7" z="0" yaw="180" model="vehicle.carlamotors.firetruck" rolename="hero"/>
-        <weather cloudiness="0" precipitation="0" precipitation_deposits="0" wind_intensity="0" sun_azimuth_angle="0" sun_altitude_angle="75" />
-    </scenario>
-</scenarios>

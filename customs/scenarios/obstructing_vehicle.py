@@ -52,7 +52,7 @@ class ObstructingVehicle(BasicScenario):
         self.timeout = timeout
         self.model_name = model_name
 
-        super(__class__, self).__init__(__class__.__name__,
+        super(__class__, self).__init__(self.__class__.__name__,
                                                        ego_vehicles,
                                                        config,
                                                        world,
