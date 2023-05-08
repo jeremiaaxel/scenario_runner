@@ -16,7 +16,7 @@ import py_trees
 from customs.autoagents.components.HumanInterface import HumanInterface
 from customs.autoagents.components.KeyboardControl import KeyboardControl
 from customs.autoagents.tram_agent import TramAgent
-from customs.helpers.json_to_dict import json_to_dict
+from customs.helpers.json2dict import json2dict
 
 class HumanTramAgent(TramAgent):
     """
@@ -33,7 +33,7 @@ class HumanTramAgent(TramAgent):
         """
 
         super().setup(path_to_conf_file)
-        configs = json_to_dict(path_to_conf_file)
+        configs = json2dict(path_to_conf_file)
         self.with_gui = configs.get("with_gui", self.with_gui)
         keyboard_config = configs.get("keyboard", None)
 

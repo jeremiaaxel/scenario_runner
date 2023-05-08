@@ -17,8 +17,7 @@ import carla
 import logging
 from customs.behaviors.horn_behavior import HornBehavior
 
-from customs.configs.config import OUT_DIR
-from customs.triggers.horn_trigger import InHornDistanceTrigger
+from customs.helpers.config import OUT_DIR
 from multisensors.utils.manual_control_global_funcs import get_actor_display_name
 
 from srunner.scenarios.background_activity import BackgroundActivity

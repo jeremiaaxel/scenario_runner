@@ -11,8 +11,7 @@ from customs.scenarios.weather import (
     WeatherHardRainNightRoute, WeatherRainyDayRoute, 
     WeatherMidRainyNoonRoute
 )
-
-from srunner.scenarios.cut_in import CutIn
+from customs.scenarios.cut_in import CutInRoute
 
 class AvailableScenarios(object):
     WEATHER_SCENARIOS = {
@@ -51,7 +50,7 @@ class AvailableScenarios(object):
         # Obstructing(s)
         "ObstructingVehicle": ObstructingVehicle,
 
-        "CutIn": CutIn
+        "CutInRoute": CutInRoute
     }
 
     @classmethod

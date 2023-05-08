@@ -6,7 +6,6 @@ import carla
 import py_trees
 
 from customs.behaviors.horn_behavior import HornBehavior
-from customs.configs.config import OUT_DIR
 from customs.triggers.horn_trigger import InHornDistanceTrigger
 
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider

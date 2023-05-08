@@ -7,7 +7,7 @@ import logging
 from datetime import datetime
 from argparse import ArgumentParser
 
-from customs.configs.config import OUT_DIR
+from customs.helpers.config import OUT_DIR
 from customs.routes.available_scenarios import AvailableScenarios
 
 from srunner.tools.route_parser import RouteParser

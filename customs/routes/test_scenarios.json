@@ -7,25 +7,14 @@
                         {
                             "transform": {
                                 "pitch": "0",
-                                "x": "60.2",
+                                "x": "50.2",
                                 "y": "-63.8",
                                 "yaw": "180.0",
                                 "z": "0.0"
-                            },
-                            "other_actors": {
-                                "left": [
-                                    {
-                                        "pitch": "0",
-                                        "x": "60.2",
-                                        "y": "-67.8",
-                                        "yaw": "180.0",
-                                        "z": "0.0"
-                                    }
-                                ]
                             }
                         }
                     ],
-                    "scenario_type": "CutIn"
+                    "scenario_type": "CutInRoute"
                 }
             ]
         }
