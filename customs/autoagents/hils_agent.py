@@ -127,7 +127,6 @@ class HilsAgent(HumanTramAgent):
           - brake
           - hand_brake
         """
-        self._log.info("Start run step")
         if self._is_first_run:
             self._is_first_run = False
             self._setup_dm()
@@ -141,9 +140,7 @@ class HilsAgent(HumanTramAgent):
                 manual_gear_shift=False,
             )
 
-        self._log.info("    Run step waiting for control event")
         self._vehicle_control_event.wait()
-        self._log.info("    Run step applying control event")
 
         throttle, _, brake = self._translate_dm_command(timestamp)
 
@@ -176,7 +173,6 @@ class HilsAgent(HumanTramAgent):
 
         self._vehicle_control_event.clear()
 
-        self._log.info("Run step finish")
         return control
 
     def _translate_dm_command(self, timestamp: int) -> Tuple[int, int, int]:
