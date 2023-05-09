@@ -100,8 +100,8 @@ class HilsAgent(HumanTramAgent):
         args_lateral_dict = {"K_P": 1.02, "K_I": 0.001, "K_D": 0.2, "dt": dt}
         args_longitudinal_dict = {"K_P": 5, "K_I": 0.3, "K_D": 0.13, "dt": dt}
 
-        locmap = LocMap(carla_map, self.ego_vehicle)
-        locmap.set_destination(
+        self._locmap = LocMap(carla_map, self.ego_vehicle)
+        self._locmap.set_destination(
             start_location=route[0][0],
             end_location=route[-1][0],
         )
@@ -109,8 +109,8 @@ class HilsAgent(HumanTramAgent):
         self._dm_controller = Controller2D(
             self.ego_vehicle,
             carla_map,
-            locmap.wpt,
-            locmap.lateral_route,
+            self._locmap.wpt,
+            self._locmap.lateral_route,
             args_lateral_dict,
             args_longitudinal_dict,
         )
@@ -127,6 +127,7 @@ class HilsAgent(HumanTramAgent):
           - brake
           - hand_brake
         """
+        self._log.info("Start run step")
         if self._is_first_run:
             self._is_first_run = False
             self._setup_dm()
@@ -140,45 +141,51 @@ class HilsAgent(HumanTramAgent):
                 manual_gear_shift=False,
             )
 
+        self._log.info("    Run step waiting for control event")
         self._vehicle_control_event.wait()
+        self._log.info("    Run step applying control event")
 
-        throttle, steer, brake = self._translate_dm_command(timestamp)
+        throttle, _, brake = self._translate_dm_command(timestamp)
 
         # steering: from NPC agent
-        # control_super = super().run_step(input_data, timestamp)
+        control_super = super().run_step(input_data, timestamp)
 
         control = VehicleControl(
             throttle=throttle,
-            #steer=control_super.steer,
-            steer=steer,
+            steer=control_super.steer,
+            #steer=steer,
             brake=brake,
             hand_brake=False,
             manual_gear_shift=False,
         )
 
-        # override control by keyboard control (if any control)
-        is_control_keyboard, control_keyboard = self._controller.parse_events(
-            timestamp - self.prev_timestamp
-        )
-        if is_control_keyboard:
-            control.throttle = control_keyboard.throttle
-            control.brake = control_keyboard.brake
-            control.hand_brake = control_keyboard.hand_brake
+        if self.with_gui:
+            # override control by keyboard control (if any control)
+            is_control_keyboard, control_keyboard = self._controller.parse_events(
+                timestamp - self.prev_timestamp
+            )
+            if is_control_keyboard:
+                control.throttle = control_keyboard.throttle
+                control.brake = control_keyboard.brake
+                control.hand_brake = control_keyboard.hand_brake
 
-        self.agent_engaged = True
-        self._hic.run_interface(input_data, {})
+            self.agent_engaged = True
+            self._hic.run_interface(input_data, {})
 
         self.prev_timestamp = timestamp
 
         self._vehicle_control_event.clear()
 
+        self._log.info("Run step finish")
         return control
 
     def _translate_dm_command(self, timestamp: int) -> Tuple[int, int, int]:
         dm_command = self._dm_command.val
 
         dm = self._dm_controller
+        dm.update_values(self._locmap, timestamp)
         dm.masterControl(timestamp, dm_command)
+        dm.update_controls()
 
         return dm.get_commands()
 
@@ -188,6 +195,7 @@ class HilsAgent(HumanTramAgent):
             return
 
         self._dm_command.val = data
+        self._vehicle_control_event.set()
 
     def set_egovehicle(self, ego_vehicle):
         super().set_egovehicle(ego_vehicle)
