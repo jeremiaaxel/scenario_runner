@@ -2,11 +2,13 @@ import math
 import carla
 import py_trees
 import operator
+import logging
 
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenarioatomics.atomic_behaviors import AccelerateToCatchUp, WaypointFollower, get_actor_control
 from srunner.tools.scenario_helper import detect_lane_obstacle
 
+logger = logging.getLogger(__name__)
 
 class AccelerateToCatchUpFollowWaypoint(WaypointFollower):
     def __init__(self, 
@@ -17,22 +19,31 @@ class AccelerateToCatchUpFollowWaypoint(WaypointFollower):
                  trigger_distance=5,
                  max_distance=500,
                  name="AccelerateToCatchUpFollowWaypoints"):
-        super().__init__(actor, None, None, None, False, name)
+        super().__init__(actor, 
+                         target_speed=delta_velocity,
+                         plan=None,
+                         blackboard_queue_name=None,
+                         avoid_collision=False, 
+                         name=name)
         self._other_actor = other_actor
         self._throttle_value = throttle_value
-        self._delta_velocity = delta_velocity  # 1m/s=3.6km/h
+        self._delta_velocity = delta_velocity
         self._trigger_distance = trigger_distance
         self._max_distance = max_distance
-
-        self._control, self._type = get_actor_control(actor)
 
         self._initial_actor_pos = None
 
     def initialise(self):
         super().initialise()
         self._initial_actor_pos = CarlaDataProvider.get_location(self._actor)
+        local_planner = self._local_planner_dict[self._actor] if self._actor else None
+        if local_planner is not None:
+            local_planner.follow_speed_limits(False)
+        return True
 
     def update(self):
+        self._target_speed = CarlaDataProvider.get_velocity(self._other_actor) + self._delta_velocity
+
         new_status = py_trees.common.Status.RUNNING
 
         check_term = operator.attrgetter("terminate_WF_actor_{}".format(self._actor.id))
@@ -68,51 +79,52 @@ class AccelerateToCatchUpFollowWaypoint(WaypointFollower):
 
                 # Check if the actor is a vehicle/bike
                 if not isinstance(actor, carla.Walker):
-                    control = local_planner.run_step(debug=False)
-
                     ## ACCELERATE
                     # get actor speed
                     actor_speed = CarlaDataProvider.get_velocity(actor)
                     target_speed = CarlaDataProvider.get_velocity(self._other_actor) + self._delta_velocity
 
-                    # distance between actors
-                    distance = CarlaDataProvider.get_location(actor).distance(
-                        CarlaDataProvider.get_location(self._other_actor))
-
-                    # driven distance of actor
-                    driven_distance = CarlaDataProvider.get_location(actor).distance(self._initial_actor_pos)
-                    
-                    self._target_speed = target_speed
-                    if actor_speed < target_speed:
-                        # set throttle to throttle_value to accelerate
-                        control.throttle = self._throttle_value
-
-                    if actor_speed >= target_speed:
-                        # keep velocity until the actors are in trigger distance
-                        control.throttle = 0
+                    if target_speed > self._target_speed:
+                        self._target_speed = target_speed
                     ## ----------
+                    local_planner.set_speed(self._target_speed)
+                    control = local_planner.run_step(debug=False)
+
+                    if actor_speed < self._target_speed:
+                        control.throttle = self._throttle_value
+                    if actor_speed >= self._target_speed:
+                        control.throttle = 0
 
                     if self._avoid_collision and detect_lane_obstacle(actor):
                         control.throttle = 0.0
                         control.brake = 1.0
 
-                    # actor.apply_control(control)
-                    self._actor.apply_control(control)
-                    print(control)
-                    print(CarlaDataProvider.get_velocity(actor))
+                    debug_strings = []
+                    debug_strings.append(f"{control}")
+                    debug_strings.append(f"Target velocity: {self._target_speed}")
+                    debug_strings.append(f"Actual velocity: {CarlaDataProvider.get_velocity(actor)}")
+                    actor.apply_control(control)
+
+                    # distance between actors
+                    distance = CarlaDataProvider.get_location(actor).distance(
+                        CarlaDataProvider.get_location(self._other_actor))
+                    # driven distance of actor
+                    driven_distance = CarlaDataProvider.get_location(actor).distance(self._initial_actor_pos)
+
+                    debug_strings.append(f"Distance: {distance} / {self._trigger_distance}")
+                    logger.debug_s("\n".join(debug_strings))
+
+                    # Check if the actor reached the end of the plan
+                    # @TODO replace access to private _waypoints_queue with public getter
+                    if local_planner._waypoints_queue:  # pylint: disable=protected-access
+                        success = False
 
                     # new status:
                     if distance <= self._trigger_distance:
                         success = True
                     elif driven_distance > self._max_distance:
                         return py_trees.common.Status.FAILURE
-                    else:
-                        success = False
 
-                    # Check if the actor reached the end of the plan
-                    # @TODO replace access to private _waypoints_queue with public getter
-                    if local_planner._waypoints_queue:  # pylint: disable=protected-access
-                        success = False
                 # If the actor is a pedestrian, we have to use the WalkerAIController
                 # The walker is sent to the next waypoint in its plan
                 else:

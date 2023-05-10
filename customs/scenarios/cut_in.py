@@ -1,10 +1,10 @@
 import logging
 import py_trees
 import carla
-from customs.behaviors.accelerate_to_catch_up import AccelerateToCatchUpFollowWaypoint
+from customs.behaviors.accelerate_to_catch_up_follow_waypoint import AccelerateToCatchUpFollowWaypoint
 
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
-from srunner.scenariomanager.scenarioatomics.atomic_behaviors import AccelerateToCatchUp, ActorTransformSetter, LaneChange, WaypointFollower
+from srunner.scenariomanager.scenarioatomics.atomic_behaviors import AccelerateToCatchUp, ActorTransformSetter, LaneChange, SetInitSpeed, WaypointFollower
 from srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import DriveDistance, InTriggerDistanceToVehicle
 from srunner.scenarios.cut_in import CutIn
 
@@ -21,6 +21,10 @@ class CutInRoute(CutIn):
         "behind_cutter": 10,
         "underground": 0 
     }
+
+    def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, criteria_enable=True, timeout=600, spawn_straight_other=False):
+        self._spawn_straight_other = spawn_straight_other
+        super().__init__(world, ego_vehicles, config, randomize, debug_mode, criteria_enable, timeout)
 
     def _initialize_actors(self, config):
         """
@@ -54,12 +58,13 @@ class CutInRoute(CutIn):
             wp_spawn_cutter = wp_spawn_cutter[-1]
         logger.debug_s(f"Cutter's spawning waypoint: {wp_spawn_cutter}")
 
-        wp_spawn_straight = wp_spawn_cutter.previous(self.offset.get('behind_cutter'))
-        if isinstance(wp_spawn_straight, list):
-            if len(wp_spawn_straight) > 1:
-                logger.debug_s(f"Waypoint detected is more than one, selected the last in the list; may select the undesired waypoint")
-            wp_spawn_straight = wp_spawn_straight[-1]
-        logger.debug_s(f"Straight's spawning waypoint: {wp_spawn_straight}")
+        if self._spawn_straight_other:
+            wp_spawn_straight = wp_spawn_cutter.previous(self.offset.get('behind_cutter'))
+            if isinstance(wp_spawn_straight, list):
+                if len(wp_spawn_straight) > 1:
+                    logger.debug_s(f"Waypoint detected is more than one, selected the last in the list; may select the undesired waypoint")
+                wp_spawn_straight = wp_spawn_straight[-1]
+            logger.debug_s(f"Straight's spawning waypoint: {wp_spawn_straight}")
 
         # spawn cutter and straight vehicle(s)
         cutter_transform = carla.Transform(
@@ -68,22 +73,25 @@ class CutInRoute(CutIn):
                            wp_spawn_cutter.transform.location.z - self.offset.get("underground")),
             wp_spawn_cutter.transform.rotation)
         self._transforms_visible.append(wp_spawn_cutter.transform)
-        straight_transform = carla.Transform(
-            carla.Location(wp_spawn_straight.transform.location.x,
-                           wp_spawn_straight.transform.location.y,
-                           wp_spawn_straight.transform.location.z - self.offset.get("underground")),
-            wp_spawn_straight.transform.rotation)
-        self._transforms_visible.append(wp_spawn_straight.transform)
+
+        if self._spawn_straight_other:
+            straight_transform = carla.Transform(
+                carla.Location(wp_spawn_straight.transform.location.x,
+                            wp_spawn_straight.transform.location.y,
+                            wp_spawn_straight.transform.location.z - self.offset.get("underground")),
+                wp_spawn_straight.transform.rotation)
+            self._transforms_visible.append(wp_spawn_straight.transform)
 
         cutter_vehicle = CarlaDataProvider.request_new_actor(cutter_model_name, cutter_transform)
         if cutter_vehicle is None:
             raise RuntimeError("Failed to spawn cutter vehicle")
         self.other_actors.append(cutter_vehicle)
 
-        straight_vehicle = CarlaDataProvider.request_new_actor(cutter_model_name, straight_transform)
-        if straight_vehicle is None:
-            raise RuntimeError("Failed to spawn straight vehicle")
-        self.other_actors.append(straight_vehicle)
+        if self._spawn_straight_other:
+            straight_vehicle = CarlaDataProvider.request_new_actor(cutter_model_name, straight_transform)
+            if straight_vehicle is None:
+                raise RuntimeError("Failed to spawn straight vehicle")
+            self.other_actors.append(straight_vehicle)
 
 
     def _create_behavior(self):
@@ -100,8 +108,10 @@ class CutInRoute(CutIn):
         behaviour = py_trees.composites.Sequence("CarOn_{}_Lane" .format(self._direction))
         cutter_visible = ActorTransformSetter(self.other_actors[0], self._transforms_visible[0])
         behaviour.add_child(cutter_visible)
-        straight_visible = ActorTransformSetter(self.other_actors[1], self._transforms_visible[1])
-        behaviour.add_child(straight_visible)
+
+        if self._spawn_straight_other:
+            straight_visible = ActorTransformSetter(self.other_actors[1], self._transforms_visible[1])
+            behaviour.add_child(straight_visible)
 
         # just_drive
         just_drive = py_trees.composites.Parallel(
@@ -118,13 +128,11 @@ class CutInRoute(CutIn):
         # accelerate
         accelerate = AccelerateToCatchUpFollowWaypoint(self.other_actors[0], self.ego_vehicles[0], throttle_value=1,
                                                        delta_velocity=self._delta_velocity, trigger_distance=5, max_distance=500)
-        # accelerate = AccelerateToCatchUp(self.other_actors[0], self.ego_vehicles[0], throttle_value=1,
-        #                                  delta_velocity=self._delta_velocity, trigger_distance=5, max_distance=500)
         behaviour.add_child(accelerate)
 
         # lane_change
         lane_change = LaneChange(
-            self.other_actors[0], speed=None, direction=self._direction, distance_same_lane=25, distance_other_lane=300)
+            self.other_actors[0], speed=None, direction=self._direction, distance_same_lane=5, distance_other_lane=100)
         behaviour.add_child(lane_change)
 
         # endcondition
