@@ -301,7 +301,7 @@ class CollisionTest(Criterion):
     MAX_ID_TIME = 5                 # Amount of time the last collision if is remembered
 
     def __init__(self, actor, other_actor=None, other_actor_type=None,
-                 optional=False, name="CollisionTest", terminate_on_failure=False):
+                 optional=False, name="CollisionTest", terminate_on_failure=True):
         """
         Construction with sensor setup
         """

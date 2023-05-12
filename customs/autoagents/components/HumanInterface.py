@@ -13,7 +13,7 @@ class HumanInterface(object):
     _show_info = True
     ego_vehicle = None
 
-    def __init__(self, title=None, width=800, height=600):
+    def __init__(self, title=None, width=640, height=403):
         self._title = title
         self._width = width
         self._height = height

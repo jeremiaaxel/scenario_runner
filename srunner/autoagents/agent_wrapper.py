@@ -13,7 +13,6 @@ from __future__ import print_function
 
 import carla
 
-from customs.autoagents.hils_agent import HilsAgent
 from srunner.autoagents.sensor_interface import CallBack
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
