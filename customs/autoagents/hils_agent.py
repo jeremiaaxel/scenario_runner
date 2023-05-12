@@ -63,7 +63,6 @@ class HilsAgent(HumanTramAgent):
         self._is_first_run = True
 
     def _setup_sensors(self):
-        print("setup sensors called")
         zmq_context = zmq.Context()
         zmq_host = os.getenv("ZMQ_HOST", "*")
 
