@@ -9,7 +9,6 @@ from srunner.scenariomanager.scenarioatomics.atomic_behaviors import KeepVelocit
 from srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import DriveDistance
 from srunner.scenarios.object_crash_vehicle import DynamicObjectCrossing
 
-from customs.configs.config import OUT_DIR
 from customs.behaviors.horn_behavior import HornBehavior
 
 class PedestrianCyclistCrossing(DynamicObjectCrossing):

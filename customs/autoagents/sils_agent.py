@@ -11,11 +11,9 @@ Steering is done automatically by the vehicle to follow the route that's been se
 from __future__ import print_function
 
 import carla
+
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
-from customs.autoagents.zmq_agent.ZmqControl import ZmqControl
-from customs.autoagents.components.HumanInterface import HumanInterface
-from customs.autoagents.components.KeyboardControl import KeyboardControl
 from customs.autoagents.human_tram_agent import HumanTramAgent
 
 # has to append PYTHONPATH with $HOME/Documents/khansa/rilis3

@@ -1,4 +1,5 @@
-
+import re
+import carla
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
 
@@ -36,3 +37,25 @@ def get_actor_blueprints(world, filter, generation):
     except:
         print("   Warning! Actor Generation is not valid. No actor will be spawned.")
         return []
+
+def find_weather_presets():
+    rgx = re.compile('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)')
+    name = lambda x: ' '.join(m.group(0) for m in rgx.finditer(x))
+    presets = [x for x in dir(carla.WeatherParameters) if re.match('[A-Z].+', x)]
+    return [(getattr(carla.WeatherParameters, x), name(x)) for x in presets]
+
+
+def get_actor_display_name(actor, truncate=250):
+    name = ' '.join(actor.type_id.replace('_', '.').title().split('.')[1:])
+    return (name[:truncate - 1] + u'\u2026') if len(name) > truncate else name
+
+def freeze_vehicle(vehicle):
+    """
+    Sets the vehicle to stop and disable physics
+    """
+    vehicle.set_autopilot(False)
+    vehicle.set_simulate_physics(enabled=False)
+
+def freeze_vehicles(vehicles):
+    for vehicle in vehicles:
+        freeze_vehicle(vehicle)

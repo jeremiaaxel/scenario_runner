@@ -54,6 +54,7 @@ from customs.scenarios.pedestrian_crossing import (
     CyclistCrossing, CyclistSlowCrossing
 )
 from customs.scenarios.obstructing_vehicle import ObstructingVehicle
+from customs.routes.available_scenarios import AvailableScenarios
 
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import (CollisionTest,
                                                                      InRouteTest,
@@ -72,7 +73,7 @@ NUMBER_CLASS_TRANSLATION = {
     "Scenario4": VehicleTurningRoute,
     # "Scenario5": OtherLeadingVehicle,
     # "Scenario6": ManeuverOppositeDirection,
-    # "Scenario7": SignalJunctionCrossingRoute,
+    "Scenario7": SignalJunctionCrossingRoute,
     # "Scenario8": SignalJunctionCrossingRoute,
     # "Scenario9": SignalJunctionCrossingRoute,
     # "Scenario10": NoSignalJunctionCrossingRoute,
@@ -114,6 +115,8 @@ NUMBER_CLASS_TRANSLATION = {
 
     "ObstructingVehicle": ObstructingVehicle,
 }
+
+NUMBER_CLASS_TRANSLATION = AvailableScenarios.get_all_scenarios()
 
 logger = logging.getLogger(__name__)
 
