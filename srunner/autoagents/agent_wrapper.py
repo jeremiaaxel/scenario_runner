@@ -13,6 +13,7 @@ from __future__ import print_function
 
 import carla
 
+from customs.autoagents.hils_agent import HilsAgent
 from srunner.autoagents.sensor_interface import CallBack
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
@@ -78,7 +79,15 @@ class AgentWrapper(object):
             sensor_transform = carla.Transform(sensor_location, sensor_rotation)
             sensor = CarlaDataProvider.get_world().spawn_actor(bp, sensor_transform, vehicle)
             # setup callback
-            sensor.listen(CallBack(sensor_spec['id'], sensor, self._agent.sensor_interface))
+            is_hils_agent = hasattr(self._agent, "get_sensor_listener")
+            if is_hils_agent:
+                additional_sensor_process = self._agent.get_sensor_listener(sensor_spec['type'])
+            else:
+                additional_sensor_process = None
+            sensor.listen(CallBack(sensor_spec['id'],
+                          sensor,
+                          self._agent.sensor_interface,
+                          additional_sensor_process))
             self._sensors_list.append(sensor)
 
         # Tick once to spawn the sensors

@@ -10,6 +10,7 @@ handling the use of sensors for the agents
 
 import copy
 import logging
+from typing import Callable, Tuple
 
 try:
     from queue import Queue
@@ -36,7 +37,7 @@ class CallBack(object):
     Class the sensors listen to in order to receive their data each frame
     """
 
-    def __init__(self, tag, sensor, data_provider):
+    def __init__(self, tag, sensor, data_provider, additional_process: Tuple[Callable, None] = None):
         """
         Initializes the call back
         """
@@ -44,6 +45,7 @@ class CallBack(object):
         self._data_provider = data_provider
 
         self._data_provider.register_sensor(tag, sensor)
+        self._additional_process = additional_process
 
     def __call__(self, data):
         """
@@ -61,6 +63,9 @@ class CallBack(object):
             self._parse_imu_cb(data, self._tag)
         else:
             logging.error('No callback method for this sensor.')
+
+        if self._additional_process:
+            self._additional_process(data)
 
     # Parsing CARLA physical Sensors
     def _parse_image_cb(self, image, tag):

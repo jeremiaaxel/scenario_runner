@@ -376,7 +376,11 @@ class ScenarioRunner(object):
             try:
                 # don't print Agent's log if debug scenario
                 is_print_log = False if self._args.debug_scenario else True
-                self.agent_instance = getattr(self.module_agent, agent_class_name)(self._args.agentConfig, is_print_log=is_print_log)
+                agent_class = getattr(self.module_agent, agent_class_name)
+                if hasattr(agent_class, "with_gui"):
+                    pass
+                self.agent_instance = agent_class(self._args.agentConfig, is_print_log=is_print_log)
+
                 config.agent = self.agent_instance
             except Exception as e:          # pylint: disable=broad-except
                 traceback.print_exc()
