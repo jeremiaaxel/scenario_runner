@@ -92,6 +92,7 @@ class AccelerateToCatchUpFollowWaypoint(WaypointFollower):
 
                     if actor_speed < self._target_speed:
                         control.throttle = self._throttle_value
+                        control.brake = 0
                     if actor_speed >= self._target_speed:
                         control.throttle = 0
 
@@ -99,10 +100,6 @@ class AccelerateToCatchUpFollowWaypoint(WaypointFollower):
                         control.throttle = 0.0
                         control.brake = 1.0
 
-                    debug_strings = []
-                    debug_strings.append(f"{control}")
-                    debug_strings.append(f"Target velocity: {self._target_speed}")
-                    debug_strings.append(f"Actual velocity: {CarlaDataProvider.get_velocity(actor)}")
                     actor.apply_control(control)
 
                     # distance between actors
@@ -111,8 +108,12 @@ class AccelerateToCatchUpFollowWaypoint(WaypointFollower):
                     # driven distance of actor
                     driven_distance = CarlaDataProvider.get_location(actor).distance(self._initial_actor_pos)
 
-                    debug_strings.append(f"Distance: {distance} / {self._trigger_distance}")
-                    logger.debug_s("\n".join(debug_strings))
+                    # debug_strings = ["Running CutIn scenario:"]
+                    # debug_strings.append(f"{control}")
+                    # debug_strings.append(f"Target velocity: {self._target_speed}")
+                    # debug_strings.append(f"Actual velocity: {CarlaDataProvider.get_velocity(actor)}")
+                    # debug_strings.append(f"Distance: {distance} / {self._trigger_distance}")
+                    # logger.debug_s("\n".join(debug_strings))
 
                     # Check if the actor reached the end of the plan
                     # @TODO replace access to private _waypoints_queue with public getter
