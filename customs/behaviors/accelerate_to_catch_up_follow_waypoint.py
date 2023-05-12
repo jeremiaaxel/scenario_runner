@@ -23,7 +23,7 @@ class AccelerateToCatchUpFollowWaypoint(WaypointFollower):
                          target_speed=delta_velocity,
                          plan=None,
                          blackboard_queue_name=None,
-                         avoid_collision=False, 
+                         avoid_collision=True, 
                          name=name)
         self._other_actor = other_actor
         self._throttle_value = throttle_value
