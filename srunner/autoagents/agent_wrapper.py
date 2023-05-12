@@ -47,7 +47,6 @@ class AgentWrapper(object):
         """
         bp_library = CarlaDataProvider.get_world().get_blueprint_library()
         for sensor_spec in self._agent.sensors():
-            print(sensor_spec)
             # These are the sensors spawned on the carla world
             bp = bp_library.find(str(sensor_spec['type']))
             if sensor_spec['type'].startswith('sensor.camera'):
