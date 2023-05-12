@@ -54,7 +54,7 @@ from customs.scenarios.pedestrian_crossing import (
     CyclistCrossing, CyclistSlowCrossing
 )
 from customs.scenarios.obstructing_vehicle import ObstructingVehicle
-from customs.routes.available_scenarios import AvailableScenarios
+from customs.scenario_maker.available_scenarios import AvailableScenarios
 
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import (CollisionTest,
                                                                      InRouteTest,

@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import carla
 import random
@@ -7,11 +8,14 @@ import logging
 from datetime import datetime
 from argparse import ArgumentParser
 
-from customs.helpers.config import OUT_DIR
-from customs.routes.available_scenarios import AvailableScenarios
+sys.path.append(os.getcwd())
+from customs.scenario_maker.available_scenarios import AvailableScenarios
 
 from srunner.tools.route_parser import RouteParser
 from srunner.tools.route_manipulation import interpolate_trajectory
+
+OUT_DIR = os.path.dirname(os.path.realpath(__file__))
+OUT_DIR = os.path.join(OUT_DIR, "out")
 
 fullfilename = os.path.join(OUT_DIR, "scenario_maker.log")
 logging.basicConfig(filename=fullfilename, level=logging.INFO)
@@ -31,14 +35,23 @@ class ScenarioMaker(object):
 
     def _get_route_interpolated(self) -> list:
         if not self._args.route:
-            logger.error("Only route-based scenario generation")
+            logger.error("Only route-based scenario generation is supported")
             return
         
-        routes = self._args.route[0]
+        route_filename = self._args.route[0]
         single_route = None
         if len(self._args.route) > 1:
             single_route = self._args.route[1]
-        route_configurations = RouteParser.parse_routes_file(routes, None, single_route=single_route)
+
+        report = f"Creating scenario for {route_filename}"
+        if single_route:
+            report += f" at {single_route}"
+        logger.info(report)
+
+        route_configurations = RouteParser.parse_routes_file(route_filename, None, single_route=single_route)
+
+        if len(route_configurations) == 0:
+            logger.error("Route Configurations length is 0, something went wrong")
 
         interpolated_routes = []
         for config in route_configurations:
@@ -98,6 +111,12 @@ class ScenarioMaker(object):
         result = True
 
         interpolated_routes = self._get_route_interpolated()
+
+        if len(interpolated_routes) == 0:
+            logger.error("Interpolated routes length is 0, something went wrong")
+        else:
+            logger.info("Interpolated routes created ")
+
         scenario_types = self._get_scenario_types().keys()
         constructed_scenario_dict = self._construct_scenario(interpolated_routes, scenario_types)
 
@@ -136,7 +155,7 @@ if __name__ == "__main__":
                         help="Result scenario filename", default=None)
     parser.add_argument('--outdir',
                         help="Result scenario filename (default to the same directory as this file)", default=None)
-    parser.add_argument('--number-of-scenario-types', default=5,
+    parser.add_argument('--number-of-scenario-types', default=5, type=int,
                         help='Number of scenario types going to be implemented in a single route scenario')
     
     arguments = parser.parse_args()
