@@ -2,9 +2,10 @@ import logging
 import py_trees
 import carla
 from customs.behaviors.accelerate_to_catch_up_follow_waypoint import AccelerateToCatchUpFollowWaypoint
+from customs.helpers.blueprints import freeze_vehicle
 
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
-from srunner.scenariomanager.scenarioatomics.atomic_behaviors import AccelerateToCatchUp, ActorTransformSetter, LaneChange, SetInitSpeed, WaypointFollower
+from srunner.scenariomanager.scenarioatomics.atomic_behaviors import ActorTransformSetter, LaneChange, WaypointFollower
 from srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import DriveDistance, InTriggerDistanceToVehicle
 from srunner.scenarios.cut_in import CutIn
 
@@ -19,12 +20,25 @@ class CutInRoute(CutIn):
     offset = {
         "behind_ego": 20,
         "behind_cutter": 10,
-        "underground": 0 
+        "underground": 500 
     }
 
-    def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, criteria_enable=True, timeout=600, spawn_straight_other=False):
+    def __init__(self, 
+                 world, 
+                 ego_vehicles, 
+                 config, randomize=False, 
+                 debug_mode=False, 
+                 criteria_enable=True, 
+                 timeout=600, 
+                 spawn_straight_other=True):
         self._spawn_straight_other = spawn_straight_other
-        super().__init__(world, ego_vehicles, config, randomize, debug_mode, criteria_enable, timeout)
+        super().__init__(world, 
+                         ego_vehicles, 
+                         config, 
+                         randomize, 
+                         debug_mode, 
+                         criteria_enable, 
+                         timeout)
 
     def _initialize_actors(self, config):
         """
@@ -85,12 +99,14 @@ class CutInRoute(CutIn):
         cutter_vehicle = CarlaDataProvider.request_new_actor(cutter_model_name, cutter_transform)
         if cutter_vehicle is None:
             raise RuntimeError("Failed to spawn cutter vehicle")
+        freeze_vehicle(cutter_vehicle)
         self.other_actors.append(cutter_vehicle)
 
         if self._spawn_straight_other:
             straight_vehicle = CarlaDataProvider.request_new_actor(cutter_model_name, straight_transform)
             if straight_vehicle is None:
                 raise RuntimeError("Failed to spawn straight vehicle")
+            freeze_vehicle(straight_vehicle)
             self.other_actors.append(straight_vehicle)
 
 
@@ -105,41 +121,64 @@ class CutInRoute(CutIn):
         """
 
         # car_visible
-        behaviour = py_trees.composites.Sequence("CarOn_{}_Lane" .format(self._direction))
-        cutter_visible = ActorTransformSetter(self.other_actors[0], self._transforms_visible[0])
-        behaviour.add_child(cutter_visible)
+        vehicles_behavior = py_trees.composites.Parallel("VehiclesBehavior", 
+                                                         policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE)
+        cutter_behavior = py_trees.composites.Sequence("CarOn_{}_Lane" .format(self._direction))
+        straight_behavior = py_trees.composites.Sequence("CarOn_{}_Lane_straight" .format(self._direction))
 
-        if self._spawn_straight_other:
-            straight_visible = ActorTransformSetter(self.other_actors[1], self._transforms_visible[1])
-            behaviour.add_child(straight_visible)
+        # behaviour = py_trees.composites.Sequence("CarOn_{}_Lane" .format(self._direction))
+        cutter_visible = ActorTransformSetter(self.other_actors[0], 
+                                              self._transforms_visible[0],
+                                              physics=True)
+        cutter_behavior.add_child(cutter_visible)
 
         # just_drive
-        just_drive = py_trees.composites.Parallel(
-            "DrivingStraight", policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE)
+        just_drive = py_trees.composites.Parallel("DrivingStraight", 
+                                                  policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE)
 
         car_driving = WaypointFollower(self.other_actors[0], self._velocity)
         just_drive.add_child(car_driving)
 
-        trigger_distance = InTriggerDistanceToVehicle(
-            self.other_actors[0], self.ego_vehicles[0], self._trigger_distance)
+        trigger_distance = InTriggerDistanceToVehicle(self.other_actors[0], 
+                                                      self.ego_vehicles[0], 
+                                                      self._trigger_distance)
         just_drive.add_child(trigger_distance)
-        behaviour.add_child(just_drive)
+        cutter_behavior.add_child(just_drive)
 
         # accelerate
-        accelerate = AccelerateToCatchUpFollowWaypoint(self.other_actors[0], self.ego_vehicles[0], throttle_value=1,
-                                                       delta_velocity=self._delta_velocity, trigger_distance=5, max_distance=500)
-        behaviour.add_child(accelerate)
+        accelerate = AccelerateToCatchUpFollowWaypoint(self.other_actors[0], 
+                                                       self.ego_vehicles[0], 
+                                                       throttle_value=1,
+                                                       delta_velocity=self._delta_velocity, 
+                                                       trigger_distance=5, 
+                                                       max_distance=500)
+        cutter_behavior.add_child(accelerate)
 
         # lane_change
-        lane_change = LaneChange(
-            self.other_actors[0], speed=None, direction=self._direction, distance_same_lane=5, distance_other_lane=100)
-        behaviour.add_child(lane_change)
+        lane_change = LaneChange(self.other_actors[0], 
+                                 speed=None, 
+                                 direction=self._direction, 
+                                 distance_same_lane=5, 
+                                 distance_other_lane=100)
+        cutter_behavior.add_child(lane_change)
+        
+        if self._spawn_straight_other:
+            # straight vehicle will only spawn and then follow waypoint
+            straight_visible = ActorTransformSetter(self.other_actors[1], 
+                                                    self._transforms_visible[1],
+                                                    physics=True)
+            straight_behavior.add_child(straight_visible)
+            straight_driving = WaypointFollower(self.other_actors[1], self._velocity)
+            straight_behavior.add_child(straight_driving)
+
+        vehicles_behavior.add_child(cutter_behavior)
+        vehicles_behavior.add_child(straight_behavior)
 
         # endcondition
         endcondition = DriveDistance(self.other_actors[0], 200)
 
         # build tree
         root = py_trees.composites.Sequence("Behavior", policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE)
-        root.add_child(behaviour)
+        root.add_child(vehicles_behavior)
         root.add_child(endcondition)
         return root

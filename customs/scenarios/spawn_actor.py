@@ -15,10 +15,10 @@ from py_trees.composites import Sequence, Parallel
 import os
 import carla
 import logging
-from customs.behaviors.horn_behavior import HornBehavior
 
+from customs.behaviors.horn_behavior import HornBehavior
 from customs.helpers.config import OUT_DIR
-from multisensors.utils.manual_control_global_funcs import get_actor_display_name
+from customs.helpers.blueprints import get_actor_display_name, freeze_vehicle
 
 from srunner.scenarios.background_activity import BackgroundActivity
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
@@ -100,7 +100,7 @@ class SpawnActor(BackgroundActivity):
 
 
             report_string += f"amount spawned: {len(new_actors)}"
-            print(report_string)
+            logger.debug_s(report_string)
             self.other_actors.extend(new_actors)
 
     def _create_behavior(self):
@@ -248,10 +248,6 @@ class SpawnActorOnTrigger(SpawnActor):
         super().__init__(world, ego_vehicles, config, randomize=randomize, debug_mode=debug_mode, timeout=timeout, criteria_enable=criteria_enable, model_names=model_names, total_amount=total_amount)
 
     def _put_other_actors_under(self):
-        def _freeze_vehicle(vehicle):
-            vehicle.set_autopilot(False)
-            vehicle.set_simulate_physics(enabled=False)
-
         for other_actor in self.other_actors:
             location = other_actor.get_location()
             uground_location = carla.Location(location.x,
@@ -260,7 +256,7 @@ class SpawnActorOnTrigger(SpawnActor):
             other_actor.set_location(uground_location)
 
             if isinstance(other_actor, carla.Vehicle):
-                _freeze_vehicle(other_actor)
+                freeze_vehicle(other_actor)
 
     def _move_actors_in_trigger_location(self):
         def new_transform_in_same_lane(transform, trigger_location):
