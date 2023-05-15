@@ -67,6 +67,7 @@ class SilsAgent(HumanTramAgent):
           - brake
           - hand_brake
         """
+    
         # get ego vehicle and route
         if not self.is_setup:
             self.post_setup()
@@ -75,7 +76,7 @@ class SilsAgent(HumanTramAgent):
         control_super = super().run_step(input_data, timestamp)
         control = self.decision_maker.run_step(timestamp)
 
-        print(f"Controller2d | Throttle: {control.throttle} | Brake: {control.brake}")
+        # print(f"Controller2d | Throttle: {control.throttle} | Brake: {control.brake}")
 
         # Output controller command to CARLA server
         control.steer = control_super.steer
@@ -85,6 +86,6 @@ class SilsAgent(HumanTramAgent):
             control.throttle = control_super.throttle
             control.brake = control_super.brake
             control.hand_brake = control_super.hand_brake
-        print(f"Result | Throttle: {control.throttle} | Brake: {control.brake}")
+        # print(f"Result | Throttle: {control.throttle} | Brake: {control.brake}")
 
         return control
