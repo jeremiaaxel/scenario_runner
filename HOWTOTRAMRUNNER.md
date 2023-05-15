@@ -23,15 +23,15 @@ Created by [jeremiaaxel](https://github.com/jeremiaaxel), modified from [Scenari
 5. Run the Scenario Runner
     - Use convenience script 
         ```bash
-        ./runtram.sh [route number] [debug-mode]
+        ./runtram.sh [repetition] [route number] [options]
         ```
         > :information_source: You can open the convenience script to learn more about the actual command to run the program.
         
         example:
-
         ```bash
-        ./runtram.sh [route number] [debug-mode]
+        ./runtram.sh 2 1 --output --file
         ```
+        The script above will run scenario runner for 2 repetitions in route 1 and write the result of each run into a file.
     - Use the actual command
         ```bash
         python scenario_runner.py --route (route file) (scenario file) [route number] --agent (agent file)
