@@ -2,7 +2,7 @@
 
 tram_route_file="./customs/routes/tram_routes.xml"
 agent_file="./customs/autoagents/hils_agent.py"
-agent_file="./customs/autoagents/sils_agent.py"
+# agent_file="./customs/autoagents/sils_agent.py"
 # agent_file="./customs/autoagents/human_tram_agent.py"
 agent_config_file="./customs/autoagents/configs/human_tram.json"
 
