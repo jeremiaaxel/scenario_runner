@@ -48,7 +48,7 @@ class AvailableScenarios(object):
         "CyclistSlowCrossing": CyclistSlowCrossing,
 
         # Obstructing(s)
-        "ObstructingVehicle": ObstructingVehicle,
+        # "ObstructingVehicle": ObstructingVehicle,
 
         "CutInRoute": CutInRoute
     }

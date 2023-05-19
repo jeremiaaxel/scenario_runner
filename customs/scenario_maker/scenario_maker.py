@@ -16,6 +16,7 @@ from srunner.tools.route_manipulation import interpolate_trajectory
 
 OUT_DIR = os.path.dirname(os.path.realpath(__file__))
 OUT_DIR = os.path.join(OUT_DIR, "out")
+os.makedirs(OUT_DIR, exist_ok=True)
 
 fullfilename = os.path.join(OUT_DIR, "scenario_maker.log")
 logging.basicConfig(filename=fullfilename, level=logging.INFO)
