@@ -12,6 +12,8 @@ from __future__ import print_function
 from typing import Callable, Tuple
 import zmq
 import os
+import math
+import csv
 from hils_connector.carla_handlers.outbound import (
     GnssHandler,
     LidarHandler,
@@ -44,6 +46,7 @@ class HilsAgent(HumanTramAgent):
     agent_engaged = False
     prev_timestamp = 0
     ego_vehicle = None
+    dm_command_wait_timeout = None       # (s) timeout of wait control from DM, None to wait indefinitely
 
     _log = logging.getLogger("HILS agent")
 
@@ -114,6 +117,31 @@ class HilsAgent(HumanTramAgent):
             args_longitudinal_dict,
         )
 
+    # ===Sementara untuk ngecek SPEED  ====
+    # def get_speed(self):
+    #     """
+    #     Compute speed of the ego vehicle in m/s.
+
+    #     :return: Speed as a float in m/s
+    #     """
+    #     vel = self.ego_vehicle.get_velocity()
+    #     return math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
+
+    # def speed_profile_plotter(self, timestamp,ego_vehicle):
+    #     fieldnames = ["Time", "Forward Speed"]
+
+    #     with open('speed_profile.csv', 'a', newline='') as csv_file:
+    #         csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+    #         current_speed = self.get_speed(ego_vehicle)
+
+    #         info = {
+    #             "Time": timestamp,
+    #             "Forward Speed": current_speed,
+    #         }
+
+    #         csv_writer.writerow(info)
+    #=========================
 
     def run_step(self, input_data, timestamp):
         """
@@ -127,6 +155,7 @@ class HilsAgent(HumanTramAgent):
           - hand_brake
         """
         if self._is_first_run:
+            self.agent_engaged = True
             self._is_first_run = False
             self._setup_dm()
             # immediately return because no control yet
@@ -139,7 +168,7 @@ class HilsAgent(HumanTramAgent):
                 manual_gear_shift=False,
             )
 
-        self._vehicle_control_event.wait()
+        self._vehicle_control_event.wait(timeout=self.dm_command_wait_timeout)
 
         throttle, _, brake = self._translate_dm_command(timestamp)
 
@@ -165,10 +194,11 @@ class HilsAgent(HumanTramAgent):
                 control.brake = control_keyboard.brake
                 control.hand_brake = control_keyboard.hand_brake
 
-            self.agent_engaged = True
             self._hic.run_interface(input_data, {})
 
         self.prev_timestamp = timestamp
+
+        # self.speed_profile_plotter(timestamp, self.ego_vehicle)
 
         self._vehicle_control_event.clear()
 
