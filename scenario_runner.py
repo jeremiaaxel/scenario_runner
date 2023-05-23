@@ -273,6 +273,9 @@ class ScenarioRunner(object):
         filename = None
         if self._args.file:
             filename = config_name + current_time + ".txt"
+            result_dir = os.path.join(os.getcwd(), "out", "results")
+            os.makedirs(result_dir, exist_ok=True)
+            filename = os.path.join(result_dir, filename)
 
         if not self.manager.analyze_scenario(self._args.output, filename, junit_filename, json_filename):
             print("All scenario tests were passed successfully!")

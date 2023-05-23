@@ -63,6 +63,10 @@ class HumanInterface(object):
             t = self.ego_vehicle.get_transform()
 
         heading = get_heading(compass)
+
+        accelerometer = [abs(x) if x == 0 else x for x in accelerometer]
+        gyroscope = [abs(x) if x == 0 else x for x in gyroscope]
+
         self._info_text = [
             # 'Speed:   % 15.0f km/h' % (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)),
             f'Compass: {compass:2f}\N{DEGREE SIGN} {heading}',

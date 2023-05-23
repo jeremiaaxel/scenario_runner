@@ -46,7 +46,7 @@ class HilsAgent(HumanTramAgent):
     agent_engaged = False
     prev_timestamp = 0
     ego_vehicle = None
-    dm_command_wait_timeout = None       # (s) timeout of wait control from DM, None to wait indefinitely
+    dm_command_wait_timeout = 1       # (s) timeout of wait control from DM, None to wait indefinitely
 
     _log = logging.getLogger("HILS agent")
 

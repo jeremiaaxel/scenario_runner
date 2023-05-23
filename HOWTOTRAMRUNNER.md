@@ -23,13 +23,13 @@ Created by [jeremiaaxel](https://github.com/jeremiaaxel), modified from [Scenari
 5. Run the Scenario Runner
     - Use convenience script 
         ```bash
-        ./runtram.sh [repetition] [route number] [options]
+        ./runtram.sh -r [repetition] -rn [route number] [options]
         ```
-        > :information_source: You can open the convenience script to learn more about the actual command to run the program.
+        > :information_source: Open the convenience script to learn more about the actual command to run the program.
         
         example:
         ```bash
-        ./runtram.sh 2 1 --output --file
+        ./runtram.sh -r 2 -rn 1 --output --file
         ```
         The script above will run scenario runner for 2 repetitions in route 1 and write the result of each run into a file.
     - Use the actual command
