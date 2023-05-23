@@ -150,7 +150,9 @@ class SpawnActor(BackgroundActivity):
             # building other actor tree
             horn_behavior = HornBehavior(self.ego_vehicles[0],
                                          other_actor,
-                                         name=f"Horn behavior {other_actor.id}") # using default in horn and out horn behavior
+                                         name=f"Horn behavior {other_actor.id}",
+                                         in_horn_meta=py_trees.meta.success_is_running,
+                                         out_horn_meta=py_trees.meta.success_is_running) # using default in horn and out horn behavior
 
             other_actors_transform.append(other_actor_transform)
             other_actors_behaviors.append(horn_behavior)

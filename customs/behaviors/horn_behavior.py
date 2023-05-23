@@ -13,12 +13,16 @@ class HornBehavior(py_trees.composites.Parallel):
                  horn_distance=20,
                  in_horn_behavior=None,
                  out_horn_behavior=None,
-                 swap_behavior=False):
+                 swap_behavior=False,
+                 in_horn_meta=None,
+                 out_horn_meta=None):
         super().__init__(name, policy=policy)
         self._actor = actor
         self._reference_actor = reference_actor
         self._horn_distance = horn_distance
         self.swap_behavior = swap_behavior
+        self.in_horn_meta = in_horn_meta
+        self.out_horn_meta = out_horn_meta
 
         if out_horn_behavior is None:
             out_horn_behavior = self.default_out_behavior()
@@ -33,7 +37,10 @@ class HornBehavior(py_trees.composites.Parallel):
         self.attach_to_in_horn_trigger(in_horn_behavior)
 
     def attach_to_in_horn_trigger(self, in_horn_behavior) -> None:
-        in_horn_behavior_complete = py_trees.meta.success_is_running(py_trees.composites.Sequence)(name="In horn distance behavior")
+        if self.in_horn_meta is None:
+            in_horn_behavior_complete = py_trees.composites.Sequence(name="In horn distance behavior")
+        else:
+            in_horn_behavior_complete = self.in_horn_meta(py_trees.composites.Sequence)(name="In horn distance behavior")
         in_horn_behavior_complete.add_child(InHornDistanceTrigger(self._reference_actor,
                                                     self._actor,
                                                     trigger_distance=self._horn_distance,
@@ -42,7 +49,10 @@ class HornBehavior(py_trees.composites.Parallel):
         self.add_child(in_horn_behavior_complete)
 
     def attach_to_out_horn_trigger(self, out_horn_behavior) -> None:
-        out_horn_behavior_complete = py_trees.meta.success_is_running(py_trees.composites.Sequence)(name="Not in horn distance behavior")
+        if self.out_horn_meta is None:
+            out_horn_behavior_complete = py_trees.composites.Sequence(name="Not in horn distance behavior")
+        else:
+            out_horn_behavior_complete = self.out_horn_meta(py_trees.composites.Sequence)(name="Not in horn distance behavior")
         out_horn_behavior_complete.add_child(out_horn_behavior)
         self.add_child(out_horn_behavior_complete)
 

@@ -98,7 +98,9 @@ class ObstructingVehicle(BasicScenario):
                                                     trigger_distance=self._horn_distance,
                                                     name=f"In horn distance {self.other_actors[0].id}")
         horn_behavior = HornBehavior(self.ego_vehicles[0], self.other_actors[0],
-                                     "Obstructing vehicle on horn")
+                                     "Obstructing vehicle on horn",
+                                     in_horn_meta=py_trees.meta.success_is_running,
+                                     out_horn_meta=py_trees.meta.success_is_running)
 
         # non leaf nodes
         root = py_trees.composites.Parallel(

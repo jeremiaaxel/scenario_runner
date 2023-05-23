@@ -4,6 +4,7 @@ from typing import List, Union
 import os
 import py_trees
 from py_trees.behaviour import Behaviour
+from customs.helpers.config import OUT_DIR
 
 from srunner.scenariomanager.scenarioatomics.atomic_behaviors import KeepVelocity
 from srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import DriveDistance
@@ -80,11 +81,13 @@ class PedestrianCyclistCrossing(DynamicObjectCrossing):
             horn_behavior = HornBehavior(self.ego_vehicles[0],
                                          self.other_actors[0], 
                                          name="Pedestrian horn behavior", 
-                                         out_horn_behavior=out_horn_behavior)
+                                         out_horn_behavior=out_horn_behavior,
+                                         in_horn_meta=py_trees.meta.success_is_running)
             horn_behavior_other = HornBehavior(self.ego_vehicles[0],
                                          self.other_actors[0], 
                                          name="Pedestrian horn behavior", 
-                                         out_horn_behavior=out_horn_behavior_other)
+                                         out_horn_behavior=out_horn_behavior_other,
+                                         in_horn_meta=py_trees.meta.success_is_running)
             # replace the existing behavior with the horn behavior
             parent.replace_child(out_horn_behavior, horn_behavior)
             parent.replace_child(out_horn_behavior_other, horn_behavior_other)
