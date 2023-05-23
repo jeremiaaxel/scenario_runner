@@ -12,7 +12,6 @@ from customs.scenarios.weather import (
     WeatherMidRainyNoonRoute
 )
 from customs.scenarios.cut_in import CutInRoute
-from srunner.scenarios.object_crash_vehicle import DynamicObjectCrossing
 
 class AvailableScenarios(object):
     WEATHER_SCENARIOS = {
@@ -39,8 +38,8 @@ class AvailableScenarios(object):
         "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger,
         "SpawnBike": SpawnBike,
         "SpawnBikeOnTrigger": SpawnBikeOnTrigger,
-        # "SpawnPedestrian": SpawnPedestrian,
-        # "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
+        "SpawnPedestrian": SpawnPedestrian,
+        "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
 
         # Crossings(s)
         # "Scenario3": DynamicObjectCrossing,

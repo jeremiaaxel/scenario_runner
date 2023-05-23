@@ -54,8 +54,15 @@ def freeze_vehicle(vehicle):
     Sets the vehicle to stop and disable physics
     """
     vehicle.set_autopilot(False)
-    vehicle.set_simulate_physics(enabled=False)
 
 def freeze_vehicles(vehicles):
     for vehicle in vehicles:
         freeze_vehicle(vehicle)
+
+
+def freeze_pedestrian(ai_controller):
+    ai_controller.stop()
+    
+def freeze_pedestrians(ai_controllers):
+    for ai_controller in ai_controllers:
+        freeze_pedestrian(ai_controller)
