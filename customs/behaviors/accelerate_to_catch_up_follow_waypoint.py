@@ -18,12 +18,13 @@ class AccelerateToCatchUpFollowWaypoint(WaypointFollower):
                  delta_velocity=0,
                  trigger_distance=5,
                  max_distance=500,
+                 avoid_collision=False,
                  name="AccelerateToCatchUpFollowWaypoints"):
         super().__init__(actor, 
                          target_speed=delta_velocity,
                          plan=None,
                          blackboard_queue_name=None,
-                         avoid_collision=True, 
+                         avoid_collision=avoid_collision, 
                          name=name)
         self._other_actor = other_actor
         self._throttle_value = throttle_value

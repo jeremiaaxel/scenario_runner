@@ -151,7 +151,8 @@ class CutInRoute(CutIn):
                                                        throttle_value=1,
                                                        delta_velocity=self._delta_velocity, 
                                                        trigger_distance=5, 
-                                                       max_distance=500)
+                                                       max_distance=500,
+                                                       avoid_collision=True)
         cutter_behavior.add_child(accelerate)
 
         # lane_change
@@ -168,7 +169,9 @@ class CutInRoute(CutIn):
                                                     self._transforms_visible[1],
                                                     physics=True)
             straight_behavior.add_child(straight_visible)
-            straight_driving = WaypointFollower(self.other_actors[1], self._velocity)
+            straight_driving = WaypointFollower(self.other_actors[1], 
+                                                self._velocity,
+                                                avoid_collision=True)
             straight_behavior.add_child(straight_driving)
 
         vehicles_behavior.add_child(cutter_behavior)
