@@ -1,10 +1,32 @@
 # Route-based Scenario Runner for Tram
 Created by [jeremiaaxel](https://github.com/jeremiaaxel), modified from [ScenarioRunner v0.9.12](https://github.com/carla-simulator/scenario_runner/tree/v0.9.12)
 
-## How to Run - Specific for RISPRO 2023
 > :information_source: In commands, `[]` means optional and `()` means required
 
 > :information_source: **Ordered list means command order** while **unordered list means optional to choose one** of the commands.
+## Before Running Scenario Runner
+1. Make sure the CARLA simulator is running
+    - Default CARLA package:
+        1. Change directory
+            ```bash
+            cd ~/carla-simulator/CARLA-0.9.12
+            ```
+        2. Run the simulator
+            ```bash
+            ./CarlaUE4.sh
+            ```
+    - CARLA build (with custom model(s))
+        1. Change directory
+            ```bash
+            cd ~/carla-build
+            ```
+        2. Run the simulator
+            ```bash
+            make launch
+            ```
+            Wait until UnrealEditor is up and running and press `Play` button on the top right.
+
+## How to Run - Specific for RISPRO 2023
 1. Use SILS computer.
 2. Open terminal.
 3. Change directory to the project folder
