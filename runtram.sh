@@ -1,12 +1,12 @@
 #!/bin/bash
 
+# CONFIGURATIONS - START
 tram_route_file="./customs/routes/tram_routes.xml"
 
 agent_config_file="./customs/autoagents/configs/human_tram.json"
 
 scenario_runner="./scenario_runner.py"
 scenario_maker="./customs/scenario_maker/scenario_maker.py"
-
 
 declare -A defined_scenario_files
 defined_scenario_files[test]="./customs/routes/test_scenarios.json"
@@ -17,9 +17,9 @@ declare -A defined_agent_files
 defined_agent_files[hils]="./customs/autoagents/hils_agent.py"
 defined_agent_files[sils]="./customs/autoagents/sils_agent.py"
 defined_agent_files[human]="./customs/autoagents/human_tram_agent.py"
+# CONFIGURATIONS - END
 
-# ARGUMENTS
-## Default Arguments
+# DEFAULT ARGUMENTS - START
 agent_mode="hils"
 agent_file=${defined_agent_files[$agent_mode]}
 
@@ -30,8 +30,47 @@ scenario_file=""
 repetition="1"
 route_number="1"
 scenario_base_size="0"
+# DEFAULT ARGUMENTS - END
 
-## EXTRACT ARGUMENTS
+# FUNCTIONS - START
+function mapAgentMode() {
+  # Agent Mode
+  if [[ -n ${defined_agent_files[$agent_mode]} ]]; then
+    agent_file=${defined_agent_files[$agent_mode]};
+  else
+    echo "Agent mode not found, using default (hils)"
+    agent_file=${defined_agent_files[hils]};
+  fi
+}
+
+function standardizeScenarioMode() {
+  case $scenario_mode in 
+    "req"|"request")
+      scenario_mode="req"
+      ;;
+    "none"|"noscenario")
+      scenario_mode="none"
+      ;;
+    *)
+      ;;
+  esac
+}
+
+function mapScenarioMode() {
+  # Scenario Generation Mode
+  if [[ -n ${defined_scenario_files[$scenario_mode]} ]]; then
+    random_scenario=false
+    scenario_file=${defined_scenario_files[$scenario_mode]};
+  else
+    echo "Scenario mode not found, using default (random)"
+    random_scenario=true
+    scenario_file=""
+  fi
+}
+# FUNCTIONS - END
+
+# MAIN PROGRAM
+## Extract user arguments 
 POSITIONAL_ARGS=()
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -72,54 +111,22 @@ while [[ $# -gt 0 ]]; do
 done
 rest="${POSITIONAL_ARGS[*]}"
 
-
-function mapAgentMode() {
-  # Agent Mode
-  if [[ -n ${defined_agent_files[$agent_mode]} ]]; then
-    agent_file=${defined_agent_files[$agent_mode]};
-  else
-    echo "Agent mode not found, using default (hils)"
-    agent_file=${defined_agent_files[hils]};
-  fi
-}
-
-function standardizeScenarioMode() {
-  case $scenario_mode in 
-    "req"|"request")
-      scenario_mode="req"
-      ;;
-    "none"|"noscenario")
-      scenario_mode="none"
-      ;;
-    *)
-      ;;
-  esac
-}
-
-function mapScenarioMode() {
-  # Scenario Generation Mode
-  if [[ -n ${defined_scenario_files[$scenario_mode]} ]]; then
-    random_scenario=false
-    scenario_file=${defined_scenario_files[$scenario_mode]};
-  else
-    echo "Scenario mode not found, using default (random)"
-    random_scenario=true
-    scenario_file=""
-  fi
-}
-
+# map agent mode to agent file
 mapAgentMode
 
+# map scenario mode to scenario file/generation
 standardizeScenarioMode
 mapScenarioMode
 
+# print summary
 echo "Agent used: $agent_file"
-if [ $random_scenario = true]; then
+if [ $random_scenario = true ]; then
   echo "Using random scenario generation"
 else
   echo "Using scenario: $scenario_file"
 fi
 
+# repetitions
 for (( i=1 ; i<=$repetition ; i++ )); do
     echo "#-repetition: $i"
 
