@@ -8,6 +8,7 @@
 Scenario spawning elements to make the town dynamic and interesting
 """
 
+from typing import List
 import py_trees
 from py_trees.common import ParallelPolicy
 from py_trees.composites import Sequence, Parallel
@@ -19,7 +20,7 @@ import logging
 from customs.behaviors.horn_behavior import HornBehavior
 from customs.behaviors.toggle_walker_controller import ToggleWalkerController
 from customs.helpers.config import OUT_DIR
-from customs.helpers.blueprints import get_actor_display_name, freeze_vehicle
+from customs.helpers.blueprints import freeze_vehicles, get_actor_display_name, freeze_vehicle
 
 from srunner.scenarios.background_activity import BackgroundActivity
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
@@ -43,7 +44,17 @@ class SpawnActor(BackgroundActivity):
     do_print = False
     _ego_route = None
 
-    def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False, model_names=['vehicle.*'], total_amount=50):
+    def __init__(self, 
+                 world, 
+                 ego_vehicles, 
+                 config, 
+                 randomize=False, 
+                 spawn_points=None, 
+                 debug_mode=False, 
+                 timeout=35 * 60, 
+                 criteria_enable=False, 
+                 model_names=['vehicle.*'], 
+                 total_amount=50):
         """
         Setup all relevant parameters and create scenario
         """
@@ -60,6 +71,9 @@ class SpawnActor(BackgroundActivity):
 
         self.model_names = model_names
         self.total_amount = total_amount
+
+        self.randomize = randomize
+        self.spawn_points = spawn_points
 
         super(SpawnActor, self).__init__(world,
                                             ego_vehicles,
@@ -258,9 +272,28 @@ class SpawnActorOnTrigger(SpawnActor):
     """
     Spawn batch actor(s) with single model on a trigger location
     """
-    def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False, model_names=['vehicle.*'], total_amount=50):
+    def __init__(self, 
+                 world, 
+                 ego_vehicles, 
+                 config, 
+                 randomize=False, 
+                 spawn_points=None,
+                 debug_mode=False, 
+                 timeout=35 * 60, 
+                 criteria_enable=False, 
+                 model_names=['vehicle.*'], 
+                 total_amount=50):
         self._ego_route = CarlaDataProvider.get_ego_vehicle_route()
-        super().__init__(world, ego_vehicles, config, randomize=randomize, debug_mode=debug_mode, timeout=timeout, criteria_enable=criteria_enable, model_names=model_names, total_amount=total_amount)
+        super().__init__(world, 
+                         ego_vehicles, 
+                         config, 
+                         randomize=randomize,
+                         spawn_points=spawn_points,
+                         debug_mode=debug_mode, 
+                         timeout=timeout, 
+                         criteria_enable=criteria_enable, 
+                         model_names=model_names, 
+                         total_amount=total_amount)
 
     def _put_other_actors_under(self):
         for other_actor in self.other_actors:
@@ -327,3 +360,35 @@ class SpawnActorOnTrigger(SpawnActor):
         self._move_actors_in_trigger_location()
         # put all actors underground
         self._put_other_actors_under()
+
+
+class SpawnActorInFront(SpawnActor):
+    def __init__(self, 
+                 world, 
+                 ego_vehicles, 
+                 config, 
+                 randomize=False, 
+                 spawn_points=None, 
+                 debug_mode=False, 
+                 timeout=35 * 60, 
+                 criteria_enable=False, 
+                 model_names=['vehicle.*'], 
+                 total_amount=50):
+        amount = 1
+        start_buffer = 11
+        step = 2
+        spawn_points: List[carla.Transform] = [carla.Transform(route[0], carla.Rotation()) for route in CarlaDataProvider.get_ego_vehicle_route()[start_buffer:start_buffer+amount*step:step]]
+        super().__init__(world, 
+                         ego_vehicles, 
+                         config, 
+                         randomize, 
+                         spawn_points, 
+                         debug_mode, 
+                         timeout, 
+                         criteria_enable, 
+                         model_names, 
+                         total_amount)
+        
+    def _initialize_actors(self, config):
+        super()._initialize_actors(config)
+        freeze_vehicles(self.other_actors)

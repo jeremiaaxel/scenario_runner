@@ -14,7 +14,7 @@
                             }
                         }
                     ],
-                    "scenario_type": "SpawnAngkotOnTrigger"
+                    "scenario_type": "Day"
                 }
             ]
         }

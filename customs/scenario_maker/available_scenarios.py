@@ -1,8 +1,9 @@
 from customs.scenarios.obstructing_vehicle import ObstructingVehicle
 from customs.scenarios.pedestrian_crossing import CyclistCrossing, CyclistSlowCrossing, PedestrianCrossing, PedestrianWalkCrossing
+from customs.scenarios.spawn_actor import SpawnActorInFront
 from customs.scenarios.spawn_angkot import SpawnAngkot, SpawnAngkotOnTrigger
 from customs.scenarios.spawn_bike import SpawnBike, SpawnBikeOnTrigger
-from customs.scenarios.spawn_pedestrian import SpawnPedestrian, SpawnPedestrianOnTrigger
+from customs.scenarios.spawn_pedestrian import SpawnPedestrian, SpawnPedestrianInFront, SpawnPedestrianOnTrigger
 from customs.scenarios.time import TimeDay, TimeNight, TimeSunrise
 from customs.scenarios.weather import (
     WeatherClear, WeatherHardRain, WeatherOvercast,
@@ -19,7 +20,7 @@ class AvailableScenarios(object):
         # "MidRainyNoon": WeatherMidRainyNoonRoute,
         # "HardRainNight": WeatherHardRainNightRoute,
         # "ClearSunset": WeatherClearSunsetRoute,
-        # "WeatherRainyDay": WeatherRainyDayRoute,
+        "WeatherRainyDay": WeatherRainyDayRoute,
         
         "Clear": WeatherClear,
         "HardRain": WeatherHardRain,
@@ -40,6 +41,10 @@ class AvailableScenarios(object):
         "SpawnBikeOnTrigger": SpawnBikeOnTrigger,
         "SpawnPedestrian": SpawnPedestrian,
         "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
+
+        # For testing
+        "SpawnPedestrianInFront": SpawnPedestrianInFront,
+        "SpawnActorInFront": SpawnActorInFront,
 
         # Crossings(s)
         # "Scenario3": DynamicObjectCrossing,

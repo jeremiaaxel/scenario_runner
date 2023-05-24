@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import carla
 import py_trees
+import logging
 
 from enum import Enum
 from typing import Union
@@ -12,6 +13,7 @@ from srunner.scenariomanager.scenarioatomics.atomic_behaviors import ChangeWeath
 from srunner.scenarios.basic_scenario import BasicScenario
 from srunner.scenariomanager.weather_sim import Weather
 
+logger = logging.getLogger(__name__)
 class RoadFriction(Enum):
     # WARNING: THE VALUE IS WRONG FOR CARLA
     """
@@ -63,9 +65,12 @@ class WeatherBasicRoute(BasicScenario):
     
     def _weather(self):
         weather = self._world.get_weather()
-        print(self.__class__.weather_config.items())
+        # logger.debug_s(f"Modified weather params: \n {'\n'.join(self.__class__.weather_config.items())}")
+        logger.debug_s(self.__class__.weather_config.items())
+        logger.debug_s(f"Previous weather: {weather}")
         for property, value in self.__class__.weather_config.items():
             setattr(weather, property, value)
+        logger.debug_s(f"New weather: {weather}")
         return Weather(weather)
     
     def _road_friction(self) -> Union[RoadFriction, float]:

@@ -8,6 +8,7 @@
 Scenario spawning elements to make the town dynamic and interesting
 """
 import random
+from typing import List
 import carla
 
 import logging
@@ -54,20 +55,21 @@ class SpawnPedestrian(SpawnActor):
     This is a single ego vehicle scenario
     """
 
-    def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False):
+    def __init__(self, world, ego_vehicles, config, randomize=True, debug_mode=False, timeout=35 * 60, criteria_enable=False, spawn_points: list=None):
         """
         Setup all relevant parameters and create scenario
         """
         self.ai_controllers = []
-        super(SpawnPedestrian, self).__init__(world,
-                                            ego_vehicles,
-                                            config,
-                                            randomize,
-                                            debug_mode=debug_mode,
-                                            timeout=timeout,
-                                            criteria_enable=criteria_enable,
-                                            model_names=pedestrian_modelnames,
-                                            total_amount=total_amount)
+        super().__init__(world,
+                        ego_vehicles,
+                        config,
+                        randomize,
+                        spawn_points=spawn_points,
+                        debug_mode=debug_mode,
+                        timeout=timeout,
+                        criteria_enable=criteria_enable,
+                        model_names=pedestrian_modelnames,
+                        total_amount=total_amount)
     
     def _spawn_walkers(self):
 
@@ -77,8 +79,9 @@ class SpawnPedestrian(SpawnActor):
         world.set_pedestrians_cross_factor(percentage_pedestrians_crossing)
 
         total_amount = self.total_amount
-        spawn_points = generate_walker_spawn_points(world, total_amount)
-        number_of_spawn_points = len(spawn_points)
+        if self.randomize or self.spawn_points is None:
+            self.spawn_points = generate_walker_spawn_points(world, total_amount)
+        number_of_spawn_points = len(self.spawn_points)
         blueprints = get_actor_blueprints(world, pedestrian_modelnames[0], generation='all')
 
         if total_amount > number_of_spawn_points:
@@ -89,7 +92,7 @@ class SpawnPedestrian(SpawnActor):
         batch = []
         walkers_list = []
         walker_speed = []
-        for spawn_point in spawn_points:
+        for spawn_point in self.spawn_points:
             walker_bp = random.choice(blueprints)
             # set as not invincible
             if walker_bp.has_attribute('is_invincible'):
@@ -154,13 +157,15 @@ class SpawnPedestrian(SpawnActor):
             ai_controller.go_to_location(target_location)
 
     def remove_ai_controllers(self):
+        if self.ai_controllers is None:
+            return
+        
         logger.info(f"Stopping {len(self.ai_controllers)} AI controllers")
         for i, _ in enumerate(self.ai_controllers):
             if self.ai_controllers[i] is not None:
                 self.ai_controllers[i].stop()
                 if CarlaDataProvider.actor_id_exists(self.ai_controllers[i].id):
                     CarlaDataProvider.remove_actor_by_id(self.ai_controllers[i].id)
-                self.ai_controllers[i] = None
         self.ai_controllers = []
 
     def remove_all_actors(self):
@@ -168,17 +173,18 @@ class SpawnPedestrian(SpawnActor):
         super().remove_all_actors()
 
 class SpawnPedestrianOnTrigger(SpawnActorOnTrigger):
-    def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False):
+    def __init__(self, world, ego_vehicles, config, randomize=False, spawn_points=None, debug_mode=False, timeout=35 * 60, criteria_enable=False):
         self.ai_controllers = []
-        super(SpawnPedestrianOnTrigger, self).__init__(world,
-                                            ego_vehicles,
-                                            config,
-                                            randomize,
-                                            debug_mode=debug_mode,
-                                            timeout=timeout,
-                                            criteria_enable=criteria_enable,
-                                            model_names=pedestrian_modelnames,
-                                            total_amount=total_amount)
+        super().__init__(world,
+                        ego_vehicles,
+                        config,
+                        randomize,
+                        spawn_points=spawn_points,
+                        debug_mode=debug_mode,
+                        timeout=timeout,
+                        criteria_enable=criteria_enable,
+                        model_names=pedestrian_modelnames,
+                        total_amount=total_amount)
         
     def _spawn_walkers(self):
         world = CarlaDataProvider.get_world()
@@ -187,8 +193,9 @@ class SpawnPedestrianOnTrigger(SpawnActorOnTrigger):
         world.set_pedestrians_cross_factor(percentage_pedestrians_crossing)
 
         total_amount = self.total_amount
-        spawn_points = generate_walker_spawn_points(world, total_amount)
-        number_of_spawn_points = len(spawn_points)
+        if self.randomize or self.spawn_points is None:
+            self.spawn_points = generate_walker_spawn_points(world, total_amount)
+        number_of_spawn_points = len(self.spawn_points)
         blueprints = get_actor_blueprints(world, pedestrian_modelnames[0], generation='all')
 
         if total_amount > number_of_spawn_points:
@@ -199,7 +206,7 @@ class SpawnPedestrianOnTrigger(SpawnActorOnTrigger):
         batch = []
         walkers_list = []
         walker_speed = []
-        for spawn_point in spawn_points:
+        for spawn_point in self.spawn_points:
             walker_bp = random.choice(blueprints)
             # set as not invincible
             if walker_bp.has_attribute('is_invincible'):
@@ -268,6 +275,9 @@ class SpawnPedestrianOnTrigger(SpawnActorOnTrigger):
             ai_controller.go_to_location(target_location)
 
     def remove_ai_controllers(self):
+        if self.ai_controllers is None:
+            return
+        
         logger.info(f"Stopping {len(self.ai_controllers)} AI controllers")
         for i, _ in enumerate(self.ai_controllers):
             if self.ai_controllers[i] is not None:
@@ -279,3 +289,31 @@ class SpawnPedestrianOnTrigger(SpawnActorOnTrigger):
     def remove_all_actors(self):
         self.remove_ai_controllers()
         super().remove_all_actors()
+
+
+class SpawnPedestrianInFront(SpawnPedestrian):
+    def __init__(self, 
+                 world, 
+                 ego_vehicles, 
+                 config, 
+                 randomize=False, 
+                 debug_mode=False, 
+                 timeout=35 * 60, 
+                 criteria_enable=False):
+        amount = 1
+        start_buffer = 11
+        step = 2
+        spawn_points: List[carla.Transform] = [carla.Transform(route[0], carla.Rotation()) for route in CarlaDataProvider.get_ego_vehicle_route()[start_buffer:start_buffer+amount*step:step]]
+
+        super().__init__(world, 
+                         ego_vehicles, 
+                         config, 
+                         randomize, 
+                         spawn_points=spawn_points,
+                         debug_mode=debug_mode, 
+                         timeout=timeout, 
+                         criteria_enable=criteria_enable)
+
+    def _initialize_actors(self, config):
+        super()._initialize_actors(config)
+        freeze_pedestrians(self.ai_controllers)

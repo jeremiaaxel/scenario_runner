@@ -24,6 +24,7 @@ from hils_connector.carla_handlers.inbound import ControlHandler
 from threading import Event
 from carla import VehicleControl
 import logging
+from customs.helpers.config import OUT_DIR
 
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from customs.autoagents.human_tram_agent import HumanTramAgent
@@ -31,6 +32,7 @@ from customs.autoagents.human_tram_agent import HumanTramAgent
 # has to append PYTHONPATH with $HOME/Documents/khansa/rilis3
 from controller2d import Controller2D
 from lokalisasi import LocMap
+from srunner.scenariomanager.timer import GameTime
 
 
 class Integer:
@@ -100,7 +102,8 @@ class HilsAgent(HumanTramAgent):
 
         dt = 1.0 / 20.0
         args_lateral_dict = {"K_P": 1.02, "K_I": 0.001, "K_D": 0.2, "dt": dt}
-        args_longitudinal_dict = {"K_P": 5, "K_I": 0.3, "K_D": 0.13, "dt": dt}
+        # args_longitudinal_dict = {"K_P": 5, "K_I": 0. 3, "K_D": 0.13, "dt": dt}
+        args_longitudinal_dict = {"K_P": 1.0, "K_I": 0.05, "K_D": 0.0, "dt": dt}
 
         self._locmap = LocMap(carla_map, self.ego_vehicle)
         self._locmap.set_destination(
@@ -169,7 +172,10 @@ class HilsAgent(HumanTramAgent):
             )
 
         self._vehicle_control_event.wait(timeout=self.dm_command_wait_timeout)
+        self._command_log(self._dm_command.val, timestamp, filename="command_log.txt")
 
+        throttle = 0
+        brake = 0
         throttle, _, brake = self._translate_dm_command(timestamp)
 
         # steering: from NPC agent
@@ -208,17 +214,27 @@ class HilsAgent(HumanTramAgent):
         dm_command = self._dm_command.val
 
         dm = self._dm_controller
+
+        self._locmap.get_position(self.ego_vehicle)
         dm.update_values(self._locmap, timestamp)
         dm.masterControl(timestamp, dm_command)
         dm.update_controls()
 
         return dm.get_commands()
+    
+    def _command_log(self, command, timestamp=None, filename: str="logs.txt"):
+        fullfilename = os.path.join(OUT_DIR, "command_logs")
+        os.makedirs(fullfilename, exist_ok=True)
+        fullfilename = os.path.join(fullfilename, filename)
+        with open(fullfilename, "a") as logfile:
+            logfile.write(f"timestamp: {timestamp} | command: {command}\n")
 
     def _on_vehicle_control(self, data: int):
         if self._vehicle_control_event.is_set():
             # throw away data if previous data is not yet processed
             return
 
+        self._command_log(self._dm_command.val, GameTime.get_time(), filename="command_log_on_vehicle_control.txt")
         self._dm_command.val = data
         self._vehicle_control_event.set()
 

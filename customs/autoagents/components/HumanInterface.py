@@ -48,11 +48,13 @@ class HumanInterface(object):
                 if idx != len(arr) - 1:
                     result += f","
             return result
-
+        
         if other_data is None:
             other_data = dict()
             
         # See sensor_interface for index reference
+        v = self.ego_vehicle.get_velocity()
+        speed = math.sqrt(v.x**2 + v.y**2 + v.z**2)
         accelerometer = imu_data.get('accelerometer')
         gyroscope = imu_data.get('gyroscope')
         compass = imu_data.get('compass')
@@ -68,20 +70,20 @@ class HumanInterface(object):
         gyroscope = [abs(x) if x == 0 else x for x in gyroscope]
 
         self._info_text = [
-            # 'Speed:   % 15.0f km/h' % (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)),
-            f'Compass: {compass:2f}\N{DEGREE SIGN} {heading}',
-            f'Accelero: {array_to_string(accelerometer)}',
-            f'Gyroscop: {array_to_string(gyroscope)}',
-            f'GNSS: {lat:2f} {lon:2f}',
+            f'{"Speed:":<10} {speed:.2f} m/s',
+            f'{"Compass:":<10} {compass:.2f}\N{DEGREE SIGN} {heading}',
+            f'{"Accelero:":<10} {array_to_string(accelerometer)}',
+            f'{"Gyroscop:":<10} {array_to_string(gyroscope)}',
+            f'{"GNSS:":<10} {lat:.2f} {lon:.2f}',
             '',
-            f'Is horn: {other_data.get("is_horn", False)}',
+            f'{"Is horn:":<10} {other_data.get("is_horn", False)}',
             '']
         
         if t:
             self._info_text.extend(
                 [
-                    'Location:% 20s' % ('(% 5.1f, % 5.1f)' % (t.location.x, t.location.y)),
-                    'Height:  % 18.0f m' % t.location.z,
+                    'Location:% 20s' % ('(% 5.2f, % 5.2f)' % (t.location.x, t.location.y)),
+                    'Height:  % 18.2f m' % t.location.z,
                 ]
             )
     
