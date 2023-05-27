@@ -3,6 +3,8 @@ import math
 import os
 
 from customs.autoagents.components.FadingText import FadingText
+from customs.helpers.blueprints import get_actor_display_name
+from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
 class HumanInterface(object):
 
@@ -69,6 +71,7 @@ class HumanInterface(object):
         accelerometer = [abs(x) if x == 0 else x for x in accelerometer]
         gyroscope = [abs(x) if x == 0 else x for x in gyroscope]
 
+
         self._info_text = [
             f'{"Speed:":<10} {speed:.2f} m/s',
             f'{"Compass:":<10} {compass:.2f}\N{DEGREE SIGN} {heading}',
@@ -86,6 +89,21 @@ class HumanInterface(object):
                     'Height:  % 18.2f m' % t.location.z,
                 ]
             )
+
+        actors_exception = ["controller.ai.walker"]
+
+        self._info_text.append("")
+        self._info_text.append("Nearby actors:")
+        actors = CarlaDataProvider.get_actors()
+        distance = lambda l: math.sqrt((l.x - t.location.x)**2 + (l.y - t.location.y)**2 + (l.z - t.location.z)**2)
+        actors = [(id, actor) for id, actor in actors if actor.type_id not in actors_exception]
+        vehicles = [(distance(actor.get_location()), actor) for id, actor in actors if id != self.ego_vehicle.id]
+        for d, vehicle in sorted(vehicles, key=lambda vehicles: vehicles[0]):
+            if d > 200.0:
+                break
+            vehicle_type = get_actor_display_name(vehicle, truncate=22)
+            self._info_text.append('% 4dm %s' % (d, vehicle_type))
+
     
     def render_info(self):
         info_surface = pygame.Surface((220, self._height))

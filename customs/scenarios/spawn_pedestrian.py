@@ -292,6 +292,9 @@ class SpawnPedestrianOnTrigger(SpawnActorOnTrigger):
 
 
 class SpawnPedestrianInFront(SpawnPedestrian):
+    """
+    Spawns pedestrian in front of the ego vehicle's route
+    """
     def __init__(self, 
                  world, 
                  ego_vehicles, 
@@ -300,10 +303,24 @@ class SpawnPedestrianInFront(SpawnPedestrian):
                  debug_mode=False, 
                  timeout=35 * 60, 
                  criteria_enable=False):
+        # amount of pedestrian spawned
         amount = 1
+        # distance from ego vehicle
         start_buffer = 11
+        # distance between each pedestrian
         step = 2
-        spawn_points: List[carla.Transform] = [carla.Transform(route[0], carla.Rotation()) for route in CarlaDataProvider.get_ego_vehicle_route()[start_buffer:start_buffer+amount*step:step]]
+        # move pedestrian from route
+        delta_loc = {
+            'x': -3,
+            'y': 0,
+            'z': 0
+        }
+
+        spawn_points: List[carla.Transform] = [carla.Transform(
+            carla.Location(x=route[0].x + delta_loc.get('x'),
+                           y=route[0].y + delta_loc.get('y'),
+                           z=route[0].z + delta_loc.get('z')),
+            carla.Rotation()) for route in CarlaDataProvider.get_ego_vehicle_route()[start_buffer:start_buffer+amount*step:step]]
 
         super().__init__(world, 
                          ego_vehicles, 

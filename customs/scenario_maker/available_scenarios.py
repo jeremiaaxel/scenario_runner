@@ -42,19 +42,21 @@ class AvailableScenarios(object):
         "SpawnPedestrian": SpawnPedestrian,
         "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
 
-        # For testing
-        "SpawnPedestrianInFront": SpawnPedestrianInFront,
-        "SpawnActorInFront": SpawnActorInFront,
-
         # Crossings(s)
         # "Scenario3": DynamicObjectCrossing,
         "PedestrianCrossing": PedestrianCrossing,
         "PedestrianWalkCrossing": PedestrianWalkCrossing,
         "CyclistCrossing": CyclistCrossing,
         "CyclistSlowCrossing": CyclistSlowCrossing,
+        # TODO: CarCrossingOnJunction
+        # TODO: BikeCrossingOnJunction
 
         # Obstructing(s)
         # "ObstructingVehicle": ObstructingVehicle,
+        # TODO: ObstructingObject timer-based: car, bike, pedestrian, cyclist
+        # For testing
+        "SpawnPedestrianInFront": SpawnPedestrianInFront,
+        "SpawnActorInFront": SpawnActorInFront,
 
         "CutInRoute": CutInRoute
     }
