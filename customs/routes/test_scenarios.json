@@ -7,6 +7,20 @@
                         {
                             "transform": {
                                 "pitch": "0",
+                                "x": "60.2",
+                                "y": "-63.8",
+                                "yaw": "180.0",
+                                "z": "0.0"
+                            }
+                        }
+                    ],
+                    "scenario_type": "Day"
+                },
+                {
+                    "available_event_configurations": [
+                        {
+                            "transform": {
+                                "pitch": "0",
                                 "x": "50.2",
                                 "y": "-63.8",
                                 "yaw": "180.0",
@@ -14,7 +28,35 @@
                             }
                         }
                     ],
-                    "scenario_type": "SpawnPedestrianInFront"
+                    "scenario_type": "HardRain"
+                },
+                {
+                    "available_event_configurations": [
+                        {
+                            "transform": {
+                                "pitch": "0",
+                                "x": "40.2",
+                                "y": "-63.8",
+                                "yaw": "180.0",
+                                "z": "0.0"
+                            }
+                        }
+                    ],
+                    "scenario_type": "Night"
+                },
+                {
+                    "available_event_configurations": [
+                        {
+                            "transform": {
+                                "pitch": "0",
+                                "x": "30.2",
+                                "y": "-63.8",
+                                "yaw": "180.0",
+                                "z": "0.0"
+                            }
+                        }
+                    ],
+                    "scenario_type": "Clear"
                 }
             ]
         }

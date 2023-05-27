@@ -6,6 +6,7 @@ import logging
 
 from enum import Enum
 from typing import Union
+from customs.behaviors.change_weather_parameter_only import ChangeWeatherParameterOnly
 
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import CollisionTest
@@ -78,9 +79,11 @@ class WeatherBasicRoute(BasicScenario):
         
     def _create_behavior(self):
         behavior = py_trees.composites.Sequence(name=__class__.__name__)
-        change_weather = py_trees.meta.oneshot(ChangeWeather)(self._weather())
-        # change_road_friction = py_trees.meta.oneshot(ChangeRoadFriction)(self._road_friction())
+        change_weather = py_trees.meta.oneshot(ChangeWeatherParameterOnly)(self.__class__.weather_config)
+        # change_weather = py_trees.meta.oneshot(ChangeWeather)(self._weather())
         behavior.add_child(change_weather)
+        
+        # change_road_friction = py_trees.meta.oneshot(ChangeRoadFriction)(self._road_friction())
         # behavior.add_child(change_road_friction)
         return behavior
     
