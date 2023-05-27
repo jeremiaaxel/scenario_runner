@@ -1,4 +1,7 @@
-from customs.scenarios.obstructing_vehicle import ObstructingVehicle
+from customs.scenarios.obstructing_actor import (
+    ObstructingVehicleHorn, ObstructingVehicleTimer,
+    ObstructingPedestrianHorn, ObstructingPedestrianTimer
+)
 from customs.scenarios.pedestrian_crossing import CyclistCrossing, CyclistSlowCrossing, PedestrianCrossing, PedestrianWalkCrossing
 from customs.scenarios.spawn_actor import SpawnActorInFront
 from customs.scenarios.spawn_angkot import SpawnAngkot, SpawnAngkotOnTrigger
@@ -20,7 +23,7 @@ class AvailableScenarios(object):
         # "MidRainyNoon": WeatherMidRainyNoonRoute,
         # "HardRainNight": WeatherHardRainNightRoute,
         # "ClearSunset": WeatherClearSunsetRoute,
-        "WeatherRainyDay": WeatherRainyDayRoute,
+        # "WeatherRainyDay": WeatherRainyDayRoute,
         
         "Clear": WeatherClear,
         "HardRain": WeatherHardRain,
@@ -52,8 +55,11 @@ class AvailableScenarios(object):
         # TODO: BikeCrossingOnJunction
 
         # Obstructing(s)
-        # "ObstructingVehicle": ObstructingVehicle,
-        # TODO: ObstructingObject timer-based: car, bike, pedestrian, cyclist
+        "ObstructingVehicleHorn": ObstructingVehicleHorn,
+        "ObstructingVehicleTimer": ObstructingVehicleTimer,
+        # TODO: Fix obstructing pedestrian
+        "ObstructingPedestrianHorn": ObstructingPedestrianHorn,
+        "ObstructingPedestrianTimer": ObstructingPedestrianTimer,
         # For testing
         "SpawnPedestrianInFront": SpawnPedestrianInFront,
         "SpawnActorInFront": SpawnActorInFront,

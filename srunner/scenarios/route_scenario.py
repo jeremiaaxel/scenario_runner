@@ -53,7 +53,6 @@ from customs.scenarios.pedestrian_crossing import (
     PedestrianCrossing, PedestrianWalkCrossing,
     CyclistCrossing, CyclistSlowCrossing
 )
-from customs.scenarios.obstructing_vehicle import ObstructingVehicle
 from customs.scenario_maker.available_scenarios import AvailableScenarios
 
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import (CollisionTest,
@@ -112,8 +111,6 @@ NUMBER_CLASS_TRANSLATION = {
     
     "CyclistCrossing": CyclistCrossing,
     "CyclistSlowCrossing": CyclistSlowCrossing,
-
-    "ObstructingVehicle": ObstructingVehicle,
 }
 
 NUMBER_CLASS_TRANSLATION = AvailableScenarios.get_all_scenarios()

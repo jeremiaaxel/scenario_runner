@@ -1,5 +1,6 @@
 import carla
 import py_trees
+from customs.behaviors.toggle_walker_controller import ToggleWalkerController
 
 from srunner.scenariomanager.scenarioatomics.atomic_behaviors import ChangeAutoPilot, StopVehicle
 from customs.triggers.horn_trigger import InHornDistanceTrigger
@@ -66,6 +67,8 @@ class HornBehavior(py_trees.composites.Parallel):
         in_horn_behavior.add_child(StopVehicle(self._actor, 1, name=f"Stop on {self._actor.id}"))
         if isinstance(self._actor, carla.Vehicle):
             in_horn_behavior.add_child(ChangeAutoPilot(self._actor, False, name=f"Autopilot off {self._actor.id}"))
+        if isinstance(self._actor, carla.WalkerAIController):
+            in_horn_behavior.add_child(ToggleWalkerController(self._actor, start=False))
         return in_horn_behavior
     
     def default_out_behavior(self):
@@ -79,5 +82,7 @@ class HornBehavior(py_trees.composites.Parallel):
         out_horn_behavior.add_child(StopVehicle(self._actor, 0, name=f"Stop off {self._actor.id}"))
         if isinstance(self._actor, carla.Vehicle):
             out_horn_behavior.add_child(ChangeAutoPilot(self._actor, True, name=f"Autopilot on {self._actor.id}"))
+        if isinstance(self._actor, carla.WalkerAIController):
+            out_horn_behavior.add_child(ToggleWalkerController(self._actor, start=True))
         return out_horn_behavior
     

@@ -7,14 +7,14 @@
                         {
                             "transform": {
                                 "pitch": "0",
-                                "x": "60.2",
-                                "y": "-63.8",
-                                "yaw": "180.0",
+                                "x": "106.40",
+                                "y": "-18.83",
+                                "yaw": "270.0",
                                 "z": "0.0"
                             }
                         }
                     ],
-                    "scenario_type": "Day"
+                    "scenario_type": "ObstructingPedestrianTimer"
                 },
                 {
                     "available_event_configurations": [

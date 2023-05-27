@@ -75,6 +75,8 @@ class SpawnActor(BackgroundActivity):
         self.randomize = randomize
         self.spawn_points = spawn_points
 
+        self.ai_controllers = [] # automatically set on child class (Pedestrian)
+
         super(SpawnActor, self).__init__(world,
                                             ego_vehicles,
                                             config,

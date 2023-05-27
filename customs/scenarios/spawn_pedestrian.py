@@ -12,7 +12,7 @@ from typing import List
 import carla
 
 import logging
-from customs.helpers.blueprints import freeze_pedestrian, freeze_pedestrians, get_actor_blueprints
+from customs.helpers.blueprints import freeze_pedestrian, freeze_pedestrians, generate_walker_spawn_points, get_actor_blueprints
 from customs.scenarios.spawn_actor import SpawnActor, SpawnActorOnTrigger
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
@@ -24,27 +24,6 @@ carlaSpawnActor = carla.command.SpawnActor
 percentage_pedestrians_running = 30.0      # how many pedestrians will run
 percentage_pedestrians_crossing = 50.0     # how many pedestrians will walk through the road
 
-
-def generate_walker_spawn_points(world, amount):
-    spawn_points = []
-    max_tries = 5
-    for i in range(amount):
-        spawn_point = carla.Transform()
-        location = world.get_random_location_from_navigation()
-
-        # re-get if location is already in spawn points to avoid collision on spawn
-        tries = 0
-        while location in spawn_points:
-            if tries >= max_tries:
-                break
-
-            location = world.get_random_location_from_navigation()
-            tries += 1
-
-        if location:
-            spawn_point.location = location
-            spawn_points.append(spawn_point)
-    return spawn_points
 
 class SpawnPedestrian(SpawnActor):
 
@@ -59,7 +38,6 @@ class SpawnPedestrian(SpawnActor):
         """
         Setup all relevant parameters and create scenario
         """
-        self.ai_controllers = []
         super().__init__(world,
                         ego_vehicles,
                         config,

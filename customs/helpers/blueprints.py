@@ -59,10 +59,62 @@ def freeze_vehicles(vehicles):
     for vehicle in vehicles:
         freeze_vehicle(vehicle)
 
-
 def freeze_pedestrian(ai_controller):
     ai_controller.stop()
     
 def freeze_pedestrians(ai_controllers):
     for ai_controller in ai_controllers:
         freeze_pedestrian(ai_controller)
+
+def start_ai_controller(ai_controller):
+    ai_controller.start()
+
+def start_ai_controllers(ai_controllers):
+    for ai_controller in ai_controllers:
+        start_ai_controller(ai_controller)
+        
+def set_location_ai_controller(ai_controller, start=False):
+    target_location = CarlaDataProvider.get_world().get_random_location_from_navigation()
+    ai_controller.go_to_location(target_location)
+    if start:
+        start_ai_controller(ai_controller)
+
+def set_location_ai_controllers(ai_controllers, start=False):
+    for ai_controller in ai_controllers:
+        set_location_ai_controller(ai_controller, start=start)
+
+def generate_walker_spawn_points(world, amount):
+    spawn_points = []
+    max_tries = 5
+    for i in range(amount):
+        spawn_point = carla.Transform()
+        location = world.get_random_location_from_navigation()
+
+        # re-get if location is already in spawn points to avoid collision on spawn
+        tries = 0
+        while location in spawn_points:
+            if tries >= max_tries:
+                break
+
+            location = world.get_random_location_from_navigation()
+            tries += 1
+
+        if location:
+            spawn_point.location = location
+            spawn_points.append(spawn_point)
+    return spawn_points
+
+def hide_actor(actor, underground_z=500, freeze=False):
+    location = actor.get_location()
+    uground_location = carla.Location(location.x,
+                                        location.y,
+                                        location.z - underground_z)
+    actor.set_location(uground_location)
+    actor.set_simulate_physics(False)
+
+    if freeze and isinstance(actor, carla.Vehicle):
+        freeze_vehicle(actor)
+
+def hide_actors(actors, underground_z=500, freeze=False):
+    for actor in actors:
+        hide_actor(actor)
