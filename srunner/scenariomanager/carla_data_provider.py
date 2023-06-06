@@ -831,3 +831,10 @@ class CarlaDataProvider(object):  # pylint: disable=too-many-public-methods
             if id:
                 actors_id.append(id)
         return actors_id
+
+    @staticmethod
+    def do_tick():
+        if CarlaDataProvider.is_sync_mode():
+            CarlaDataProvider.get_world().tick()
+        else:
+            CarlaDataProvider.get_world().wait_for_tick()

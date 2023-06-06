@@ -109,12 +109,12 @@ def hide_actor(actor, underground_z=500, freeze=False):
     uground_location = carla.Location(location.x,
                                         location.y,
                                         location.z - underground_z)
-    actor.set_location(uground_location)
     actor.set_simulate_physics(False)
+    actor.set_location(uground_location)
 
     if freeze and isinstance(actor, carla.Vehicle):
         freeze_vehicle(actor)
 
 def hide_actors(actors, underground_z=500, freeze=False):
     for actor in actors:
-        hide_actor(actor)
+        hide_actor(actor, underground_z=underground_z, freeze=freeze)

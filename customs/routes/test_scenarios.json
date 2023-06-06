@@ -14,7 +14,7 @@
                             }
                         }
                     ],
-                    "scenario_type": "ObstructingPedestrianTimer"
+                    "scenario_type": "ObstructingPedestrianHorn"
                 },
                 {
                     "available_event_configurations": [

@@ -94,8 +94,8 @@ class SpawnActor(BackgroundActivity):
         heading += 'E' if 0.5 < compass < 179.5 else ''
         heading += 'W' if 180.5 < compass < 359.5 else ''
         return heading
-    
-    def _initialize_actors(self, config):
+
+    def _spawn_actors(self, config):
         logger.debug_s(f"Initializing actor: {self.model_names}")
         total_amount = self.total_amount
         amount_round_down = total_amount // len(self.model_names)
@@ -119,6 +119,13 @@ class SpawnActor(BackgroundActivity):
             report_string += f"amount spawned: {len(new_actors)}"
             logger.debug_s(report_string)
             self.other_actors.extend(new_actors)
+
+    def _post_initialize_actors(self, config):
+        pass
+
+    def _initialize_actors(self, config):
+        self._spawn_actors(config)
+        self._post_initialize_actors(config)
 
     def _create_behavior(self):
         """
@@ -351,14 +358,9 @@ class SpawnActorOnTrigger(SpawnActor):
                 other_actor.set_location(new_transform.location)
                 logger.debug_s(f"{other_actor.id} moved from {transform.location} to {new_transform.location}")
         
-        # sync state
-        if CarlaDataProvider.is_sync_mode():
-            CarlaDataProvider.get_world().tick()
-        else:
-            CarlaDataProvider.get_world().wait_for_tick()
-
-    def _initialize_actors(self, config):        
-        super()._initialize_actors(config)
+        CarlaDataProvider.do_tick()
+    
+    def _post_initialize_actors(self, config):
         self._move_actors_in_trigger_location()
         # put all actors underground
         self._put_other_actors_under()

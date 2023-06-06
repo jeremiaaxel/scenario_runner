@@ -6,11 +6,10 @@ from typing import Literal
 import carla
 import py_trees
 import logging
-import random
 
 from customs.behaviors.horn_behavior import HornBehavior
 from customs.behaviors.toggle_walker_controller import ToggleWalkerController
-from customs.helpers.blueprints import freeze_pedestrians, freeze_vehicle, generate_walker_spawn_points, get_actor_blueprints, hide_actor, hide_actors
+from customs.helpers.blueprints import freeze_pedestrians, hide_actors
 from customs.helpers.config import OUT_DIR
 from customs.triggers.horn_trigger import InHornDistanceTrigger
 
@@ -72,7 +71,7 @@ class ObstructingActor(BasicScenario):
                                                        debug_mode,
                                                        criteria_enable=criteria_enable)
 
-    def _initialize_actors(self, config):
+    def _spawn_actors(self, config):
         """
         Custom initialization
         """
@@ -92,30 +91,14 @@ class ObstructingActor(BasicScenario):
         actor = CarlaDataProvider.request_new_actor(self.model_name, self.transform)
         actor.set_simulate_physics(True)
         self.other_actors.append(actor)
-        
-        # put actor underground
-        # self.hide_actors()
-        # location = actor.get_location()
-        # uground_location = carla.Location(location.x, location.y, location.z - 100)
-        # actor.set_location(uground_location)
-        # actor.set_simulate_physics(False)
-        # if isinstance(actor, carla.Vehicle):
-        #     actor.set_autopilot(False)
-        # hide_actor(actor, freeze=True)
-        
-    def hide_actors(self):
-        for other_actor in self.other_actors:
-            location = other_actor.get_location()
-            uground_location = carla.Location(location.x,
-                                              location.y,
-                                              location.z - self.underground_z)
-            # SOMEHOW THIS CAUSES SEGFAULT
-            # other_actor.set_location(uground_location)
-            other_actor.set_simulate_physics(enabled=False)
 
-            if isinstance(other_actor, carla.Vehicle):
-                freeze_vehicle(other_actor)
-
+    def _post_initialize_actors(self, config):
+        hide_actors(self.other_actors)
+    
+    def _initialize_actors(self, config):
+        self._spawn_actors(config)
+        self._post_initialize_actors(config)
+        
     def _create_behavior(self):
         """
         The vehicle was parked
@@ -187,57 +170,10 @@ class ObstructingPedestrian(ObstructingActor):
     percentage_pedestrians_crossing = 50.0     # how many pedestrians will walk through the road
     ai_controller_model = "controller.ai.walker"
     
-    def _spawn_walkers(self):
+    def _spawn_actors(self, config):
+        super()._spawn_actors(config)
         world = CarlaDataProvider.get_world()
-        client = CarlaDataProvider.get_client()
-
         world.set_pedestrians_cross_factor(self.percentage_pedestrians_crossing)
-
-        total_amount = self.total_amount
-        if self.randomize or self.spawn_points is None:
-            self.spawn_points = generate_walker_spawn_points(world, total_amount)
-        number_of_spawn_points = len(self.spawn_points)
-        blueprints = get_actor_blueprints(world, self.model_name, generation='all')
-
-        if total_amount > number_of_spawn_points:
-            msg = 'requested %d pedestrians, but could only find %d spawn points'
-            logging.warning(msg, total_amount, number_of_spawn_points)
-            total_amount = number_of_spawn_points
-
-        batch = []
-        walkers_list = []
-        walker_speed = []
-        for spawn_point in self.spawn_points:
-            walker_bp = random.choice(blueprints)
-            # set as not invincible
-            if walker_bp.has_attribute('is_invincible'):
-                walker_bp.set_attribute('is_invincible', 'false')
-            # set the max speed
-            if walker_bp.has_attribute('speed'):
-                if random.random() > self.percentage_pedestrians_running:
-                    # walking
-                    walker_speed.append(walker_bp.get_attribute('speed').recommended_values[1])
-                else:
-                    # running
-                    walker_speed.append(walker_bp.get_attribute('speed').recommended_values[2])
-            else:
-                print("Walker has no speed")
-                walker_speed.append(0.0)
-            batch.append(carlaSpawnActor(walker_bp, spawn_point))
-
-        results = client.apply_batch_sync(batch, True)
-        # walker_speed2 = []
-        for i in range(len(results)):
-            if results[i].error:
-                logging.error(results[i].error)
-        #     else:
-        #         walkers_list.append({"id": results[i].actor_id})
-        #         walker_speed2.append(walker_speed[i])
-        # walker_speed = walker_speed2
-
-        walkers = world.get_actors([result.actor_id for result in results])
-        self.other_actors.extend(walkers)
-        CarlaDataProvider.insert_spawned_actors(walkers)
 
     def _attach_ai_controller(self):
         logger.debug_s(f"Spawning and attaching ai controllers to pedestrians")
@@ -278,11 +214,10 @@ class ObstructingPedestrian(ObstructingActor):
                     CarlaDataProvider.remove_actor_by_id(self.ai_controllers[i].id)
         self.ai_controllers = []
     
-    def _initialize_actors(self, config):
-        super()._initialize_actors(config)
-        # self._spawn_walkers()
+    def _post_initialize_actors(self, config):
         self._attach_ai_controller()
         freeze_pedestrians(self.ai_controllers)
+        super()._post_initialize_actors(config)
 
     def remove_all_actors(self):
         self.remove_ai_controllers()

@@ -50,7 +50,6 @@ class SpawnPedestrian(SpawnActor):
                         total_amount=total_amount)
     
     def _spawn_walkers(self):
-
         world = CarlaDataProvider.get_world()
         client = CarlaDataProvider.get_client()
 
@@ -68,7 +67,6 @@ class SpawnPedestrian(SpawnActor):
             total_amount = number_of_spawn_points
 
         batch = []
-        walkers_list = []
         walker_speed = []
         for spawn_point in self.spawn_points:
             walker_bp = random.choice(blueprints)
@@ -89,14 +87,13 @@ class SpawnPedestrian(SpawnActor):
             batch.append(carlaSpawnActor(walker_bp, spawn_point))
 
         results = client.apply_batch_sync(batch, True)
-        # walker_speed2 = []
+        walker_speed2 = []
         for i in range(len(results)):
             if results[i].error:
                 logging.error(results[i].error)
-        #     else:
-        #         walkers_list.append({"id": results[i].actor_id})
-        #         walker_speed2.append(walker_speed[i])
-        # walker_speed = walker_speed2
+            else:
+                walker_speed2.append(walker_speed[i])
+        self.walker_speed = walker_speed2
 
         walkers = world.get_actors([result.actor_id for result in results])
         self.other_actors.extend(walkers)
@@ -164,7 +161,7 @@ class SpawnPedestrianOnTrigger(SpawnActorOnTrigger):
                         model_names=pedestrian_modelnames,
                         total_amount=total_amount)
         
-    def _spawn_walkers(self):
+    def _spawn_actors(self, config):
         world = CarlaDataProvider.get_world()
         client = CarlaDataProvider.get_client()
 
@@ -182,7 +179,6 @@ class SpawnPedestrianOnTrigger(SpawnActorOnTrigger):
             total_amount = number_of_spawn_points
 
         batch = []
-        walkers_list = []
         walker_speed = []
         for spawn_point in self.spawn_points:
             walker_bp = random.choice(blueprints)
@@ -203,27 +199,22 @@ class SpawnPedestrianOnTrigger(SpawnActorOnTrigger):
             batch.append(carlaSpawnActor(walker_bp, spawn_point))
 
         results = client.apply_batch_sync(batch, True)
-        # walker_speed2 = []
+        walker_speed2 = []
         for i in range(len(results)):
             if results[i].error:
                 logging.error(results[i].error)
-        #     else:
-        #         walkers_list.append({"id": results[i].actor_id})
-        #         walker_speed2.append(walker_speed[i])
-        # walker_speed = walker_speed2
+            else:
+                walker_speed2.append(walker_speed[i])
+        self.walker_speed = walker_speed2
 
         walkers = world.get_actors([result.actor_id for result in results])
         self.other_actors.extend(walkers)
         CarlaDataProvider.insert_spawned_actors(walkers)
 
-    def _initialize_actors(self, config):
-        logger.debug_s(f"Initializing actor: {self.model_names}")
-        self._spawn_walkers()
+    def _post_initialize_actors(self, config):
         self._attach_ai_controller()
         freeze_pedestrians(self.ai_controllers)
-        self._move_actors_in_trigger_location()
-        # put all actors underground
-        self._put_other_actors_under()
+        super()._post_initialize_actors(config)
 
     def _attach_ai_controller(self):
         logger.debug_s(f"Spawning and attaching ai controllers to pedestrians")
@@ -247,10 +238,11 @@ class SpawnPedestrianOnTrigger(SpawnActorOnTrigger):
 
         CarlaDataProvider.insert_spawned_actors(ai_controllers)
 
-        for ai_controller in self.ai_controllers:
+        for i, ai_controller in enumerate(self.ai_controllers):
             target_location = world.get_random_location_from_navigation()
             ai_controller.start()
             ai_controller.go_to_location(target_location)
+            ai_controller.set_max_speed(float(self.walker_speed[int(i/2)]))
 
     def remove_ai_controllers(self):
         if self.ai_controllers is None:
