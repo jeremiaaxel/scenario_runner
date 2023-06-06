@@ -74,13 +74,13 @@ class HilsAgent(HumanTramAgent):
         for sensor in self.sensors():
             if sensor["type"] == "sensor.camera.rgb":
                 port = os.getenv("ZMQ_CAMERA_PORT", 5555)
-                self._camera_handler = CameraHandler(zmq_host, port, zmq_context)
+                self._camera_handler = CameraHandler(zmq_host, port, zmq_context, is_time_logging_enabled=True)
             elif sensor["type"] == "sensor.lidar.ray_cast":
                 port = os.getenv("ZMQ_LIDAR_PORT", 5558)
-                self._lidar_handler = LidarHandler(zmq_host, port, zmq_context)
+                self._lidar_handler = LidarHandler(zmq_host, port, zmq_context, is_time_logging_enabled=True)
             elif sensor["type"] == "sensor.other.gnss":
                 port = os.getenv("ZMQ_GNSS_PORT", 5557)
-                self._gnss_handler = GnssHandler(zmq_host, port, zmq_context)
+                self._gnss_handler = GnssHandler(zmq_host, port, zmq_context, is_time_logging_enabled=True)
             else:
                 self._log.warn("Sensor of type %s is not supported. Will be ignored.", sensor["type"])
                 continue
@@ -89,7 +89,7 @@ class HilsAgent(HumanTramAgent):
         zmq_host = os.getenv("ZMQ_SRC", "167.205.66.15")
         port = os.getenv("ZMQ_CONTROL_PORT", 5556)
         self._control_receiver = ControlHandler(
-            zmq_host, port, self._on_vehicle_control, zmq_context
+            zmq_host, port, self._on_vehicle_control, zmq_context, is_time_logging_enabled=True
         )
 
     def _setup_dm(self):

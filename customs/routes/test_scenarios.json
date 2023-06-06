@@ -14,7 +14,7 @@
                             }
                         }
                     ],
-                    "scenario_type": "ObstructingPedestrianHorn"
+                    "scenario_type": "SpawnAngkotOnTrigger"
                 },
                 {
                     "available_event_configurations": [
