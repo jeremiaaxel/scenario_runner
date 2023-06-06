@@ -120,31 +120,11 @@ class HilsAgent(HumanTramAgent):
             args_longitudinal_dict,
         )
 
-    # ===Sementara untuk ngecek SPEED  ====
-    # def get_speed(self):
-    #     """
-    #     Compute speed of the ego vehicle in m/s.
+        fieldnames = ["Time", "Forward Speed", "powering"]
 
-    #     :return: Speed as a float in m/s
-    #     """
-    #     vel = self.ego_vehicle.get_velocity()
-    #     return math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
-
-    # def speed_profile_plotter(self, timestamp,ego_vehicle):
-    #     fieldnames = ["Time", "Forward Speed"]
-
-    #     with open('speed_profile.csv', 'a', newline='') as csv_file:
-    #         csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-
-    #         current_speed = self.get_speed(ego_vehicle)
-
-    #         info = {
-    #             "Time": timestamp,
-    #             "Forward Speed": current_speed,
-    #         }
-
-    #         csv_writer.writerow(info)
-    #=========================
+        with open('speed_profile.csv', 'w') as csv_file:
+            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
 
     def run_step(self, input_data, timestamp):
         """
@@ -204,7 +184,7 @@ class HilsAgent(HumanTramAgent):
 
         self.prev_timestamp = timestamp
 
-        # self.speed_profile_plotter(timestamp, self.ego_vehicle)
+        speed_profile_plotter(timestamp, self._locmap.speed, self._dm_controller.curCommand, self._is_first_run)
 
         self._vehicle_control_event.clear()
 
@@ -276,3 +256,25 @@ class HilsAgent(HumanTramAgent):
             self._control_receiver.destroy()
         except AttributeError:
             pass
+
+def speed_profile_plotter(time, current_speed, powering, start_simulation=True):
+    fieldnames = ["Time", "Forward Speed", "powering"]
+
+    # if not start_simulation:
+    #     with open('speed_profile.csv', 'w') as csv_file:
+    #         csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+    #         csv_writer.writeheader()
+
+    with open('speed_profile.csv', 'a') as csv_file:
+        csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+        Times = time
+        Forward_Speed = current_speed
+
+        info = {
+            "Time": Times,
+            "Forward Speed": Forward_Speed,
+            "powering":powering
+        }
+
+        csv_writer.writerow(info)
