@@ -60,18 +60,71 @@ class ScenarioMaker(object):
             interpolated_routes.append(route)
 
         return interpolated_routes
+
+    @staticmethod
+    def __select_init_scenarios():
+        weather_scenarios = AvailableScenarios.get_weather_scenarios()
+        time_scenarios = AvailableScenarios.get_time_scenarios()
+        background_scenarios = AvailableScenarios.get_background_scenarios()
+
+        init_scenarios = []
+        init_scenarios.extend(random.sample(time_scenarios.keys(), 1))
+        init_scenarios.extend(random.sample(background_scenarios.keys(), 1))
+        init_scenarios.extend(random.sample(weather_scenarios.keys(), 1))
+        return init_scenarios
     
-    def _construct_scenario(self, interpolated_routes, available_scenarios):
+    @staticmethod
+    def __select_main_scenarios(number_of_scenarios: int):
+        all_scenarios = AvailableScenarios.get_all_scenarios()
+        selected_scenarios = random.sample(all_scenarios.keys(), number_of_scenarios)
+        random.shuffle(selected_scenarios)
+        return selected_scenarios
+
+    
+    def _construct_scenario(self, interpolated_routes: list) -> dict:
+        """
+        Function to construct a route scenario for each single scenario(s).
+        There are 2 groups of scenario:
+         1. Init scenario defines the starting condition of the simulation. 
+            Init scenarios contains weather scenario, time scenario, and background scenario.
+         2. Main scenario defines the scenarios during the simulation.
+            Main scenario may contains all type of scenarios.
+        """
+
         this_map = "Town10HD_Opt"
         this_map_scenario = []
 
         for route in interpolated_routes:
-            selected_scenarios = random.sample(available_scenarios, self._args.number_of_scenario_types)
-            random.shuffle(selected_scenarios)
 
+            # append init scenarios to the dictionary
+            init_scenarios = self.__select_init_scenarios()
+            init_idx = 3
+            for _, scenario_type in enumerate(init_scenarios):
+                init_idx += 2
+                wp_transform, _ = route[init_idx]
+                this_map_scenario.append({ 
+                    "available_event_configurations": [
+                        {
+                            "transform": {
+                                "pitch": str(wp_transform.rotation.pitch),
+                                "yaw": str(wp_transform.rotation.yaw),
+                                "x": str(wp_transform.location.x),
+                                "y": str(wp_transform.location.y),
+                                "z": str(wp_transform.location.z)
+                            }
+                        }
+                    ],
+                    "scenario_type": str(scenario_type)
+                })
+
+
+            # append main scenarios to the dictionary
+            selected_scenarios = self.__select_main_scenarios(self._args.number_of_scenario_types)
             n_points = len(route)
-            n_chunks = n_points // len(selected_scenarios)
-            curr_chunk = (0, n_chunks)
+            n_chunks = 0
+            if len(selected_scenarios) > 0:
+                n_chunks = n_points // len(selected_scenarios)
+            curr_chunk = (init_idx+2, n_chunks)
             for scenario_type in selected_scenarios:
                 idx = random.randrange(curr_chunk[0], curr_chunk[1])
                 wp_transform, _ = route[idx]
@@ -105,9 +158,6 @@ class ScenarioMaker(object):
         }
         return scenario
 
-    def _get_scenario_types(self):
-        return AvailableScenarios.get_all_scenarios()
-    
     def generate_scenario(self) -> bool:
         result = True
 
@@ -118,8 +168,7 @@ class ScenarioMaker(object):
         else:
             logger.info("Interpolated routes created ")
 
-        scenario_types = self._get_scenario_types().keys()
-        constructed_scenario_dict = self._construct_scenario(interpolated_routes, scenario_types)
+        constructed_scenario_dict = self._construct_scenario(interpolated_routes)
 
         filename = self._args.filename
         if filename is None:

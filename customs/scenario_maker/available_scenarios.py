@@ -36,15 +36,17 @@ class AvailableScenarios(object):
         "Sunrise": TimeSunrise,
     }
 
-    OTHER_SCENARIOS = {
+    BACKGROUND_SCENARIOS = {
         # Spawning(s)
-        "SpawnAngkot": SpawnAngkot,
+        # "SpawnAngkot": SpawnAngkot,
         "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger,
-        "SpawnBike": SpawnBike,
+        # "SpawnBike": SpawnBike,
         "SpawnBikeOnTrigger": SpawnBikeOnTrigger,
-        "SpawnPedestrian": SpawnPedestrian,
+        # "SpawnPedestrian": SpawnPedestrian,
         "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
+    }
 
+    OTHER_SCENARIOS = {
         # Crossings(s)
         # "Scenario3": DynamicObjectCrossing,
         "PedestrianCrossing": PedestrianCrossing,
@@ -80,9 +82,14 @@ class AvailableScenarios(object):
         return cls.OTHER_SCENARIOS
 
     @classmethod
+    def get_background_scenarios(cls):
+        return cls.BACKGROUND_SCENARIOS
+
+    @classmethod
     def get_all_scenarios(cls):
         all_scenarios = dict()
         all_scenarios.update(cls.get_weather_scenarios())
         all_scenarios.update(cls.get_time_scenarios())
+        all_scenarios.update(cls.get_background_scenarios())
         all_scenarios.update(cls.get_other_scenarios())
         return all_scenarios
