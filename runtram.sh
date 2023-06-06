@@ -94,7 +94,7 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    -sm|--scenario-base-size)
+    -sbs|--scenario-base-size)
       scenario_base_size="$2"
       shift # past argument
       shift # past value
@@ -133,7 +133,7 @@ for (( i=1 ; i<=$repetition ; i++ )); do
     # SCENARIO MAKING
     if [ $random_scenario = true ]; then
       scenario_file="scenario_repetition_$i.json"
-      n_scenario_types=$(($scenario_base_size + $i));
+      n_scenario_types=$(($scenario_base_size - 1 + $i));
       (set -x; python3 $scenario_maker \
                     --route $tram_route_file $route_number \
                     --filename $scenario_file \
