@@ -152,6 +152,7 @@ class DynamicObjectCrossing(BasicScenario):
                  adversary_type=False, 
                  spawn_blocker: bool=True,
                  name: Union[str, None]=None,
+                 start_distance=12,
                  timeout=60):
         """
         Setup all relevant parameters and create scenario
@@ -168,6 +169,7 @@ class DynamicObjectCrossing(BasicScenario):
         self._adversary_type = adversary_type  # flag to select either pedestrian (False) or cyclist (True)
         self._walker_yaw = 0
         self._num_lane_changes = 1
+        self._start_distance = start_distance
         self.transform = None
         self.transform2 = None
         self.timeout = timeout
@@ -260,7 +262,7 @@ class DynamicObjectCrossing(BasicScenario):
         Custom initialization
         """
         # cyclist transform
-        _start_distance = 12
+        _start_distance = self._start_distance
         # We start by getting and waypoint in the closest sidewalk.
         waypoint = self._reference_waypoint
         while True:
@@ -331,7 +333,7 @@ class DynamicObjectCrossing(BasicScenario):
         lane_width = self._reference_waypoint.lane_width
         lane_width = lane_width + (1.25 * lane_width * self._num_lane_changes)
 
-        dist_to_trigger = 12 + self._num_lane_changes
+        dist_to_trigger = self._start_distance + self._num_lane_changes
         # leaf nodes
         if self._ego_route is not None:
             start_condition = InTriggerDistanceToLocationAlongRoute(self.ego_vehicles[0],

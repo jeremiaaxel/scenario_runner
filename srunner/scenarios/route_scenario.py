@@ -49,10 +49,6 @@ from srunner.scenarios.junction_crossing_route import SignalJunctionCrossingRout
 from customs.scenarios.spawn_angkot import SpawnAngkot, SpawnAngkotOnTrigger
 from customs.scenarios.spawn_bike import SpawnBike, SpawnBikeOnTrigger
 from customs.scenarios.spawn_pedestrian import SpawnPedestrian, SpawnPedestrianOnTrigger
-from customs.scenarios.pedestrian_crossing import (
-    PedestrianCrossing, PedestrianWalkCrossing,
-    CyclistCrossing, CyclistSlowCrossing
-)
 from customs.scenario_maker.available_scenarios import AvailableScenarios
 
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import (CollisionTest,
@@ -106,11 +102,11 @@ NUMBER_CLASS_TRANSLATION = {
     "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
 
     ## Special Scenario
-    "PedestrianCrossing": PedestrianCrossing,
-    "PedestrianWalkCrossing": PedestrianWalkCrossing,
+    # "PedestrianCrossing": PedestrianCrossing,
+    # "PedestrianWalkCrossing": PedestrianWalkCrossing,
     
-    "CyclistCrossing": CyclistCrossing,
-    "CyclistSlowCrossing": CyclistSlowCrossing,
+    # "CyclistCrossing": CyclistCrossing,
+    # "CyclistSlowCrossing": CyclistSlowCrossing,
 }
 
 NUMBER_CLASS_TRANSLATION = AvailableScenarios.get_all_scenarios()

@@ -12,6 +12,12 @@ from srunner.scenarios.object_crash_vehicle import DynamicObjectCrossing
 
 from customs.behaviors.horn_behavior import HornBehavior
 
+class PedestrianCyclistProps:
+    DISTANCE_FAR = 30
+    DISTANCE_CLOSE = 12
+    SPEED_NORMAL = 1.0
+    SPEED_SLOW = 0.7
+
 class PedestrianCyclistCrossing(DynamicObjectCrossing):
     """
     Base of pedestrian crossing scenario
@@ -19,6 +25,7 @@ class PedestrianCyclistCrossing(DynamicObjectCrossing):
     custom_name = None
     custom_speed = None
     adversary_type = False
+    _start_distance = 12
 
     def __init__(self, 
                  world, 
@@ -38,6 +45,7 @@ class PedestrianCyclistCrossing(DynamicObjectCrossing):
                          criteria_enable=criteria_enable, 
                          spawn_blocker=False,
                          adversary_type=self.adversary_type,
+                         start_distance=self._start_distance,
                          timeout=timeout)
     
 
@@ -101,18 +109,14 @@ class PedestrianCyclistCrossing(DynamicObjectCrossing):
         behavior = insert_horn_behavior(behavior)
         return behavior
 
-class PedestrianCrossing(PedestrianCyclistCrossing):
-    custom_name = "PedestrianCrossing"
-    adversary_type = False
 
-class PedestrianWalkCrossing(PedestrianCrossing):
-    custom_name = "PedestrianWalkCrossing"
-    custom_speed = 0.7
+def pedestrian_crossing_wrapper(cls: PedestrianCyclistCrossing, **kwargs):
+    class ModifiedClass(PedestrianCyclistCrossing):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
 
-class CyclistCrossing(PedestrianCyclistCrossing):
-    custom_name = "CyclistCrossing"
-    adversary_type = True
+    for key, value in kwargs.items():
+        setattr(ModifiedClass, key, value)
 
-class CyclistSlowCrossing(CyclistCrossing):
-    custom_name = "CyclistSlowCrossing"
-    custom_speed = 0.7
+    return ModifiedClass
+            
