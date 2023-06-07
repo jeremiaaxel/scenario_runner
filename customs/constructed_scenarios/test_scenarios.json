@@ -14,7 +14,7 @@
                             }
                         }
                     ],
-                    "scenario_type": "SpawnAngkotOnTrigger"
+                    "scenario_type": "CyclistSlowFarCrossing"
                 },
                 {
                     "available_event_configurations": [
@@ -28,7 +28,7 @@
                             }
                         }
                     ],
-                    "scenario_type": "HardRain"
+                    "scenario_type": "PedestrianSlowCloseCrossing"
                 },
                 {
                     "available_event_configurations": [
@@ -42,7 +42,7 @@
                             }
                         }
                     ],
-                    "scenario_type": "Night"
+                    "scenario_type": "CyclistFarCrossing"
                 },
                 {
                     "available_event_configurations": [
@@ -56,7 +56,7 @@
                             }
                         }
                     ],
-                    "scenario_type": "Clear"
+                    "scenario_type": "PedestrianFarCrossing"
                 }
             ]
         }

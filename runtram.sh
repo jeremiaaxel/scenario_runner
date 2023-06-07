@@ -9,9 +9,10 @@ scenario_runner="./scenario_runner.py"
 scenario_maker="./customs/scenario_maker/scenario_maker.py"
 
 declare -A defined_scenario_files
-defined_scenario_files[test]="./customs/routes/test_scenarios.json"
-defined_scenario_files[none]="./customs/routes/no_scenarios.json"
-defined_scenario_files[req]="./customs/routes/req_scenarios.json"
+defined_scenario_files[test]="./customs/constructed_scenarios/test_scenarios.json"
+defined_scenario_files[none]="./customs/constructed_scenarios/no_scenarios.json"
+defined_scenario_files[req]="./customs/constructed_scenarios/req_scenarios.json"
+defined_scenario_files[defined]="./customs/constructed_scenarios/defined_scenarios_<NUM>.json"
 
 declare -A defined_agent_files
 defined_agent_files[hils]="./customs/autoagents/hils_agent.py"
@@ -58,9 +59,11 @@ function standardizeScenarioMode() {
 
 function mapScenarioMode() {
   # Scenario Generation Mode
+  # Exact scenario
   if [[ -n ${defined_scenario_files[$scenario_mode]} ]]; then
     random_scenario=false
     scenario_file=${defined_scenario_files[$scenario_mode]};
+  # Random generation
   else
     echo "Scenario mode not found, using default (random)"
     random_scenario=true
@@ -140,6 +143,9 @@ for (( i=1 ; i<=$repetition ; i++ )); do
                     --number-of-scenario-types $n_scenario_types)
       scenario_file="customs/scenario_maker/out/$scenario_file"
     fi
+
+    # replace <NUM> with current repetition (for defined dynamic scenarios)
+    scenario_file="${scenario_file/<NUM>/$i}"
 
     # SCENARIO RUNNING
     echo "Runtram using $scenario_file scenario";
