@@ -20,13 +20,13 @@ import logging
 from customs.behaviors.horn_behavior import HornBehavior
 from customs.behaviors.toggle_walker_controller import ToggleWalkerController
 from customs.helpers.config import OUT_DIR
-from customs.helpers.blueprints import freeze_vehicles, get_actor_display_name, freeze_vehicle
+from customs.helpers.blueprints import freeze_vehicles, get_actor_display_name, hide_actors
 
 from srunner.scenarios.background_activity import BackgroundActivity
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import CollisionTest
-from srunner.scenariomanager.scenarioatomics.atomic_behaviors import ChangeAutoPilot, ActorTransformSetter, Idle, KeepLongitudinalGap, KeepVelocity, ActorDestroy, HandBrakeVehicle, StopVehicle
-from srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import DriveDistance, InTimeToArrivalToVehicle, InTriggerDistanceToLocationAlongRoute
+from srunner.scenariomanager.scenarioatomics.atomic_behaviors import ChangeAutoPilot, ActorTransformSetter, Idle, ActorDestroy, StopVehicle
+from srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import DriveDistance, InTriggerDistanceToLocationAlongRoute
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +54,7 @@ class SpawnActor(BackgroundActivity):
                  timeout=35 * 60, 
                  criteria_enable=False, 
                  model_names=['vehicle.*'], 
+                 model_exceptions=['vehicle.tram.tram'],
                  total_amount=50):
         """
         Setup all relevant parameters and create scenario
@@ -74,6 +75,7 @@ class SpawnActor(BackgroundActivity):
 
         self.randomize = randomize
         self.spawn_points = spawn_points
+        self.model_exceptions = model_exceptions
 
         self.ai_controllers = [] # automatically set on child class (Pedestrian)
 
@@ -110,7 +112,8 @@ class SpawnActor(BackgroundActivity):
                                                                     carla.Transform(),
                                                                     autopilot=True,
                                                                     random_location=True,
-                                                                    rolename='background')
+                                                                    rolename='background',
+                                                                    model_exceptions=self.model_exceptions)
 
             if new_actors is None:
                 raise Exception("Error: Unable to add the background activity, all spawn points were occupied")
@@ -304,18 +307,7 @@ class SpawnActorOnTrigger(SpawnActor):
                          model_names=model_names, 
                          total_amount=total_amount)
 
-    def _put_other_actors_under(self):
-        for other_actor in self.other_actors:
-            location = other_actor.get_location()
-            uground_location = carla.Location(location.x,
-                                              location.y,
-                                              location.z - self.underground_z)
-            other_actor.set_location(uground_location)
-            other_actor.set_simulate_physics(enabled=False)
-
-            if isinstance(other_actor, carla.Vehicle):
-                freeze_vehicle(other_actor)
-
+    
     def _move_actors_in_trigger_location(self):
         def new_transform_in_same_lane(transform, trigger_location):
             movement_distance = 20
@@ -363,7 +355,7 @@ class SpawnActorOnTrigger(SpawnActor):
     def _post_initialize_actors(self, config):
         self._move_actors_in_trigger_location()
         # put all actors underground
-        self._put_other_actors_under()
+        hide_actors(self.other_actors, underground_z=self.underground_z, freeze=True)
 
 
 class SpawnActorInFront(SpawnActor):

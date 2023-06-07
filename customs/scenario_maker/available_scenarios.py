@@ -3,7 +3,7 @@ from customs.scenarios.obstructing_actor import (
     ObstructingPedestrianHorn, ObstructingPedestrianTimer
 )
 from customs.scenarios.pedestrian_crossing import CyclistCrossing, CyclistSlowCrossing, PedestrianCrossing, PedestrianWalkCrossing
-from customs.scenarios.spawn_actor import SpawnActorInFront
+from customs.scenarios.spawn_actor import SpawnActorInFront, SpawnActorOnTrigger
 from customs.scenarios.spawn_angkot import SpawnAngkot, SpawnAngkotOnTrigger
 from customs.scenarios.spawn_bike import SpawnBike, SpawnBikeOnTrigger
 from customs.scenarios.spawn_pedestrian import SpawnPedestrian, SpawnPedestrianInFront, SpawnPedestrianOnTrigger
@@ -38,6 +38,7 @@ class AvailableScenarios(object):
 
     BACKGROUND_SCENARIOS = {
         # Spawning(s)
+        "SpawnActorOnTrigger": SpawnActorOnTrigger,
         # "SpawnAngkot": SpawnAngkot,
         "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger,
         # "SpawnBike": SpawnBike,
@@ -62,9 +63,9 @@ class AvailableScenarios(object):
         # TODO: Fix obstructing pedestrian
         "ObstructingPedestrianHorn": ObstructingPedestrianHorn,
         "ObstructingPedestrianTimer": ObstructingPedestrianTimer,
-        # For testing
-        "SpawnPedestrianInFront": SpawnPedestrianInFront,
-        "SpawnActorInFront": SpawnActorInFront,
+        # # For testing
+        # "SpawnPedestrianInFront": SpawnPedestrianInFront,
+        # "SpawnActorInFront": SpawnActorInFront,
 
         "CutInRoute": CutInRoute
     }
