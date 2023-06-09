@@ -104,7 +104,7 @@ class WeatherClear(WeatherBasicRoute):
         'fog_falloff': 0.2,
         'wetness': 0.0,
         'scattering_intensity': 0.0,
-        'mie_scattering_scale': 0.0331,
+        'mie_scattering_scale': 0.331,
     }
 
 class WeatherOvercast(WeatherBasicRoute):
@@ -118,7 +118,7 @@ class WeatherOvercast(WeatherBasicRoute):
         'fog_falloff': 0.1,
         'wetness': 10.0,
         'scattering_intensity': 0.0,
-        'mie_scattering_scale': 0.0331,
+        'mie_scattering_scale': 0.331,
     }
 
 class WeatherHardRain(WeatherBasicRoute):
@@ -132,7 +132,7 @@ class WeatherHardRain(WeatherBasicRoute):
         'fog_falloff': 0.1,
         'wetness': 100.0,
         'scattering_intensity': 0.0,
-        'mie_scattering_scale': 0.0331,
+        'mie_scattering_scale': 0.331,
     }
 
 class WeatherFoggy(WeatherBasicRoute):
@@ -141,18 +141,18 @@ class WeatherFoggy(WeatherBasicRoute):
         'fog_distance': 10.0,
         'fog_falloff': 3.5,
         'wetness': 60.0,
-        'scattering_intensity': 0.0,
-        'mie_scattering_scale': 0.3,
+        'scattering_intensity': 0.5,
+        'mie_scattering_scale': 1.0,
     }
 
 class WeatherLightFoggy(WeatherBasicRoute):
     weather_config = {
         'fog_density': 10.0,
-        'fog_distance': 0.3,
+        'fog_distance': 50.0,
         'fog_falloff': 3.5,
         'wetness': 60.0,
-        'scattering_intensity': 0.0,
-        'mie_scattering_scale': 0.3,
+        'scattering_intensity': 0.2,
+        'mie_scattering_scale': 1.0,
     }
 
 
