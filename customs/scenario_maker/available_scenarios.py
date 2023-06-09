@@ -8,13 +8,14 @@ from customs.scenarios.spawn_angkot import SpawnAngkot, SpawnAngkotOnTrigger
 from customs.scenarios.spawn_bike import SpawnBike, SpawnBikeOnTrigger
 from customs.scenarios.spawn_pedestrian import SpawnPedestrian, SpawnPedestrianInFront, SpawnPedestrianOnTrigger
 from customs.scenarios.time import TimeDay, TimeNight, TimeSunrise
-from customs.scenarios.weather import (
-    WeatherClear, WeatherHardRain, WeatherOvercast,
-    # Presets
-    WeatherClearSunsetRoute, WeatherWetNoonRoute, 
-    WeatherHardRainNightRoute, WeatherRainyDayRoute, 
-    WeatherMidRainyNoonRoute
-)
+from customs.scenarios.weather import get_weather_scenario
+# (
+#     WeatherClear, WeatherHardRain, WeatherOvercast,
+#     # Presets
+#     WeatherClearSunsetRoute, WeatherWetNoonRoute, 
+#     WeatherHardRainNightRoute, WeatherRainyDayRoute, 
+#     WeatherMidRainyNoonRoute
+# )
 from customs.scenarios.cut_in import CutInRoute
 
 class AvailableScenarios(object): 
@@ -25,9 +26,11 @@ class AvailableScenarios(object):
         # "ClearSunset": WeatherClearSunsetRoute,
         # "WeatherRainyDay": WeatherRainyDayRoute,
         
-        "Clear": WeatherClear,
-        "HardRain": WeatherHardRain,
-        "Overcast": WeatherOvercast
+        "Clear": get_weather_scenario('clear'),
+        "HardRain": get_weather_scenario('hardrain'),
+        "Overcast": get_weather_scenario('overcast'),
+        "Foggy": get_weather_scenario('foggy'),
+        "LightFoggy": get_weather_scenario('lightfoggy')
     }
 
     TIME_SCENARIOS = {

@@ -104,7 +104,6 @@ class WeatherClear(WeatherBasicRoute):
         'fog_falloff': 0.2,
         'wetness': 0.0,
         'scattering_intensity': 0.0,
-        'mie_scattering_scale': 0.0,
         'mie_scattering_scale': 0.0331,
     }
 
@@ -119,7 +118,6 @@ class WeatherOvercast(WeatherBasicRoute):
         'fog_falloff': 0.1,
         'wetness': 10.0,
         'scattering_intensity': 0.0,
-        'mie_scattering_scale': 0.3,
         'mie_scattering_scale': 0.0331,
     }
 
@@ -134,10 +132,39 @@ class WeatherHardRain(WeatherBasicRoute):
         'fog_falloff': 0.1,
         'wetness': 100.0,
         'scattering_intensity': 0.0,
-        'mie_scattering_scale': 0.3,
         'mie_scattering_scale': 0.0331,
     }
 
+class WeatherFoggy(WeatherBasicRoute):
+    weather_config = {
+        'fog_density': 30.0,
+        'fog_distance': 10.0,
+        'fog_falloff': 3.5,
+        'wetness': 60.0,
+        'scattering_intensity': 0.0,
+        'mie_scattering_scale': 0.3,
+    }
+
+class WeatherLightFoggy(WeatherBasicRoute):
+    weather_config = {
+        'fog_density': 10.0,
+        'fog_distance': 0.3,
+        'fog_falloff': 3.5,
+        'wetness': 60.0,
+        'scattering_intensity': 0.0,
+        'mie_scattering_scale': 0.3,
+    }
+
+
+def get_weather_scenario(key: str) -> WeatherBasicRoute:
+    custom_weathers = {
+        'hardrain': WeatherHardRain,
+        'overcast': WeatherOvercast,
+        'clear': WeatherClear,
+        'foggy': WeatherFoggy,
+        'lightfoggy': WeatherLightFoggy
+    }
+    return custom_weathers.get(key, None)
 
 ## ---------- PRESETS --------- ##
 class WeatherClearSunsetRoute(WeatherBasicRoute):
