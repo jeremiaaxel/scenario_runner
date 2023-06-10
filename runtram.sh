@@ -1,5 +1,21 @@
 #!/bin/bash
 
+: '
+Bash script to run the tram testing simulation.
+! Make sure the CARLA server is up and running.
+'
+
+display_help() {
+  echo "Bash script to run the tram testing simulation" >&2
+  echo
+  echo "  --help, -h                  print this help message"
+  echo "  --agent-mode, -am           which agent controls the tram. (\"human\", \"sils\", \"hils\" [default])"
+  echo "  --scenario-mode, -sm        which scenario to use. (\"none\", \"noscenario\", \"test\", \"req\", \"request\", \"random\" [default])"
+  echo "  --repetition, -r            how much repetition. default: 1"
+  echo "  --route-number, -rn         which route number to use (\"1\" [default], \"2\")"
+  echo "  --scenario-base-size, -sbs  how much number of subscenario to generate scenario. Has to be used with \"random\" scenario mode. default: 0"
+}
+
 # CONFIGURATIONS - START
 tram_route_file="./customs/routes/tram_routes.xml"
 
@@ -8,15 +24,23 @@ agent_config_file="./customs/autoagents/configs/human_tram.json"
 scenario_runner="./scenario_runner.py"
 scenario_maker="./customs/scenario_maker/scenario_maker.py"
 
+# randomized generated scenario (default)
 declare -A defined_scenario_files
+# "test"
 defined_scenario_files[test]="./customs/constructed_scenarios/test_scenarios.json"
+# "none" | "noscenario"
 defined_scenario_files[none]="./customs/constructed_scenarios/no_scenarios.json"
+# "req" | "request"
 defined_scenario_files[req]="./customs/constructed_scenarios/req_scenarios.json"
+# "defined"
 defined_scenario_files[defined]="./customs/constructed_scenarios/defined_scenarios_<NUM>.json"
 
 declare -A defined_agent_files
+# "hils" (default) 
 defined_agent_files[hils]="./customs/autoagents/hils_agent.py"
+# "sils"
 defined_agent_files[sils]="./customs/autoagents/sils_agent.py"
+# "human"
 defined_agent_files[human]="./customs/autoagents/human_tram_agent.py"
 # CONFIGURATIONS - END
 
@@ -31,6 +55,7 @@ scenario_file=""
 repetition="1"
 route_number="1"
 scenario_base_size="0"
+is_help=false
 # DEFAULT ARGUMENTS - END
 
 # FUNCTIONS - START
@@ -102,6 +127,10 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -h|--help)
+      is_help=true
+      shift
+      ;;
     # -*|--*)
     #   echo "Unknown option $1"
     #   exit 1
@@ -120,6 +149,11 @@ mapAgentMode
 # map scenario mode to scenario file/generation
 standardizeScenarioMode
 mapScenarioMode
+
+if [ $is_help = true ]; then
+  display_help
+  exit 0
+fi
 
 # print summary
 echo "Agent used: $agent_file"
