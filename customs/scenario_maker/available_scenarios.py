@@ -27,10 +27,11 @@ class AvailableScenarios(object):
         # "WeatherRainyDay": WeatherRainyDayRoute,
         
         "Clear": get_weather_scenario('clear'),
+        "Rain": get_weather_scenario('rain'),
         "HardRain": get_weather_scenario('hardrain'),
         "Overcast": get_weather_scenario('overcast'),
         "Foggy": get_weather_scenario('foggy'),
-        "LightFoggy": get_weather_scenario('lightfoggy')
+        "LightFoggy": get_weather_scenario('lightfoggy'),
     }
 
     TIME_SCENARIOS = {
