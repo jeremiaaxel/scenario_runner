@@ -46,7 +46,7 @@ class HumanInterface(object):
         def array_to_string(arr):
             result = f""
             for idx, item in enumerate(arr):
-                result += f"{item:2f}"
+                result += f"{item:>5.2f}"
                 if idx != len(arr) - 1:
                     result += f","
             return result
@@ -77,7 +77,7 @@ class HumanInterface(object):
             f'{"Compass:":<10} {compass:.2f}\N{DEGREE SIGN} {heading}',
             f'{"Accelero:":<10} {array_to_string(accelerometer)}',
             f'{"Gyroscop:":<10} {array_to_string(gyroscope)}',
-            f'{"GNSS:":<10} {lat:.2f} {lon:.2f}',
+            f'{"GNSS:":<10} {lat:5>.2f} {lon:>5.2f}',
             '',
             f'{"Is horn:":<10} {other_data.get("is_horn", False)}',
             '']
