@@ -59,7 +59,8 @@ from srunner.scenariomanager.scenarioatomics.atomic_criteria import (CollisionTe
                                                                      RunningStopTest,
                                                                      ActorSpeedAboveThresholdTest)
 
-SECONDS_GIVEN_PER_METERS = 0.4
+# SECONDS_GIVEN_PER_METERS = 0.4
+SECONDS_GIVEN_PER_METERS = 2.5
 
 NUMBER_CLASS_TRANSLATION = {
     # "Scenario1": ControlLoss,
