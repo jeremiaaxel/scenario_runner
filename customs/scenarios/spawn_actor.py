@@ -38,6 +38,8 @@ class SpawnActor(BackgroundActivity):
     _horn_distance = 20
     _time_to_reach = 1
 
+    autopilot_vehicles_distance = 75.0 # dm instead of m lol
+
     underground_z = 500
     _other_actor_target_velocity = 5
     _ego_vehicle_distance_driven = -1 # set value <= 0 to make the scenario endless
@@ -76,6 +78,8 @@ class SpawnActor(BackgroundActivity):
         self.randomize = randomize
         self.spawn_points = spawn_points
         self.model_exceptions = model_exceptions
+        self._tm = CarlaDataProvider.get_client().get_trafficmanager(
+                    CarlaDataProvider.get_traffic_manager_port())
 
         self.ai_controllers = [] # automatically set on child class (Pedestrian)
 
@@ -101,6 +105,8 @@ class SpawnActor(BackgroundActivity):
         logger.debug_s(f"Initializing actor: {self.model_names}")
         total_amount = self.total_amount
         amount_round_down = total_amount // len(self.model_names)
+
+        self._tm.set_global_distance_to_leading_vehicle(self.autopilot_vehicles_distance)
 
         for idx, model_name in enumerate(self.model_names):
             amount = total_amount if idx == len(self.model_names) - 1 else amount_round_down
