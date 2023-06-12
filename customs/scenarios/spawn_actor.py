@@ -41,7 +41,7 @@ class SpawnActor(BackgroundActivity):
     underground_z = 500
     _other_actor_target_velocity = 5
     _ego_vehicle_distance_driven = -1 # set value <= 0 to make the scenario endless
-    do_print = False
+    do_print = True
     _ego_route = None
 
     def __init__(self, 
@@ -196,20 +196,20 @@ class SpawnActor(BackgroundActivity):
                 other_actors_ai_controller_on.append(other_actor_ai_controller_on)
 
         # non leaf nodes
-        other_actors_transform_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
-                                                               name="Other actors transform")
-        other_actors_stop_on_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
-                                                               name="Other actors stop on")
-        other_actors_stop_off_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
-                                                               name="Other actors stop off")
-        other_actors_autopilot_on_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
-                                                               name="Other actors autopilot")
-        other_actors_ai_controller_on_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
-                                                               name="Other actors ai_controller")
-        other_actors_behavior_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL,
-                                                                name="Other actors behavior")
-        other_actors_remove_parallel = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL,
-                                                                name="Other actors remove")
+        other_actors_transform_parallel = Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
+                                                name="Other actors transform")
+        other_actors_stop_on_parallel = Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
+                                                name="Other actors stop on")
+        other_actors_stop_off_parallel = Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
+                                                name="Other actors stop off")
+        other_actors_autopilot_on_parallel = Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
+                                                name="Other actors autopilot")
+        other_actors_ai_controller_on_parallel = Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL, 
+                                                name="Other actors ai_controller")
+        other_actors_behavior_parallel = Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL,
+                                                name="Other actors behavior")
+        other_actors_remove_parallel = Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL,
+                                                name="Other actors remove")
         
         other_actors_transform_parallel.add_children(other_actors_transform)
         other_actors_stop_on_parallel.add_children(other_actors_stop_on)
@@ -294,7 +294,7 @@ class SpawnActorOnTrigger(SpawnActor):
                  timeout=35 * 60, 
                  criteria_enable=False, 
                  model_names=['vehicle.*'], 
-                 total_amount=50):
+                 total_amount=200):
         self._ego_route = CarlaDataProvider.get_ego_vehicle_route()
         super().__init__(world, 
                          ego_vehicles, 

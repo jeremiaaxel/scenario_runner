@@ -1,12 +1,16 @@
+from dataclasses import dataclass
 import os
 import sys
 import json
+from typing import Dict, List, Literal
 import carla
 import random
 import logging
 
 from datetime import datetime
 from argparse import ArgumentParser
+
+from srunner.scenarios.basic_scenario import BasicScenario
 
 sys.path.append(os.getcwd())
 from customs.scenario_maker.available_scenarios import AvailableScenarios
@@ -22,17 +26,31 @@ fullfilename = os.path.join(OUT_DIR, "scenario_maker.log")
 logging.basicConfig(filename=fullfilename, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class ScenarioMaker(object):
+MAP_NAME = "Town10HD_Opt"
+
+@dataclass
+class ScenarioItem(object):
+    x: float
+    y: float
+    z: float
+    pitch: float
+    yaw: float
+    scenario_type: str
+    
+
+class  ScenarioMaker(object):
     """
     Make scenario file in a route
     """
-    def __init__(self, args) -> None:
+    def __init__(self, map_name, args) -> None:
+        self._map_name = map_name
         self._args = args
         self._client = carla.Client(args.host, int(args.port))
         if args.timeout:
             self.client_timeout = float(args.timeout)
         self._client.set_timeout(self.client_timeout)
         self._world = self._client.get_world()
+        self._selected_scenarios = dict()
 
     def _get_route_interpolated(self) -> list:
         if not self._args.route:
@@ -62,69 +80,89 @@ class ScenarioMaker(object):
         return interpolated_routes
 
     @staticmethod
-    def __select_init_scenarios():
+    def __select_init_scenarios(background_selection_method = "random"):
+        """
+        Selects the initialization scenarios from BACKGROUND_SCENARIOS in available_scenarios.
+        """
+        def select_from_options(options: Dict[str, BasicScenario], selection_method: Literal['all', 'random', 'none']='all', randsize: int = 1):
+            """
+            param:
+                selection_method: the method used for selection: all, random, none
+                randsize: the size of random. Must be used with random selection method
+            """
+            if selection_method == "none":
+                return []
+            if selection_method == "random":
+                if randsize > len(options.keys()):
+                    print(f"Random size {randsize} is bigger the available options {len(options.keys())}.")
+                    print("Using options size instead.")
+                    randsize = len(options.keys())
+                return random.sample(options.keys(), randsize)
+            return options
+                
         weather_scenarios = AvailableScenarios.get_weather_scenarios()
         time_scenarios = AvailableScenarios.get_time_scenarios()
         background_scenarios = AvailableScenarios.get_background_scenarios()
 
         init_scenarios = []
-        init_scenarios.extend(random.sample(time_scenarios.keys(), 1))
-        init_scenarios.extend(random.sample(background_scenarios.keys(), 1))
-        init_scenarios.extend(random.sample(weather_scenarios.keys(), 1))
+        init_scenarios.extend(select_from_options(time_scenarios, "random", 1))
+        init_scenarios.extend(select_from_options(weather_scenarios, "random", 1))
+        init_scenarios.extend(select_from_options(background_scenarios, background_selection_method))
         return init_scenarios
     
     @staticmethod
-    def __select_main_scenarios(number_of_scenarios: int):
+    def __select_main_scenarios(number_of_scenarios: int, avoid_used=True, used_scenarios_key=[]):
         all_scenarios = AvailableScenarios.get_all_scenarios()
+
+        if avoid_used:
+            logger.info(f"All scenarios keys BEFORE filter: {all_scenarios.keys()}")
+            all_scenarios = {k: v for k, v in all_scenarios.items() if k not in used_scenarios_key}
+            logger.info(f"Used scenarios keys: {used_scenarios_key}")
+            logger.info(f"All scenarios keys AFTER filter: {all_scenarios.keys()}")
+
         selected_scenarios = random.sample(all_scenarios.keys(), number_of_scenarios)
         random.shuffle(selected_scenarios)
         return selected_scenarios
-
     
-    def _construct_scenario(self, interpolated_routes: list) -> dict:
+    def __scenarios_selection(self, interpolated_routes) -> Dict[int, List[ScenarioItem]]:
         """
-        Function to construct a route scenario for each single scenario(s).
         There are 2 groups of scenario:
          1. Init scenario defines the starting condition of the simulation. 
             Init scenarios contains weather scenario, time scenario, and background scenario.
          2. Main scenario defines the scenarios during the simulation.
             Main scenario may contains all type of scenarios.
         """
+        this_map_scenarios: Dict[int, List[ScenarioItem]] = dict()
 
-        this_map = "Town10HD_Opt"
-        this_map_scenario = []
-
-        for route in interpolated_routes:
+        # scenario selections
+        for route_idx, route in enumerate(interpolated_routes):
+            this_route_scenarios: List[ScenarioItem] = []
 
             # append init scenarios to the dictionary
-            init_scenarios = self.__select_init_scenarios()
-            init_idx = 3
+            init_scenarios = self.__select_init_scenarios(background_selection_method=self._args.background_selection_method)
+            wp_idx = 3
             for _, scenario_type in enumerate(init_scenarios):
-                init_idx += 2
-                wp_transform, _ = route[init_idx]
-                this_map_scenario.append({ 
-                    "available_event_configurations": [
-                        {
-                            "transform": {
-                                "pitch": str(wp_transform.rotation.pitch),
-                                "yaw": str(wp_transform.rotation.yaw),
-                                "x": str(wp_transform.location.x),
-                                "y": str(wp_transform.location.y),
-                                "z": str(wp_transform.location.z)
-                            }
-                        }
-                    ],
-                    "scenario_type": str(scenario_type)
-                })
-
+                wp_idx += 2
+                wp_transform, _ = route[wp_idx]
+                this_route_scenarios.append(
+                    ScenarioItem(x=wp_transform.location.x,
+                                 y=wp_transform.location.y,
+                                 z=wp_transform.location.z,
+                                 pitch=wp_transform.rotation.pitch,
+                                 yaw=wp_transform.rotation.yaw,
+                                 scenario_type=str(scenario_type)))
+                
+            used_scenarios_key = [scenario_item.scenario_type for scenario_item in this_route_scenarios]
 
             # append main scenarios to the dictionary
-            selected_scenarios = self.__select_main_scenarios(self._args.number_of_scenario_types)
+            selected_scenarios = self.__select_main_scenarios(self._args.number_of_scenario_types, 
+                                                              avoid_used=True, 
+                                                              used_scenarios_key=used_scenarios_key)
             n_points = len(route)
             n_chunks = 0
             if len(selected_scenarios) > 0:
                 n_chunks = n_points // len(selected_scenarios)
-            curr_chunk = (init_idx+2, n_chunks)
+            curr_chunk = (wp_idx+2, n_chunks)
             for scenario_type in selected_scenarios:
                 idx = random.randrange(curr_chunk[0], curr_chunk[1])
                 wp_transform, _ = route[idx]
@@ -132,27 +170,50 @@ class ScenarioMaker(object):
                 if scenario_type is None:
                     continue
 
-                this_map_scenario.append({ 
+                this_route_scenarios.append(
+                    ScenarioItem(x=wp_transform.location.x,
+                                 y=wp_transform.location.y,
+                                 z=wp_transform.location.z,
+                                 pitch=wp_transform.rotation.pitch,
+                                 yaw=wp_transform.rotation.yaw,
+                                 scenario_type=str(scenario_type)))
+
+                curr_chunk = (n_chunks, n_chunks + n_chunks)
+
+            this_map_scenarios[route_idx] = this_route_scenarios
+
+        return this_map_scenarios
+
+    
+    def _construct_scenario(self, interpolated_routes: list) -> dict:
+        """
+        Function to construct a route scenario for each single scenario(s).
+        """
+
+        map_scenarios = self.__scenarios_selection(interpolated_routes)
+        map_scenarios_json = []
+
+        for _, route_scenarios in map_scenarios.items():
+            for route_scenario in route_scenarios:
+                map_scenarios_json.append({
                     "available_event_configurations": [
                         {
                             "transform": {
-                                "pitch": str(wp_transform.rotation.pitch),
-                                "yaw": str(wp_transform.rotation.yaw),
-                                "x": str(wp_transform.location.x),
-                                "y": str(wp_transform.location.y),
-                                "z": str(wp_transform.location.z)
+                                "pitch": str(route_scenario.pitch),
+                                "yaw": str(route_scenario.yaw),
+                                "x": str(route_scenario.x),
+                                "y": str(route_scenario.y),
+                                "z": str(route_scenario.z)
                             }
                         }
                     ],
-                    "scenario_type": str(scenario_type)
+                    "scenario_type": str(route_scenario.scenario_type)
                 })
-
-                curr_chunk = (n_chunks, n_chunks + n_chunks)
 
         scenario = { 
             "available_scenarios": [
                 {
-                    this_map: this_map_scenario
+                    self._map_name: map_scenarios_json
                 }
             ] 
         }
@@ -189,26 +250,48 @@ class ScenarioMaker(object):
         return result
             
 
+def background_selection_mapper(no_init, is_all):
+    if no_init:
+        return "none"
+    return "all" if is_all else "random"
+
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument('--host', default='127.0.0.1',
+    parser.add_argument('--host', 
+                        default='127.0.0.1',
                         help='IP of the host server (default: localhost)')
-    parser.add_argument('--port', default='2000',
+    parser.add_argument('--port', 
+                        default='2000',
                         help='TCP port to listen to (default: 2000)')
-    parser.add_argument('--timeout', default="10.0",
+    parser.add_argument('--timeout', 
+                        default="10.0",
                         help='Set the CARLA client timeout value in seconds')
-    parser.add_argument('--sync', action='store_true',
+    parser.add_argument('--sync', 
+                        action='store_true',
                         help='Forces the simulation to run synchronously')
+    parser.add_argument('--no-init', 
+                        action='store_true',
+                        help='Disables initialization scenarios (no scenarios run on earliest waypoints)')
+    parser.add_argument('--background-all', 
+                        action='store_true',
+                        help='Uses all available background scenarios on init')
     parser.add_argument('--route', 
-                        help='Run a route as a scenario (input: (route_file,scenario_file,[route id]))', nargs='+', type=str)
+                        help='Run a route as a scenario (input: (route_file,route id))', 
+                        nargs='+',
+                        type=str)
     parser.add_argument('--filename',
-                        help="Result scenario filename", default=None)
+                        help="Result scenario filename", 
+                        default=None)
     parser.add_argument('--outdir',
-                        help="Result scenario filename (default to the same directory as this file)", default=None)
-    parser.add_argument('--number-of-scenario-types', default=5, type=int,
+                        help="Result scenario filename (default to the same directory as this file)", 
+                        default=None)
+    parser.add_argument('--number-of-scenario-types', 
+                        default=5, 
+                        type=int,
                         help='Number of scenario types going to be implemented in a single route scenario')
     
     arguments = parser.parse_args()
-    scenario_maker = ScenarioMaker(arguments)
+    arguments.background_selection_method = background_selection_mapper(arguments.no_init, arguments.background_all)
+    scenario_maker = ScenarioMaker(MAP_NAME, arguments)
     scenario_maker.generate_scenario()
     

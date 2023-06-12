@@ -12,12 +12,12 @@ from typing import List
 import carla
 
 import logging
-from customs.helpers.blueprints import freeze_pedestrian, freeze_pedestrians, generate_walker_spawn_points, get_actor_blueprints
+from customs.helpers.blueprints import freeze_pedestrians, generate_walker_spawn_points, get_actor_blueprints
 from customs.scenarios.spawn_actor import SpawnActor, SpawnActorOnTrigger
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
 logger = logging.getLogger(__name__)
-total_amount = 100
+total_amount = 200
 pedestrian_modelnames = ["walker.*"]
 pedestrian_ai_controller = ["controller.ai.walker"]
 carlaSpawnActor = carla.command.SpawnActor

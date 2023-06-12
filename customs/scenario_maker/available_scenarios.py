@@ -37,7 +37,7 @@ class AvailableScenarios(object):
     TIME_SCENARIOS = {
         "Night": TimeNight,
         "Day": TimeDay,
-        "Sunrise": TimeSunrise,
+        # "Sunrise": TimeSunrise, # tmpcmt: for video avoid too dark
     }
 
     BACKGROUND_SCENARIOS = {

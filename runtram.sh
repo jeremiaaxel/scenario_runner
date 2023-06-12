@@ -174,7 +174,8 @@ for (( i=1 ; i<=$repetition ; i++ )); do
       (set -x; python3 $scenario_maker \
                     --route $tram_route_file $route_number \
                     --filename $scenario_file \
-                    --number-of-scenario-types $n_scenario_types)
+                    --number-of-scenario-types $n_scenario_types \
+                    --background-all)
       scenario_file="customs/scenario_maker/out/$scenario_file"
     fi
 

@@ -97,7 +97,7 @@ class HumanInterface(object):
         actors = CarlaDataProvider.get_actors()
         distance = lambda l: math.sqrt((l.x - t.location.x)**2 + (l.y - t.location.y)**2 + (l.z - t.location.z)**2)
         actors = [(id, actor) for id, actor in actors if actor.type_id not in actors_exception]
-        vehicles = [(distance(actor.get_location()), actor) for id, actor in actors if id != self.ego_vehicle.id]
+        vehicles = [(distance(actor.get_location()), actor) for id, actor in actors if actor is not None and id != self.ego_vehicle.id]
         for d, vehicle in sorted(vehicles, key=lambda vehicles: vehicles[0]):
             if d > 200.0:
                 break

@@ -7,14 +7,70 @@
                         {
                             "transform": {
                                 "pitch": "0",
-                                "x": "50.2",
+                                "x": "70.00",
+                                "y": "-63.83",
+                                "yaw": "180.0",
+                                "z": "0.0"
+                            }
+                        }
+                    ],
+                    "scenario_type": "SpawnPedestrianOnTrigger"
+                },
+                {
+                    "available_event_configurations": [
+                        {
+                            "transform": {
+                                "pitch": "0",
+                                "x": "48.40",
+                                "y": "-63.83",
+                                "yaw": "180.0",
+                                "z": "0.0"
+                            }
+                        }
+                    ],
+                    "scenario_type": "SpawnActorOnTrigger"
+                },
+                {
+                    "available_event_configurations": [
+                        {
+                            "transform": {
+                                "pitch": "0",
+                                "x": "30.2",
                                 "y": "-63.8",
                                 "yaw": "180.0",
                                 "z": "0.0"
                             }
                         }
                     ],
-                    "scenario_type": "Day"
+                    "scenario_type": "Rain"
+                },
+                {
+                    "available_event_configurations": [
+                        {
+                            "transform": {
+                                "pitch": "0",
+                                "x": "0.2",
+                                "y": "-63.8",
+                                "yaw": "180.0",
+                                "z": "0.0"
+                            }
+                        }
+                    ],
+                    "scenario_type": "LightFoggy"
+                },
+                {
+                    "available_event_configurations": [
+                        {
+                            "transform": {
+                                "pitch": "0",
+                                "x": "-22.2",
+                                "y": "-63.8",
+                                "yaw": "180.0",
+                                "z": "0.0"
+                            }
+                        }
+                    ],
+                    "scenario_type": "Sunrise"
                 }
             ]
         }

@@ -63,7 +63,7 @@ class HornBehavior(py_trees.composites.Parallel):
           vehicle: stop on, autopilot off
           walker: stop on
         """
-        in_horn_behavior = py_trees.composites.Sequence()
+        in_horn_behavior = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL)
         in_horn_behavior.add_child(StopVehicle(self._actor, 1, name=f"Stop on {self._actor.id}"))
         if isinstance(self._actor, carla.Vehicle):
             in_horn_behavior.add_child(ChangeAutoPilot(self._actor, False, name=f"Autopilot off {self._actor.id}"))
@@ -78,7 +78,7 @@ class HornBehavior(py_trees.composites.Parallel):
           walker:stop off
         """
         # this is automatically success, so change to running so that in horn can prevail if it is true (success)
-        out_horn_behavior = py_trees.composites.Sequence()
+        out_horn_behavior = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL)
         out_horn_behavior.add_child(StopVehicle(self._actor, 0, name=f"Stop off {self._actor.id}"))
         if isinstance(self._actor, carla.Vehicle):
             out_horn_behavior.add_child(ChangeAutoPilot(self._actor, True, name=f"Autopilot on {self._actor.id}"))
