@@ -1,0 +1,22 @@
+{
+    "available_scenarios": [
+        {
+            "Town10HD_Opt": [
+                {
+                    "available_event_configurations": [
+                        {
+                            "transform": {
+                                "pitch": "0",
+                                "x": "60.00",
+                                "y": "-63.83",
+                                "yaw": "180.0",
+                                "z": "0.0"
+                            }
+                        }
+                    ],
+                    "scenario_type": "Regression"
+                }
+            ]
+        }
+    ]
+}
