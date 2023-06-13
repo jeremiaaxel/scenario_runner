@@ -2,7 +2,7 @@ import logging
 import py_trees
 import carla
 from customs.behaviors.accelerate_to_catch_up_follow_waypoint import AccelerateToCatchUpFollowWaypoint
-from customs.helpers.blueprints import freeze_vehicle
+from customs.helpers.blueprints import freeze_vehicle, wp_to_underground_transform
 
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenarioatomics.atomic_behaviors import ActorTransformSetter, LaneChange, WaypointFollower
@@ -80,35 +80,44 @@ class CutInRoute(CutIn):
                 wp_spawn_straight = wp_spawn_straight[-1]
             logger.debug_s(f"Straight's spawning waypoint: {wp_spawn_straight}")
 
-        # spawn cutter and straight vehicle(s)
-        cutter_transform = carla.Transform(
-            carla.Location(wp_spawn_cutter.transform.location.x,
-                           wp_spawn_cutter.transform.location.y,
-                           wp_spawn_cutter.transform.location.z - self.offset.get("underground")),
-            wp_spawn_cutter.transform.rotation)
-        self._transforms_visible.append(wp_spawn_cutter.transform)
-
-        if self._spawn_straight_other:
-            straight_transform = carla.Transform(
-                carla.Location(wp_spawn_straight.transform.location.x,
-                            wp_spawn_straight.transform.location.y,
-                            wp_spawn_straight.transform.location.z - self.offset.get("underground")),
-                wp_spawn_straight.transform.rotation)
-            self._transforms_visible.append(wp_spawn_straight.transform)
-
+        # spawn cutter
+        # avoid other vehicle(s)
+        MAX_ATTEMPT = 10
+        PREV_DISTANCE = 2
+        attempt = 1
+        cutter_transform = wp_to_underground_transform(wp_spawn_cutter, self.offset.get('underground', 500))
         cutter_vehicle = CarlaDataProvider.request_new_actor(cutter_model_name, cutter_transform)
+        while cutter_vehicle is None and attempt < MAX_ATTEMPT:
+            wp_spawn_cutter = wp_spawn_cutter.previous(PREV_DISTANCE)[-1]
+            cutter_transform = wp_to_underground_transform(wp_spawn_cutter, self.offset.get('underground', 500))
+            cutter_vehicle = CarlaDataProvider.request_new_actor(cutter_model_name, cutter_transform)
+
         if cutter_vehicle is None:
             raise RuntimeError("Failed to spawn cutter vehicle")
+
+        # spawn cutter and straight vehicle(s)
+        self._transforms_visible.append(wp_spawn_cutter.transform)
+
         freeze_vehicle(cutter_vehicle)
         self.other_actors.append(cutter_vehicle)
 
+        # spawn straight 
         if self._spawn_straight_other:
+            attempt = 1
+            straight_transform = wp_to_underground_transform(wp_spawn_straight, self.offset.get('underground', 500))
             straight_vehicle = CarlaDataProvider.request_new_actor(cutter_model_name, straight_transform)
+            while straight_vehicle is None and attempt < MAX_ATTEMPT:
+                wp_spawn_straight = wp_spawn_straight.previous(PREV_DISTANCE)[-1]
+                straight_transform = wp_to_underground_transform(wp_spawn_straight, self.offset.get('underground', 500))
+                straight_vehicle = CarlaDataProvider.request_new_actor(cutter_model_name, straight_transform)
+
             if straight_vehicle is None:
                 raise RuntimeError("Failed to spawn straight vehicle")
+            
+            self._transforms_visible.append(wp_spawn_straight.transform)
+
             freeze_vehicle(straight_vehicle)
             self.other_actors.append(straight_vehicle)
-
 
     def _create_behavior(self):
         """

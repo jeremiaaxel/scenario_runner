@@ -14,7 +14,21 @@
                             }
                         }
                     ],
-                    "scenario_type": "SpawnActorOnTrigger"
+                    "scenario_type": "PedestrianSlowCloseCrossing"
+                },
+                {
+                    "available_event_configurations": [
+                        {
+                            "transform": {
+                                "pitch": "0",
+                                "x": "40.00",
+                                "y": "-63.83",
+                                "yaw": "180.0",
+                                "z": "0.0"
+                            }
+                        }
+                    ],
+                    "scenario_type": "CutInRoute"
                 }
             ]
         }
