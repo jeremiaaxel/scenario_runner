@@ -110,10 +110,9 @@ class PedestrianCyclistCrossing(DynamicObjectCrossing):
         return behavior
 
 
-def pedestrian_crossing_wrapper(cls: PedestrianCyclistCrossing, **kwargs):
+def pedestrian_crossing_wrapper(**kwargs):
     class ModifiedClass(PedestrianCyclistCrossing):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
+        pass
 
     for key, value in kwargs.items():
         setattr(ModifiedClass, key, value)

@@ -1,6 +1,8 @@
 import re
+from typing import Type, TypeVar
 import carla
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
+from srunner.scenarios.basic_scenario import BasicScenario
 
 
 def create_blueprints_by_attribute(attribute_name: str, attribute_value, model_name: str = "*", model_exceptions: list = []):
@@ -118,3 +120,25 @@ def hide_actor(actor, underground_z=500, freeze=False):
 def hide_actors(actors, underground_z=500, freeze=False):
     for actor in actors:
         hide_actor(actor, underground_z=underground_z, freeze=freeze)
+
+def wp_to_underground_transform(wp: carla.Waypoint, underground_z: float=500) -> carla.Transform:
+    transform: carla.Transform = wp.transform
+    transform.location.z -= underground_z
+    return transform
+    
+
+def modify_class(cls, **kwargs):
+    class ModifiedClass(cls):
+        pass
+
+    for key, value in kwargs.items():
+        setattr(ModifiedClass, key, value)
+
+    return ModifiedClass
+            
+def get_heading(compass):
+    heading = 'N' if compass > 270.5 or compass < 89.5 else ''
+    heading += 'S' if 90.5 < compass < 269.5 else ''
+    heading += 'E' if 0.5 < compass < 179.5 else ''
+    heading += 'W' if 180.5 < compass < 359.5 else ''
+    return heading

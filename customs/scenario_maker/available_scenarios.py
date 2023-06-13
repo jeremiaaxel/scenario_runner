@@ -3,6 +3,7 @@ from customs.scenarios.obstructing_actor import (
     ObstructingPedestrianHorn, ObstructingPedestrianTimer
 )
 from customs.scenarios.pedestrian_crossing import PedestrianCyclistCrossing, PedestrianCyclistProps, pedestrian_crossing_wrapper
+from customs.scenarios.regression import Regression
 from customs.scenarios.spawn_actor import SpawnActorInFront, SpawnActorOnTrigger
 from customs.scenarios.spawn_angkot import SpawnAngkot, SpawnAngkotOnTrigger
 from customs.scenarios.spawn_bike import SpawnBike, SpawnBikeOnTrigger
@@ -17,6 +18,7 @@ from customs.scenarios.weather import get_weather_scenario
 #     WeatherMidRainyNoonRoute
 # )
 from customs.scenarios.cut_in import CutInRoute
+from customs.helpers.blueprints import modify_class
 
 class AvailableScenarios(object): 
     WEATHER_SCENARIOS = {
@@ -53,43 +55,42 @@ class AvailableScenarios(object):
 
     OTHER_SCENARIOS = {
         # Crossings(s)
-        "PedestrianFarCrossing": pedestrian_crossing_wrapper(PedestrianCyclistCrossing, 
+        "PedestrianFarCrossing": modify_class(PedestrianCyclistCrossing, 
                                                           custom_name="PedestrianFarCrossing",
                                                           adversary_type=False,
                                                           _start_distance=PedestrianCyclistProps.DISTANCE_FAR,
                                                           custom_speed=PedestrianCyclistProps.SPEED_NORMAL),
-        "PedestrianCloseCrossing": pedestrian_crossing_wrapper(PedestrianCyclistCrossing, 
+        "PedestrianCloseCrossing": modify_class(PedestrianCyclistCrossing, 
                                                           custom_name="PedestrianCloseCrossing",
                                                           adversary_type=False,
                                                           _start_distance=PedestrianCyclistProps.DISTANCE_CLOSE,
                                                           custom_speed=PedestrianCyclistProps.SPEED_NORMAL),
-        "CyclistFarCrossing": pedestrian_crossing_wrapper(PedestrianCyclistCrossing,
+        "CyclistFarCrossing": modify_class(PedestrianCyclistCrossing,
                                                           custom_name="CyclistFarCrossing",
                                                           adversary_type=True,
                                                           _start_distance=PedestrianCyclistProps.DISTANCE_FAR,
                                                           custom_speed=PedestrianCyclistProps.SPEED_NORMAL),
-        "CyclistCloseCrossing": pedestrian_crossing_wrapper(PedestrianCyclistCrossing,
+        "CyclistCloseCrossing": modify_class(PedestrianCyclistCrossing,
                                                           custom_name="CyclistCloseCrossing",
                                                           adversary_type=True,
                                                           _start_distance=PedestrianCyclistProps.DISTANCE_CLOSE,
                                                           custom_speed=PedestrianCyclistProps.SPEED_NORMAL),
                                                           
-        "PedestrianSlowFarCrossing": pedestrian_crossing_wrapper(PedestrianCyclistCrossing, 
+        "PedestrianSlowFarCrossing": modify_class(PedestrianCyclistCrossing, 
                                                           custom_name="PedestrianSlowFarCrossing",
                                                           adversary_type=False,
                                                           _start_distance=PedestrianCyclistProps.DISTANCE_FAR,
                                                           custom_speed=PedestrianCyclistProps.SPEED_SLOW),
-        "PedestrianSlowCloseCrossing": pedestrian_crossing_wrapper(PedestrianCyclistCrossing, 
-                                                          custom_name="PedestrianSlowCloseCrossing",
+        "PedestrianSlowCloseCrossing": modify_class(custom_name="PedestrianSlowCloseCrossing",
                                                           adversary_type=False,
                                                           _start_distance=PedestrianCyclistProps.DISTANCE_CLOSE,
                                                           custom_speed=PedestrianCyclistProps.SPEED_SLOW),
-        "CyclistSlowFarCrossing": pedestrian_crossing_wrapper(PedestrianCyclistCrossing,
+        "CyclistSlowFarCrossing": modify_class(PedestrianCyclistCrossing,
                                                           custom_name="CyclistSlowFarCrossing",
                                                           adversary_type=True,
                                                           _start_distance=PedestrianCyclistProps.DISTANCE_FAR,
                                                           custom_speed=PedestrianCyclistProps.SPEED_SLOW),
-        "CyclistSlowCloseCrossing": pedestrian_crossing_wrapper(PedestrianCyclistCrossing,
+        "CyclistSlowCloseCrossing": modify_class(PedestrianCyclistCrossing,
                                                           custom_name="CyclistSlowCloseCrossing",
                                                           adversary_type=True,
                                                           _start_distance=PedestrianCyclistProps.DISTANCE_CLOSE,
@@ -106,6 +107,9 @@ class AvailableScenarios(object):
         # # For testing
         # "SpawnPedestrianInFront": SpawnPedestrianInFront,
         # "SpawnActorInFront": SpawnActorInFront,
+        
+        # For Regression
+        "Regression": Regression,
 
         "CutInRoute": CutInRoute
     }

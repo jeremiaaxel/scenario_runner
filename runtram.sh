@@ -32,6 +32,8 @@ defined_scenario_files[test]="./customs/constructed_scenarios/test_scenarios.jso
 defined_scenario_files[none]="./customs/constructed_scenarios/no_scenarios.json"
 # "req" | "request"
 defined_scenario_files[req]="./customs/constructed_scenarios/req_scenarios.json"
+# "reg" | "regression"
+defined_scenario_files[reg]="./customs/constructed_scenarios/reg_scenarios.json"
 # "defined"
 defined_scenario_files[defined]="./customs/constructed_scenarios/defined_scenarios_<NUM>.json"
 
@@ -73,6 +75,9 @@ function standardizeScenarioMode() {
   case $scenario_mode in 
     "req"|"request")
       scenario_mode="req"
+      ;;
+    "reg"|"regression")
+      scenario_mode="reg"
       ;;
     "none"|"noscenario")
       scenario_mode="none"
