@@ -70,8 +70,6 @@ class SpawnActor(BackgroundActivity):
         self._trigger_location = config.trigger_points[0].location
         logger.debug_s(f"Trigger location: {self._trigger_location}")
 
-        self.timeout = timeout  # Timeout of scenario in seconds
-
         self.model_names = model_names
         self.total_amount = total_amount
 
@@ -300,7 +298,7 @@ class SpawnActorOnTrigger(SpawnActor):
                  timeout=35 * 60, 
                  criteria_enable=False, 
                  model_names=['vehicle.*'], 
-                 total_amount=200):
+                 total_amount=120):
         self._ego_route = CarlaDataProvider.get_ego_vehicle_route()
         super().__init__(world, 
                          ego_vehicles, 

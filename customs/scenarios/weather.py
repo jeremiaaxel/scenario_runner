@@ -80,7 +80,6 @@ class WeatherBasicRoute(BasicScenario):
     def _create_behavior(self):
         behavior = py_trees.composites.Sequence(name=__class__.__name__)
         change_weather = py_trees.meta.oneshot(ChangeWeatherParameterOnly)(self.__class__.weather_config)
-        # change_weather = py_trees.meta.oneshot(ChangeWeather)(self._weather())
         behavior.add_child(change_weather)
         
         # change_road_friction = py_trees.meta.oneshot(ChangeRoadFriction)(self._road_friction())

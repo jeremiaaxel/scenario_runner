@@ -66,6 +66,11 @@ class HumanInterface(object):
         if self.ego_vehicle is not None:
             t = self.ego_vehicle.get_transform()
 
+        t_camera = None
+        _camera = CarlaDataProvider.get_sensor_by_id('Center')
+        if _camera is not None:
+            t_camera = _camera.get_transform()
+    
         heading = get_heading(compass)
 
         accelerometer = [abs(x) if x == 0 else x for x in accelerometer]
@@ -73,31 +78,34 @@ class HumanInterface(object):
 
 
         self._info_text = [
-            f'{"Speed:":<10} {speed:.2f} m/s',
-            f'{"Compass:":<10} {compass:.2f}\N{DEGREE SIGN} {heading}',
-            f'{"Accelero:":<10} {array_to_string(accelerometer)}',
-            f'{"Gyroscop:":<10} {array_to_string(gyroscope)}',
-            f'{"GNSS:":<10} {lat:5>.2f} {lon:>5.2f}',
+            f'{"Speed":<10}: {speed:.2f} m/s',
+            f'{"Compass":<10}: {compass:.2f}\N{DEGREE SIGN} {heading}',
+            f'{"Accelero":<10}: {array_to_string(accelerometer)}',
+            f'{"Gyroscop":<10}: {array_to_string(gyroscope)}',
+            f'{"GNSS":<10}: {lat:5>.2f} {lon:>5.2f}',
             '',
             f'{"Is horn:":<10} {other_data.get("is_horn", False)}',
             '']
         
+        if t_camera:
+            self._info_text.append(f"{'Location (camera)':<19}: ({t_camera.location.x:5>.2f}, {t_camera.location.y:5>.2f})")
+
         if t:
             self._info_text.extend(
                 [
-                    'Location:% 20s' % ('(% 5.2f, % 5.2f)' % (t.location.x, t.location.y)),
-                    'Height:  % 18.2f m' % t.location.z,
+                    f"{'Location':<19}: ({t.location.x:5>.2f}, {t.location.y:5>.2f})",
+                    f"{'Height':<19}: {t.location.z:5>.2f}"
                 ]
             )
-
+            
         actors_exception = ["controller.ai.walker"]
 
         self._info_text.append("")
-        self._info_text.append("Nearby actors:")
+        self._info_text.append("Nearby actors (camera):")
         actors = CarlaDataProvider.get_actors()
-        distance = lambda l: math.sqrt((l.x - t.location.x)**2 + (l.y - t.location.y)**2 + (l.z - t.location.z)**2)
+        distance = lambda l, t: math.sqrt((l.x - t.location.x)**2 + (l.y - t.location.y)**2 + (l.z - t.location.z)**2)
         actors = [(id, actor) for id, actor in actors if actor.type_id not in actors_exception]
-        vehicles = [(distance(actor.get_location()), actor) for id, actor in actors if actor is not None and id != self.ego_vehicle.id]
+        vehicles = [(distance(actor.get_location(), t_camera), actor) for id, actor in actors if actor is not None and id != self.ego_vehicle.id]
         for d, vehicle in sorted(vehicles, key=lambda vehicles: vehicles[0]):
             if d > 200.0:
                 break

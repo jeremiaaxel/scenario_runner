@@ -45,6 +45,7 @@ class AgentWrapper(object):
         :return:
         """
         bp_library = CarlaDataProvider.get_world().get_blueprint_library()
+        sensor_ids = []
         for sensor_spec in self._agent.sensors():
             # These are the sensors spawned on the carla world
             bp = bp_library.find(str(sensor_spec['type']))
@@ -88,9 +89,11 @@ class AgentWrapper(object):
                           self._agent.sensor_interface,
                           additional_sensor_process))
             self._sensors_list.append(sensor)
+            sensor_ids.append(sensor_spec['id'])
 
         # Tick once to spawn the sensors
         CarlaDataProvider.get_world().tick()
+        CarlaDataProvider.add_sensors(self._sensors_list, sensor_ids)
 
     def cleanup(self):
         """

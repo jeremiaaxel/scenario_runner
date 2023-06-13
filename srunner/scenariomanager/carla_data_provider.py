@@ -51,6 +51,7 @@ class CarlaDataProvider(object):  # pylint: disable=too-many-public-methods
     _actor_transform_map = {}
     _traffic_light_map = {}
     _carla_actor_pool = {}
+    _carla_sensor_pool = {}
     _client = None
     _world = None
     _map = None
@@ -804,6 +805,7 @@ class CarlaDataProvider(object):  # pylint: disable=too-many-public-methods
         CarlaDataProvider._sync_flag = False
         CarlaDataProvider._ego_vehicle_route = None
         CarlaDataProvider._carla_actor_pool = {}
+        CarlaDataProvider._carla_sensor_pool = {}
         CarlaDataProvider._client = None
         CarlaDataProvider._spawn_points = None
         CarlaDataProvider._spawn_index = 0
@@ -838,3 +840,81 @@ class CarlaDataProvider(object):  # pylint: disable=too-many-public-methods
             CarlaDataProvider.get_world().tick()
         else:
             CarlaDataProvider.get_world().wait_for_tick()
+
+    @staticmethod
+    def add_sensor(sensor, id=None):
+        sensor_id = id if id is not None else sensor.id
+        CarlaDataProvider._carla_sensor_pool[id] = sensor
+
+    @staticmethod
+    def add_sensors(sensors, ids=None):
+        """
+        Add list of sensors
+
+        id can be supplied with custom ids instead of actor id
+        """
+        for idx, sensor in enumerate(sensors):
+            id = ids[idx] if ids is not None else None
+            CarlaDataProvider.add_sensor(sensor, id)
+
+    @staticmethod
+    def get_sensors():
+        """
+        Return list of sensors and their ids
+
+        Note: iteritems from six is used to allow compatibility with Python 2 and 3
+        """
+        return iteritems(CarlaDataProvider._carla_sensor_pool)
+
+    @staticmethod
+    def sensor_id_exists(sensor_id):
+        """
+        Check if a certain id is still at the simulation
+        """
+        if sensor_id in CarlaDataProvider._carla_sensor_pool:
+            return True
+
+        return False
+
+    @staticmethod
+    def get_hero_sensor():
+        """
+        Get the sensor object of the hero sensor if it exists, returns none otherwise.
+        """
+        for sensor_id in CarlaDataProvider._carla_sensor_pool:
+            if CarlaDataProvider._carla_sensor_pool[sensor_id].attributes['role_name'] == 'hero':
+                return CarlaDataProvider._carla_sensor_pool[sensor_id]
+        return None
+
+    @staticmethod
+    def get_sensor_by_id(sensor_id):
+        """
+        Get an sensor from the pool by using its ID. If the sensor
+        does not exist, None is returned.
+        """
+        if sensor_id in CarlaDataProvider._carla_sensor_pool:
+            return CarlaDataProvider._carla_sensor_pool[sensor_id]
+
+        print("Non-existing sensor id {}".format(sensor_id))
+        return None
+
+    @staticmethod
+    def remove_sensor_by_id(sensor_id):
+        """
+        Remove an sensor from the pool using its ID
+        """
+        if sensor_id in CarlaDataProvider._carla_sensor_pool:
+            CarlaDataProvider._carla_sensor_pool[sensor_id].destroy()
+            CarlaDataProvider._carla_sensor_pool[sensor_id] = None
+            CarlaDataProvider._carla_sensor_pool.pop(sensor_id)
+        else:
+            print("Trying to remove a non-existing sensor id {}".format(sensor_id))
+
+    @staticmethod
+    def clear_sensors():
+        for i, _ in CarlaDataProvider._carla_sensor_pool.items():
+            if CarlaDataProvider._carla_sensor_pool[i] is not None:
+                CarlaDataProvider._carla_sensor_pool[i].stop()
+                CarlaDataProvider._carla_sensor_pool[i].destroy()
+                CarlaDataProvider._carla_sensor_pool[i] = None
+        CarlaDataProvider._carla_sensor_pool = {}
