@@ -3,7 +3,7 @@ from customs.scenarios.obstructing_actor import (
     ObstructingPedestrianHorn, ObstructingPedestrianTimer
 )
 from customs.scenarios.pedestrian_crossing import PedestrianCyclistCrossing, PedestrianCyclistProps, pedestrian_crossing_wrapper
-from customs.scenarios.regression import Regression
+from customs.scenarios.spawn_still_walkers import SpawnStillWalkers
 from customs.scenarios.spawn_actor import SpawnActorInFront, SpawnActorOnTrigger
 from customs.scenarios.spawn_angkot import SpawnAngkot, SpawnAngkotOnTrigger
 from customs.scenarios.spawn_bike import SpawnBike, SpawnBikeOnTrigger
@@ -81,7 +81,8 @@ class AvailableScenarios(object):
                                                           adversary_type=False,
                                                           _start_distance=PedestrianCyclistProps.DISTANCE_FAR,
                                                           custom_speed=PedestrianCyclistProps.SPEED_SLOW),
-        "PedestrianSlowCloseCrossing": modify_class(custom_name="PedestrianSlowCloseCrossing",
+        "PedestrianSlowCloseCrossing": modify_class(PedestrianCyclistCrossing,
+                                                          custom_name="PedestrianSlowCloseCrossing",
                                                           adversary_type=False,
                                                           _start_distance=PedestrianCyclistProps.DISTANCE_CLOSE,
                                                           custom_speed=PedestrianCyclistProps.SPEED_SLOW),
@@ -109,7 +110,7 @@ class AvailableScenarios(object):
         # "SpawnActorInFront": SpawnActorInFront,
         
         # For Regression
-        "Regression": Regression,
+        "SpawnStillWalkers": SpawnStillWalkers,
 
         "CutInRoute": CutInRoute
     }

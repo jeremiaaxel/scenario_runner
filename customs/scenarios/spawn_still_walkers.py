@@ -1,9 +1,8 @@
 import carla
 import math
 
-from py_trees.composites import Sequence, Parallel
-from py_trees.common import ParallelPolicy
-from customs.helpers.blueprints import get_heading, hide_actors
+from py_trees.composites import Sequence
+from customs.helpers.blueprints import hide_actors
 
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenarioatomics.atomic_behaviors import ActorDestroy, ActorTransformSetter
@@ -12,12 +11,11 @@ from srunner.scenariomanager.timer import TimeOut
 from srunner.scenarios.basic_scenario import BasicScenario
 
 
-class Regression(BasicScenario):
+class SpawnStillWalkers(BasicScenario):
     delta_ys = [num for num in range(5, 36, 5)]
-    delta_xs = [num for num in range(-15, 16, 5)]
+    delta_xs = [num for num in range(-5, 11, 5)]
     transforms = []
     actor_timeout = 15 # (s)
-    timeout = -1
 
     model = "walker.*"
 
@@ -31,10 +29,10 @@ class Regression(BasicScenario):
                  criteria_enable=False):
 
         self.timeout = timeout
-        self._trigger_wp = config.trigger_points[0]
+        print(f"{config.trigger_points[0]}")
+        self._trigger_wp = CarlaDataProvider.get_map().get_waypoint(config.trigger_points[0].location)
         self._ego_route = CarlaDataProvider.get_ego_vehicle_route()
-        print(f"Trigger point {self._trigger_wp}")
-        super().__init__("Regression", 
+        super().__init__("SpawnStillWalkers", 
                          ego_vehicles, 
                          config, 
                          world, 
@@ -50,27 +48,29 @@ class Regression(BasicScenario):
             y = -1 * delta_x * math.sin(rad) + delta_y * math.cos(rad)
             return (x, y)
 
-        ego_heading = self._trigger_wp.rotation.yaw
-        ego_location = self._trigger_wp.location
+        ego_heading = self._trigger_wp.transform.rotation.yaw
+        ego_location = self._trigger_wp.transform.location
+        buffer = 5
 
         for delta_y_rel in self.delta_ys:
-            actor_location = ego_location
-            delta_x, delta_y = delta_relative_to_absolute(ego_heading, 
-                                                           0,
-                                                           delta_y_rel)
-            actor_location.y += delta_y
-            actor_location.x += delta_x
-            actor_location.z += 0.2
-            actor_transform = carla.Transform(actor_location, 
-                                              carla.Rotation())
-            actor = CarlaDataProvider.request_new_actor(self.model,
-                                                        actor_transform,
-                                                        actor_category="pedestrian")
-            if actor is None:
-                print(f"Failed to spawn actor on delta y: {delta_y_rel}")
-            else:
-                self.other_actors.append(actor)
-                self.transforms.append(actor_transform)
+            for delta_x_rel in self.delta_xs:
+                actor_location = carla.Location(ego_location)
+                delta_x, delta_y = delta_relative_to_absolute(ego_heading, 
+                                                            delta_x_rel,
+                                                            delta_y_rel + buffer)
+                actor_location.y += delta_y
+                actor_location.x += delta_x
+                actor_location.z += 0.8
+                actor_transform = carla.Transform(actor_location, 
+                                                carla.Rotation())
+                actor = CarlaDataProvider.request_new_actor(self.model,
+                                                            actor_transform,
+                                                            actor_category="pedestrian")
+                if actor is None:
+                    print(f"Failed to spawn actor on delta y: {delta_y_rel}")
+                else:
+                    self.other_actors.append(actor)
+                    self.transforms.append(actor_transform)
 
     def _post_initialize_actors(self):
         hide_actors(self.other_actors)
@@ -86,8 +86,13 @@ class Regression(BasicScenario):
         root = Sequence(name=self.__class__.__name__)
 
         for actor_idx, actor in enumerate(self.other_actors):
-            root.add_child(ActorTransformSetter(actor, self.transforms[actor_idx]))
-            root.add_child(TimeOut(self.actor_timeout))
-            root.add_child(ActorDestroy(actor, name=f"Destroy actor {actor.id}"))
+            actor_seq = Sequence(name="Actor sequence")
+            actor_seq.add_child(ActorTransformSetter(actor, self.transforms[actor_idx]))
+            actor_seq.add_child(TimeOut(self.actor_timeout))
+            actor_seq.add_child(ActorDestroy(actor, name=f"Destroy actor {actor.id}"))
+            root.add_child(actor_seq)
 
         return root
+
+    def _create_test_criteria(self):
+        pass
