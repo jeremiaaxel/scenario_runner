@@ -92,13 +92,20 @@ class  ScenarioMaker(object):
             """
             if selection_method == "none":
                 return []
+            
+            selecteds = options.keys()
             if selection_method == "random":
                 if randsize > len(options.keys()):
                     print(f"Random size {randsize} is bigger the available options {len(options.keys())}.")
                     print("Using options size instead.")
                     randsize = len(options.keys())
-                return random.sample(options.keys(), randsize)
-            return options
+                selecteds = random.sample(options.keys(), randsize)
+
+            # SpawnMixed xor these exceptions
+            spawn_mixed_exceptions = ["SpawnAngkot", "SpawnBike", "SpawnActor"]
+            if any(selected.startswith("SpawnMixed") for selected in selecteds):
+                selecteds = [selected for selected in selecteds if not any(selected.startswith(pre_exception) for pre_exception in spawn_mixed_exceptions)]
+            return selecteds
                 
         weather_scenarios = AvailableScenarios.get_weather_scenarios()
         time_scenarios = AvailableScenarios.get_time_scenarios()

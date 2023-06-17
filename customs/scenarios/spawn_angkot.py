@@ -36,17 +36,8 @@ class SpawnAngkot(SpawnActor):
                                             timeout=timeout,
                                             criteria_enable=criteria_enable,
                                             model_names=[angkot_model_name],
-                                            total_amount=total_amount)
+                                            amounts=[total_amount])
 
 
-class SpawnAngkotOnTrigger(SpawnActorOnTrigger):
-    def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False):
-        super(SpawnAngkotOnTrigger, self).__init__(world,
-                                            ego_vehicles,
-                                            config,
-                                            randomize,
-                                            debug_mode=debug_mode,
-                                            timeout=timeout,
-                                            criteria_enable=criteria_enable,
-                                            model_names=[angkot_model_name],
-                                            total_amount=total_amount)
+class SpawnAngkotOnTrigger(SpawnAngkot, SpawnActorOnTrigger):
+    pass

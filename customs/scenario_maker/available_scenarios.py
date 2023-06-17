@@ -2,12 +2,13 @@ from customs.scenarios.obstructing_actor import (
     ObstructingVehicleHorn, ObstructingVehicleTimer,
     ObstructingPedestrianHorn, ObstructingPedestrianTimer
 )
-from customs.scenarios.pedestrian_crossing import PedestrianCyclistCrossing, PedestrianCyclistProps, pedestrian_crossing_wrapper
+from customs.scenarios.pedestrian_crossing import PedestrianCyclistCrossing, PedestrianCyclistProps
+from customs.scenarios.spawn_mixed import SpawnMixedOnTrigger
 from customs.scenarios.spawn_still_walkers import SpawnStillWalkers
-from customs.scenarios.spawn_actor import SpawnActorInFront, SpawnActorOnTrigger
-from customs.scenarios.spawn_angkot import SpawnAngkot, SpawnAngkotOnTrigger
-from customs.scenarios.spawn_bike import SpawnBike, SpawnBikeOnTrigger
-from customs.scenarios.spawn_pedestrian import SpawnPedestrian, SpawnPedestrianInFront, SpawnPedestrianOnTrigger
+from customs.scenarios.spawn_actor import SpawnActorOnTrigger
+from customs.scenarios.spawn_angkot import SpawnAngkotOnTrigger
+from customs.scenarios.spawn_bike import SpawnBikeOnTrigger
+from customs.scenarios.spawn_pedestrian import SpawnPedestrianOnTrigger
 from customs.scenarios.time import TimeDay, TimeNight, TimeSunrise
 from customs.scenarios.weather import get_weather_scenario
 # (
@@ -44,13 +45,15 @@ class AvailableScenarios(object):
 
     BACKGROUND_SCENARIOS = {
         # Spawning(s)
-        "SpawnActorOnTrigger": SpawnActorOnTrigger,
         # "SpawnAngkot": SpawnAngkot,
-        "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger,
         # "SpawnBike": SpawnBike,
-        "SpawnBikeOnTrigger": SpawnBikeOnTrigger,
         # "SpawnPedestrian": SpawnPedestrian,
-        # "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
+        # "SpawnMixed": SpawnMixed,
+        "SpawnActorOnTrigger": SpawnActorOnTrigger,
+        "SpawnAngkotOnTrigger": SpawnAngkotOnTrigger,
+        "SpawnBikeOnTrigger": SpawnBikeOnTrigger,
+        "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
+        "SpawnMixedOnTrigger": SpawnMixedOnTrigger,
     }
 
     OTHER_SCENARIOS = {
@@ -105,9 +108,6 @@ class AvailableScenarios(object):
         # TODO: Fix obstructing pedestrian
         "ObstructingPedestrianHorn": ObstructingPedestrianHorn,
         "ObstructingPedestrianTimer": ObstructingPedestrianTimer,
-        # # For testing
-        # "SpawnPedestrianInFront": SpawnPedestrianInFront,
-        # "SpawnActorInFront": SpawnActorInFront,
         
         # For Regression
         "SpawnStillWalkers": SpawnStillWalkers,

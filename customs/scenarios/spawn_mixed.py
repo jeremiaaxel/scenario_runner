@@ -9,10 +9,14 @@ Scenario spawning elements to make the town dynamic and interesting
 """
 
 import logging
+from customs.helpers.blueprints import create_blueprints_by_attribute, distribute_amounts
 from customs.scenarios.spawn_actor import SpawnActor, SpawnActorOnTrigger
+from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
 logger = logging.getLogger(__name__)
-model_names = ['vehicle.carlamotors.firetruck', 'vehicle.tesla.cybertruck', ]
+
+total_amount = 30
+
 
 class SpawnMixed(SpawnActor):
 
@@ -22,28 +26,49 @@ class SpawnMixed(SpawnActor):
 
     This is a single ego vehicle scenario
     """
+    @classmethod
+    def get_modelnames_and_amounts(cls):
+        two_wheel_blueprints = create_blueprints_by_attribute(
+            "number_of_wheels", 2)
+        two_wheel_modelnames = [bp.id for bp in two_wheel_blueprints]
+        two_wheel_amount = 100
+        two_wheel_amount = distribute_amounts(
+            two_wheel_amount, len(two_wheel_modelnames))
 
-    def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False):
+        four_wheel_blueprints = create_blueprints_by_attribute(
+            "number_of_wheels", 4)
+        four_wheel_modelnames = [bp.id for bp in four_wheel_blueprints]
+        four_wheel_amount = 50
+        four_wheel_amount = distribute_amounts(
+            four_wheel_amount, len(four_wheel_modelnames))
+
+        modelnames = two_wheel_modelnames + four_wheel_modelnames
+        amounts = two_wheel_amount + four_wheel_amount
+        return modelnames, amounts
+
+    def __init__(self,
+                 world,
+                 ego_vehicles,
+                 config,
+                 randomize=False,
+                 debug_mode=False,
+                 timeout=35 * 60,
+                 criteria_enable=False,
+                 amounts=[total_amount]):
         """
         Setup all relevant parameters and create scenario
         """
-        super(SpawnMixed, self).__init__(world,
-                                            ego_vehicles,
-                                            config,
-                                            randomize,
-                                            debug_mode=debug_mode,
-                                            timeout=timeout,
-                                            criteria_enable=criteria_enable,
-                                            model_names=model_names)
+        modelnames, amounts = __class__.get_modelnames_and_amounts()
+        super().__init__(world,
+                         ego_vehicles,
+                         config,
+                         randomize,
+                         debug_mode=debug_mode,
+                         timeout=timeout,
+                         criteria_enable=criteria_enable,
+                         model_names=modelnames,
+                         amounts=amounts)
 
 
-class SpawnMixedOnTrigger(SpawnActorOnTrigger):
-    def __init__(self, world, ego_vehicles, config, randomize=False, debug_mode=False, timeout=35 * 60, criteria_enable=False):
-        super(SpawnMixedOnTrigger, self).__init__(world,
-                                            ego_vehicles,
-                                            config,
-                                            randomize,
-                                            debug_mode=debug_mode,
-                                            timeout=timeout,
-                                            criteria_enable=criteria_enable,
-                                            model_names=model_names)
+class SpawnMixedOnTrigger(SpawnMixed, SpawnActorOnTrigger):
+    pass

@@ -108,14 +108,3 @@ class PedestrianCyclistCrossing(DynamicObjectCrossing):
 
         behavior = insert_horn_behavior(behavior)
         return behavior
-
-
-def pedestrian_crossing_wrapper(**kwargs):
-    class ModifiedClass(PedestrianCyclistCrossing):
-        pass
-
-    for key, value in kwargs.items():
-        setattr(ModifiedClass, key, value)
-
-    return ModifiedClass
-            

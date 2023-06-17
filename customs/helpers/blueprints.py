@@ -1,8 +1,8 @@
+from random import randint
 import re
-from typing import Type, TypeVar
+from typing import List
 import carla
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
-from srunner.scenarios.basic_scenario import BasicScenario
 
 
 def create_blueprints_by_attribute(attribute_name: str, attribute_value, model_name: str = "*", model_exceptions: list = []):
@@ -142,3 +142,22 @@ def get_heading(compass):
     heading += 'E' if 0.5 < compass < 179.5 else ''
     heading += 'W' if 180.5 < compass < 359.5 else ''
     return heading
+
+def distribute_amounts(total_amount: int, size: int, diff: int = 2):
+    """
+    Distribute total_amount into size of numbers
+    parameters:
+        total_amount: the total amount to be distributed
+        size: the number of amount divider of the total amount
+    """
+    amounts: List[int] = [total_amount // size for _ in range(size)]
+    amount_left = total_amount - sum(amounts)
+
+    while amount_left > 0:
+        idx = randint(0, size-1)
+        amount = randint(1, diff)
+        amounts[idx] += amount
+        amount_left -= amount
+
+    return amounts
+    
