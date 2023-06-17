@@ -157,6 +157,7 @@ class HilsAgent(HumanTramAgent):
         throttle = 0
         brake = 0
         throttle, _, brake = self._translate_dm_command(timestamp)
+        # throttle, brake = 0, 1 # force brake for regression
 
         # steering: from NPC agent
         control_super = super().run_step(input_data, timestamp)

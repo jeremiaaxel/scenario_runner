@@ -88,13 +88,16 @@ class HumanInterface(object):
             '']
         
         if t_camera:
-            self._info_text.append(f"{'Location (camera)':<19}: ({t_camera.location.x:5>.2f}, {t_camera.location.y:5>.2f})")
+            self._info_text.extend([
+                "(camera)",
+                f"{'Location':<9}: ({t_camera.location.x:5>.2f}, {t_camera.location.y:5>.2f})"
+            ])
 
         if t:
             self._info_text.extend(
                 [
-                    f"{'Location':<19}: ({t.location.x:5>.2f}, {t.location.y:5>.2f})",
-                    f"{'Height':<19}: {t.location.z:5>.2f}"
+                    f"{'Location':<9}: ({t.location.x:5>.2f}, {t.location.y:5>.2f})",
+                    f"{'Height':<9}: {t.location.z:5>.2f}"
                 ]
             )
             

@@ -43,7 +43,7 @@ class SpawnActor(BackgroundActivity):
     underground_z = 500
     _other_actor_target_velocity = 5
     _ego_vehicle_distance_driven = -1 # set value <= 0 to make the scenario endless
-    do_print = True
+    do_print = False
     _ego_route = None
 
     def __init__(self, 

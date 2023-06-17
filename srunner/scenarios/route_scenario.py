@@ -543,12 +543,12 @@ class RouteScenario(BasicScenario):
 
         route = convert_transform_to_location(self.route)
 
-        collision_criterion = CollisionTest(self.ego_vehicles[0], terminate_on_failure=True)
+        collision_criterion = CollisionTest(self.ego_vehicles[0], terminate_on_failure=False)
 
         route_criterion = InRouteTest(self.ego_vehicles[0],
                                       route=route,
                                       offroad_max=30,
-                                      terminate_on_failure=True)
+                                      terminate_on_failure=False)
 
         completion_criterion = RouteCompletionTest(self.ego_vehicles[0], route=route)
 
@@ -561,7 +561,7 @@ class RouteScenario(BasicScenario):
         blocked_criterion = ActorSpeedAboveThresholdTest(self.ego_vehicles[0],
                                                          speed_threshold=0.1,
                                                          below_threshold_max_time=90.0,
-                                                         terminate_on_failure=True)
+                                                         terminate_on_failure=False)
 
         criteria.append(completion_criterion)
         criteria.append(collision_criterion)

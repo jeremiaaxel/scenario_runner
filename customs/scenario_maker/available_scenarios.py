@@ -50,7 +50,7 @@ class AvailableScenarios(object):
         # "SpawnBike": SpawnBike,
         "SpawnBikeOnTrigger": SpawnBikeOnTrigger,
         # "SpawnPedestrian": SpawnPedestrian,
-        "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
+        # "SpawnPedestrianOnTrigger": SpawnPedestrianOnTrigger,
     }
 
     OTHER_SCENARIOS = {
