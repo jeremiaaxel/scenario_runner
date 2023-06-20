@@ -154,8 +154,7 @@ class HilsAgent(HumanTramAgent):
         self._vehicle_control_event.wait(timeout=self.dm_command_wait_timeout)
         self._command_log(self._dm_command.val, timestamp, filename="command_log.txt")
 
-        throttle = 0
-        brake = 0
+        throttle, brake = 0, 0
         throttle, _, brake = self._translate_dm_command(timestamp)
         # throttle, brake = 0, 1 # force brake for regression
 

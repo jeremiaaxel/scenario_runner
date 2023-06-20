@@ -78,7 +78,7 @@ class PedestrianCyclistCrossing(DynamicObjectCrossing):
             if self.custom_speed is None:
                 return behavior 
             
-            logger.info(f"Pedestrian crossing with speed: {self.custom_speed}")
+            logger.debug_s(f"Pedestrian crossing with speed: {self.custom_speed}")
 
             # find keep velocity
             target_node = find_behavior_by_name(behavior, "keep velocity")

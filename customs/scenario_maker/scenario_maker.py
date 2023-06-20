@@ -122,10 +122,10 @@ class  ScenarioMaker(object):
         all_scenarios = AvailableScenarios.get_all_scenarios()
 
         if avoid_used:
-            logger.info(f"All scenarios keys BEFORE filter: {all_scenarios.keys()}")
+            logger.debug(f"All scenarios keys BEFORE filter: {all_scenarios.keys()}")
             all_scenarios = {k: v for k, v in all_scenarios.items() if k not in used_scenarios_key}
-            logger.info(f"Used scenarios keys: {used_scenarios_key}")
-            logger.info(f"All scenarios keys AFTER filter: {all_scenarios.keys()}")
+            logger.debug(f"Used scenarios keys: {used_scenarios_key}")
+            logger.debug(f"All scenarios keys AFTER filter: {all_scenarios.keys()}")
 
         selected_scenarios = random.choices(all_scenarios.keys(), k=number_of_scenarios)
         random.shuffle(selected_scenarios)
