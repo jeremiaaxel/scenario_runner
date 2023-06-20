@@ -23,7 +23,7 @@ OUT_DIR = os.path.join(OUT_DIR, "out")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 fullfilename = os.path.join(OUT_DIR, "scenario_maker.log")
-logging.basicConfig(filename=fullfilename, level=logging.INFO)
+logging.basicConfig(filename=fullfilename, filemode="a", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 MAP_NAME = "Town10HD_Opt"
@@ -127,11 +127,11 @@ class  ScenarioMaker(object):
             logger.info(f"Used scenarios keys: {used_scenarios_key}")
             logger.info(f"All scenarios keys AFTER filter: {all_scenarios.keys()}")
 
-        selected_scenarios = random.sample(all_scenarios.keys(), number_of_scenarios)
+        selected_scenarios = random.choices(all_scenarios.keys(), k=number_of_scenarios)
         random.shuffle(selected_scenarios)
         return selected_scenarios
-    
-    def __scenarios_selection(self, interpolated_routes) -> Dict[int, List[ScenarioItem]]:
+     
+    def __scenarios_selection(self, interpolated_routes) -> Dict[int, Dict[int, ScenarioItem]]:
         """
         There are 2 groups of scenario:
          1. Init scenario defines the starting condition of the simulation. 
@@ -143,49 +143,73 @@ class  ScenarioMaker(object):
 
         # scenario selections
         for route_idx, route in enumerate(interpolated_routes):
-            this_route_scenarios: List[ScenarioItem] = []
+            this_route_scenarios: Dict[ScenarioItem] = {}
 
             # append init scenarios to the dictionary
             init_scenarios = self.__select_init_scenarios(background_selection_method=self._args.background_selection_method)
+            logger.info(f"Init scenarios with length: {len(init_scenarios)}")
             wp_idx = 3
             for _, scenario_type in enumerate(init_scenarios):
                 wp_idx += 2
                 wp_transform, _ = route[wp_idx]
-                this_route_scenarios.append(
-                    ScenarioItem(x=wp_transform.location.x,
-                                 y=wp_transform.location.y,
-                                 z=wp_transform.location.z,
-                                 pitch=wp_transform.rotation.pitch,
-                                 yaw=wp_transform.rotation.yaw,
-                                 scenario_type=str(scenario_type)))
+                this_route_scenarios[wp_idx] = ScenarioItem(x=wp_transform.location.x,
+                                                            y=wp_transform.location.y,
+                                                            z=wp_transform.location.z,
+                                                            pitch=wp_transform.rotation.pitch,
+                                                            yaw=wp_transform.rotation.yaw,
+                                                            scenario_type=str(scenario_type))
                 
-            used_scenarios_key = [scenario_item.scenario_type for scenario_item in this_route_scenarios]
+            used_scenarios_key = [scenario_item.scenario_type for scenario_item in this_route_scenarios.values()]
 
             # append main scenarios to the dictionary
             selected_scenarios = self.__select_main_scenarios(self._args.number_of_scenario_types, 
                                                               avoid_used=True, 
                                                               used_scenarios_key=used_scenarios_key)
+            logger.info(f"Main scenarios with length: {len(selected_scenarios)}")
             n_points = len(route)
             n_chunks = 0
             if len(selected_scenarios) > 0:
                 n_chunks = n_points // len(selected_scenarios)
-            curr_chunk = (wp_idx+2, n_chunks)
+            curr_chunk = (wp_idx+2, wp_idx+2 + n_chunks)
             for scenario_type in selected_scenarios:
-                idx = random.randrange(curr_chunk[0], curr_chunk[1])
-                wp_transform, _ = route[idx]
+                wp_idx = random.randrange(curr_chunk[0], curr_chunk[1])
+                wp_transform, _ = route[wp_idx]
 
                 if scenario_type is None:
                     continue
 
-                this_route_scenarios.append(
-                    ScenarioItem(x=wp_transform.location.x,
-                                 y=wp_transform.location.y,
-                                 z=wp_transform.location.z,
-                                 pitch=wp_transform.rotation.pitch,
-                                 yaw=wp_transform.rotation.yaw,
-                                 scenario_type=str(scenario_type)))
+                this_route_scenarios[wp_idx] = ScenarioItem(x=wp_transform.location.x,
+                                                            y=wp_transform.location.y,
+                                                            z=wp_transform.location.z,
+                                                            pitch=wp_transform.rotation.pitch,
+                                                            yaw=wp_transform.rotation.yaw,
+                                                            scenario_type=str(scenario_type))
 
-                curr_chunk = (n_chunks, n_chunks + n_chunks)
+                curr_chunk = (curr_chunk[1], curr_chunk[1] + n_chunks)
+
+            if self._args.crossings_percent:
+                crossing_percentage = float(self._args.crossings_percent)
+
+                logger.info(f"Appending scenarios with crossings percentage: {crossing_percentage}")
+                crossing_scenarios = [scen_key for scen_key in AvailableScenarios.get_other_scenarios().keys() if scen_key.lower().endswith("crossing")]
+
+                wp_idx = 0
+                while wp_idx < len(route):
+                    if wp_idx in this_route_scenarios.keys():
+                        continue
+                    if random.random() <= crossing_percentage:
+                        continue
+                    
+                    wp_transform, _ = route[wp_idx]
+                    crossing_scen = random.choice(crossing_scenarios)
+                    this_route_scenarios[wp_idx] = ScenarioItem(x=wp_transform.location.x,
+                                                            y=wp_transform.location.y,
+                                                            z=wp_transform.location.z,
+                                                            pitch=wp_transform.rotation.pitch,
+                                                            yaw=wp_transform.rotation.yaw,
+                                                            scenario_type=str(crossing_scen))
+                    
+                    wp_idx += random.randint(12, 30)
 
             this_map_scenarios[route_idx] = this_route_scenarios
 
@@ -201,7 +225,7 @@ class  ScenarioMaker(object):
         map_scenarios_json = []
 
         for _, route_scenarios in map_scenarios.items():
-            for route_scenario in route_scenarios:
+            for _, route_scenario in route_scenarios.items():
                 map_scenarios_json.append({
                     "available_event_configurations": [
                         {
@@ -282,6 +306,10 @@ if __name__ == "__main__":
     parser.add_argument('--background-all', 
                         action='store_true',
                         help='Uses all available background scenarios on init')
+    parser.add_argument('--crossings-percent', 
+                        default=0.5,
+                        type=float,
+                        help='Percentage of adding pedestrian crossing scenarios through the route')
     parser.add_argument('--route', 
                         help='Run a route as a scenario (input: (route_file,route id))', 
                         nargs='+',
