@@ -180,7 +180,8 @@ for (( i=1 ; i<=$repetition ; i++ )); do
                     --route $tram_route_file $route_number \
                     --filename $scenario_file \
                     --number-of-scenario-types $n_scenario_types \
-                    --background-all)
+                    --background-all \
+                    --crossings-percent 0.5)
       scenario_file="customs/scenario_maker/out/$scenario_file"
     fi
 

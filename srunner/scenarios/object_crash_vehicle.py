@@ -374,6 +374,8 @@ class DynamicObjectCrossing(BasicScenario):
                                       self._ego_vehicle_distance_driven,
                                       name="End condition ego drive distance")
 
+        timeout = TimeOut(25, "Crossing timeout")
+
         # non leaf nodes
 
         scenario_sequence = py_trees.composites.Sequence()
@@ -381,10 +383,14 @@ class DynamicObjectCrossing(BasicScenario):
             policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE, name="keep velocity other")
         keep_velocity = py_trees.composites.Parallel(
             policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE, name="keep velocity")
+        timeout_wrapper = py_trees.composites.Parallel(
+            policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE, name="timeout if crossing fails")
+        crosser_sequence = py_trees.composites.Sequence("Crosser behavior")
 
         # building tree
 
         root.add_child(scenario_sequence)
+        # init
         scenario_sequence.add_child(ActorTransformSetter(self.other_actors[0], self.transform,
                                                          name='TransformSetterTS3walker'))
         if self.spawn_blocker:
@@ -392,14 +398,27 @@ class DynamicObjectCrossing(BasicScenario):
                                                             name='TransformSetterTS3coca', physics=False))
         scenario_sequence.add_child(HandBrakeVehicle(self.other_actors[0], True))
         scenario_sequence.add_child(start_condition)
-        scenario_sequence.add_child(HandBrakeVehicle(self.other_actors[0], False))
-        scenario_sequence.add_child(keep_velocity)
-        scenario_sequence.add_child(keep_velocity_other)
-        scenario_sequence.add_child(actor_stop_crossed_lane)
+
+        # started
+        scenario_sequence.add_child(timeout_wrapper)
+
+        # scenario_sequence.add_child(HandBrakeVehicle(self.other_actors[0], False))
+        # scenario_sequence.add_child(keep_velocity)
+        # scenario_sequence.add_child(keep_velocity_other)
+        # scenario_sequence.add_child(actor_stop_crossed_lane)
+
+        # delete
         scenario_sequence.add_child(actor_remove)
         if self.spawn_blocker:
             scenario_sequence.add_child(static_remove)
         scenario_sequence.add_child(end_condition)
+
+        timeout_wrapper.add_child(crosser_sequence)
+        timeout_wrapper.add_child(timeout)
+
+        crosser_sequence.add_child(HandBrakeVehicle(self.other_actors[0], False))
+        crosser_sequence.add_child(keep_velocity)
+        crosser_sequence.add_child(keep_velocity_other)
 
         keep_velocity.add_child(actor_velocity)
         keep_velocity.add_child(actor_drive)
