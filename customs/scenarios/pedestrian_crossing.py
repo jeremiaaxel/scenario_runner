@@ -1,4 +1,6 @@
 from __future__ import print_function, annotations
+import random
+import logging
 from typing import List, Union
 
 import os
@@ -12,11 +14,15 @@ from srunner.scenarios.object_crash_vehicle import DynamicObjectCrossing
 
 from customs.behaviors.horn_behavior import HornBehavior
 
+logger = logging.getLogger(__name__)
+
 class PedestrianCyclistProps:
     DISTANCE_FAR = 30
     DISTANCE_CLOSE = 12
+    DISTANCE_RANDOM = -1
     SPEED_NORMAL = 1.0
     SPEED_SLOW = 0.7
+    SPEED_RANDOM = -1
 
 class PedestrianCyclistCrossing(DynamicObjectCrossing):
     """
@@ -36,6 +42,12 @@ class PedestrianCyclistCrossing(DynamicObjectCrossing):
                  criteria_enable=False,
                  name: str="PedestrianCyclistCrossing",
                  timeout=60):
+        
+        if self._start_distance == -1:
+            self._start_distance = random.randint(12, 40)
+        if self.custom_speed == -1:
+            self.custom_speed = random.randrange(5, 70) / 10 # [0.5, 7.0]
+
         super().__init__(world, 
                          ego_vehicles, 
                          config, 
@@ -65,6 +77,8 @@ class PedestrianCyclistCrossing(DynamicObjectCrossing):
         def change_crossing_speed(behavior: Behaviour):
             if self.custom_speed is None:
                 return behavior 
+            
+            logger.info(f"Pedestrian crossing with speed: {self.custom_speed}")
 
             # find keep velocity
             target_node = find_behavior_by_name(behavior, "keep velocity")

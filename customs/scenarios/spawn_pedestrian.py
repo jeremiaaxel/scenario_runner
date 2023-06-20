@@ -21,8 +21,8 @@ total_amount = 200
 pedestrian_modelnames = ["walker.*"]
 pedestrian_ai_controller = ["controller.ai.walker"]
 carlaSpawnActor = carla.command.SpawnActor
-percentage_pedestrians_running = 30.0      # how many pedestrians will run
-percentage_pedestrians_crossing = 50.0     # how many pedestrians will walk through the road
+percentage_pedestrians_running = 0.5      # how many pedestrians will run
+percentage_pedestrians_crossing = 1.0     # how many pedestrians will walk through the road
 
 
 class SpawnPedestrian(SpawnActor):
@@ -73,16 +73,13 @@ class SpawnPedestrian(SpawnActor):
                 if walker_bp.has_attribute('is_invincible'):
                     walker_bp.set_attribute('is_invincible', 'false')
                 # set the max speed
+                speed = 0.0
                 if walker_bp.has_attribute('speed'):
-                    if random.random() > percentage_pedestrians_running:
-                        # walking
-                        walker_speed.append(walker_bp.get_attribute('speed').recommended_values[1])
-                    else:
-                        # running
-                        walker_speed.append(walker_bp.get_attribute('speed').recommended_values[2])
+                    speed = walker_bp.get_attribute('speed').recommended_values[1 if random.random() >= percentage_pedestrians_running else 2]
                 else:
                     print("Walker has no speed")
-                    walker_speed.append(0.0)
+                walker_speed.append(speed)
+                walker_bp.set_attribute('speed', speed)
                 batch.append(carlaSpawnActor(walker_bp, spawn_point))
 
         results = client.apply_batch_sync(batch, True)

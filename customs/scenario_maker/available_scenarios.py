@@ -99,6 +99,17 @@ class AvailableScenarios(object):
                                                           adversary_type=True,
                                                           _start_distance=PedestrianCyclistProps.DISTANCE_CLOSE,
                                                           custom_speed=PedestrianCyclistProps.SPEED_SLOW),
+
+        "PedestrianRandomCrossing": modify_class(PedestrianCyclistCrossing,
+                                                          custom_name="PedestrianRandomCrossing",
+                                                          adversary_type=False,
+                                                          _start_distance=PedestrianCyclistProps.DISTANCE_RANDOM,
+                                                          custom_speed=PedestrianCyclistProps.SPEED_RANDOM),
+        "CyclistRandomCrossing": modify_class(PedestrianCyclistCrossing,
+                                                          custom_name="CyclistRandomCrossing",
+                                                          adversary_type=True,
+                                                          _start_distance=PedestrianCyclistProps.DISTANCE_RANDOM,
+                                                          custom_speed=PedestrianCyclistProps.SPEED_RANDOM),
         # TODO: CarCrossingOnJunction
         # TODO: BikeCrossingOnJunction
 
