@@ -18,4 +18,5 @@ results*.txt
 setup-env.sh
 setup-env.ps1
 out/
+josep-logs/
 log.csv
