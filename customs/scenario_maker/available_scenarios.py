@@ -26,8 +26,8 @@ from collections import OrderedDict
 class AvailableScenarios(object): 
     WEATHER_SCENARIOS = OrderedDict([
         ("Overcast", get_weather_scenario('overcast')),
-        ("LightFoggy", get_weather_scenario('lightfoggy')),
         ("Foggy", get_weather_scenario('foggy')),
+        ("HeavyFoggy", get_weather_scenario('heavyfoggy')),
         ("Clear", get_weather_scenario('clear')),
         ("HardRain", get_weather_scenario('hardrain')),
         ("Rain", get_weather_scenario('rain')),

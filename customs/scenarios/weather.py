@@ -94,21 +94,31 @@ class WeatherBasicRoute(BasicScenario):
 
 class WeatherClear(WeatherBasicRoute):
     weather_config = {
-        'cloudiness': 10.0,
+        'cloudiness': 0.0,
         'precipitation': 0.0,
         'precipitation_deposits': 0.0,
-        'wind_intensity': 5.0,
+        'wind_intensity': 0.0,
         'fog_density': 0.0,
         'fog_distance': 0.0,
-        'fog_falloff': 0.2,
+        'fog_falloff': 0.0,
         'wetness': 0.0,
-        'scattering_intensity': 0.0,
-        'mie_scattering_scale': 0.331,
+    }
+
+class WeatherCloudy(WeatherBasicRoute):
+    weather_config = {
+        'cloudiness': 70.0,
+        'precipitation': 0.0,
+        'precipitation_deposits': 0.0,
+        'wind_intensity': 0.0,
+        'fog_density': 0.0,
+        'fog_distance': 0.0,
+        'fog_falloff': 0.0,
+        'wetness': 0.0,
     }
 
 class WeatherOvercast(WeatherBasicRoute):
     weather_config = {
-        'cloudiness': 80.0,
+        'cloudiness': 100.0,
         'precipitation': 0.0,
         'precipitation_deposits': 0.0,
         'wind_intensity': 50.0,
@@ -116,22 +126,6 @@ class WeatherOvercast(WeatherBasicRoute):
         'fog_distance': 0.75,
         'fog_falloff': 0.1,
         'wetness': 10.0,
-        'scattering_intensity': 0.0,
-        'mie_scattering_scale': 0.331,
-    }
-
-class WeatherHardRain(WeatherBasicRoute):
-    weather_config = {
-        'cloudiness': 100.0,
-        'precipitation': 80.0,
-        'precipitation_deposits': 90.0,
-        'wind_intensity': 100.0,
-        'fog_density': 7.0,
-        'fog_distance': 0.75,
-        'fog_falloff': 0.1,
-        'wetness': 100.0,
-        'scattering_intensity': 0.0,
-        'mie_scattering_scale': 0.331,
     }
 
 class WeatherRain(WeatherBasicRoute):
@@ -144,39 +138,42 @@ class WeatherRain(WeatherBasicRoute):
         'fog_distance': 0.0,
         'fog_falloff': 0.0,
         'wetness': 60.0,
-        'scattering_intensity': 0.0,
-        'mie_scattering_scale': 0.331,
+    }
+
+class WeatherHardRain(WeatherBasicRoute):
+    weather_config = {
+        'cloudiness': 100.0,
+        'precipitation': 80.0,
+        'precipitation_deposits': 90.0,
+        'wind_intensity': 100.0,
+        'fog_density': 7.0,
+        'fog_distance': 0.75,
+        'fog_falloff': 0.1,
+        'wetness': 100.0,
     }
 
 class WeatherFoggy(WeatherBasicRoute):
     weather_config = {
-        'fog_density': 30.0,
-        'fog_distance': 10.0,
-        'fog_falloff': 3.5,
-        'wetness': 60.0,
-        'scattering_intensity': 0.5,
-        'mie_scattering_scale': 1.0,
-    }
-
-class WeatherLightFoggy(WeatherBasicRoute):
-    weather_config = {
         'fog_density': 10.0,
         'fog_distance': 50.0,
         'fog_falloff': 3.5,
-        'wetness': 60.0,
-        'scattering_intensity': 0.2,
-        'mie_scattering_scale': 1.0,
     }
 
+class WeatherHeavyFoggy(WeatherBasicRoute):
+    weather_config = {
+        'fog_density': 30.0,
+        'fog_distance': 10.0,
+        'fog_falloff': 3.5,
+    }
 
 def get_weather_scenario(key: str) -> WeatherBasicRoute:
     custom_weathers = {
-        'hardrain': WeatherHardRain,
-        'overcast': WeatherOvercast,
         'clear': WeatherClear,
+        'overcast': WeatherOvercast,
+        'rain': WeatherRain,
+        'hardrain': WeatherHardRain,
         'foggy': WeatherFoggy,
-        'lightfoggy': WeatherLightFoggy,
-        'rain': WeatherRain
+        'heavyfoggy': WeatherHeavyFoggy,
     }
     return custom_weathers.get(key, None)
 
