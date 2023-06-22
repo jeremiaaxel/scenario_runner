@@ -300,9 +300,7 @@ class ScenarioMaker(object):
         for route_idx, route in enumerate(interpolated_routes):
             all_scenario_occurences = {
                 scenario_key: 0
-                for scenario_key in AvailableScenarios.get_all_scenarios(
-                    randomize=False, no_background=True
-                ).keys()
+                for scenario_key in AvailableScenarios.get_validation_scenarios().keys()
             }
 
             wp_idx = 3

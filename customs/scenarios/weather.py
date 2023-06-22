@@ -169,6 +169,7 @@ class WeatherHeavyFoggy(WeatherBasicRoute):
 def get_weather_scenario(key: str) -> WeatherBasicRoute:
     custom_weathers = {
         'clear': WeatherClear,
+        'cloudy': WeatherCloudy,
         'overcast': WeatherOvercast,
         'rain': WeatherRain,
         'hardrain': WeatherHardRain,
