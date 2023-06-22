@@ -52,6 +52,9 @@ class  ScenarioMaker(object):
         self._world = self._client.get_world()
         self._selected_scenarios = dict()
 
+        self._validation_occ_size = args.validation
+        self._validation_mode = True if args.validation > 0 else False
+
     def _get_route_interpolated(self) -> list:
         if not self._args.route:
             logger.error("Only route-based scenario generation is supported")
@@ -139,6 +142,9 @@ class  ScenarioMaker(object):
          2. Main scenario defines the scenarios during the simulation.
             Main scenario may contains all type of scenarios.
         """
+        if self._validation_mode:
+            return self.__validation_scenarios_selection(interpolated_routes, self._validation_occ_size)
+        
         this_map_scenarios: Dict[int, List[ScenarioItem]] = dict()
 
         # scenario selections
@@ -150,7 +156,10 @@ class  ScenarioMaker(object):
             logger.info(f"Init scenarios with length: {len(init_scenarios)}")
             wp_idx = 3
             for _, scenario_type in enumerate(init_scenarios):
-                wp_idx += 2
+                if wp_idx >= len(route):
+                    logger.debug_s("Index greater than route size. Breaking")
+                    break
+
                 wp_transform, _ = route[wp_idx]
                 this_route_scenarios[wp_idx] = ScenarioItem(x=wp_transform.location.x,
                                                             y=wp_transform.location.y,
@@ -158,6 +167,7 @@ class  ScenarioMaker(object):
                                                             pitch=wp_transform.rotation.pitch,
                                                             yaw=wp_transform.rotation.yaw,
                                                             scenario_type=str(scenario_type))
+                wp_idx += 2
                 
             used_scenarios_key = [scenario_item.scenario_type for scenario_item in this_route_scenarios.values()]
 
@@ -173,6 +183,10 @@ class  ScenarioMaker(object):
             curr_chunk = (wp_idx+2, wp_idx+2 + n_chunks)
             for scenario_type in selected_scenarios:
                 wp_idx = random.randrange(curr_chunk[0], curr_chunk[1])
+                if wp_idx >= len(route):
+                    logger.debug_s("Index greater than route size. Breaking")
+                    break
+
                 wp_transform, _ = route[wp_idx]
 
                 if scenario_type is None:
@@ -191,7 +205,7 @@ class  ScenarioMaker(object):
                 crossing_percentage = float(self._args.crossings_percent)
 
                 logger.info(f"Appending scenarios with crossings percentage: {crossing_percentage}")
-                crossing_scenarios = [scen_key for scen_key in AvailableScenarios.get_other_scenarios().keys() if scen_key.lower().endswith("crossing")]
+                crossing_scenarios = [scen_key for scen_key in AvailableScenarios.get_other_scenarios().keys() if scen_key.lower().startswith("crossing")]
 
                 wp_idx = 0
                 while wp_idx < len(route):
@@ -214,8 +228,57 @@ class  ScenarioMaker(object):
             this_map_scenarios[route_idx] = this_route_scenarios
 
         return this_map_scenarios
-
     
+    def __validation_scenarios_selection(self, interpolated_routes, occurences_each=1):
+        """
+        Construct scenarios for each scenario with n time occurence(s)
+        """
+        def is_all_occurences_ok(scenario_occurences: Dict[str, int], occurences_size: int) -> bool:
+            """
+            Checks if all occurences are occurences_size
+            """
+            unique_occ = set([occ for occ in scenario_occurences.values()])
+            return len(unique_occ) == 1 and list(unique_occ)[0] == occurences_size
+        
+        logger.info(f"Generating scenario for validation with occurences size: {occurences_each}")
+
+        this_map_scenarios: Dict[int, List[ScenarioItem]] = dict()
+
+        for route_idx, route in enumerate(interpolated_routes):
+            all_scenario_occurences = {scenario_key: 0 for scenario_key in AvailableScenarios.get_all_scenarios(randomize=False).keys()}
+
+            wp_idx = 3
+            this_route_scenarios: Dict[ScenarioItem] = {}
+
+            wp_out = False
+            for scenario_type in all_scenario_occurences.keys():
+                if wp_out:
+                    break
+
+                for _ in range(occurences_each):
+                    if wp_idx >= len(route):
+                        wp_out = True
+                        break
+
+                    wp_transform, _ = route[wp_idx]
+                    this_route_scenarios[wp_idx] = ScenarioItem(x=wp_transform.location.x,
+                                                                y=wp_transform.location.y,
+                                                                z=wp_transform.location.z,
+                                                                pitch=wp_transform.rotation.pitch,
+                                                                yaw=wp_transform.rotation.yaw,
+                                                                scenario_type=str(scenario_type))
+                    wp_idx += random.randint(12, 30)
+                    all_scenario_occurences[scenario_type] += 1
+                    
+            if not is_all_occurences_ok(all_scenario_occurences, occurences_each):
+                logger.info("Scenario size is bigger than route's waypoints size")
+    
+            logger.info(f"Constructed validation scenario with: {all_scenario_occurences}")
+            this_map_scenarios[route_idx] = this_route_scenarios
+
+        return this_map_scenarios
+
+
     def _construct_scenario(self, interpolated_routes: list) -> dict:
         """
         Function to construct a route scenario for each single scenario(s).
@@ -306,6 +369,10 @@ if __name__ == "__main__":
     parser.add_argument('--background-all', 
                         action='store_true',
                         help='Uses all available background scenarios on init')
+    parser.add_argument('--validation', 
+                        help='Uses all available background scenarios with occurences',
+                        default=-1, const=1, nargs="?",
+                        type=int)
     parser.add_argument('--crossings-percent', 
                         default=0.5,
                         type=float,

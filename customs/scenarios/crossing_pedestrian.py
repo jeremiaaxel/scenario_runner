@@ -16,7 +16,7 @@ from customs.behaviors.horn_behavior import HornBehavior
 
 logger = logging.getLogger(__name__)
 
-class PedestrianCyclistProps:
+class CrossingPedestrianCyclistProps:
     DISTANCE_FAR = 30
     DISTANCE_CLOSE = 12
     DISTANCE_RANDOM = -1
@@ -24,7 +24,7 @@ class PedestrianCyclistProps:
     SPEED_SLOW = 0.7
     SPEED_RANDOM = -1
 
-class PedestrianCyclistCrossing(DynamicObjectCrossing):
+class CrossingPedestrianCyclist(DynamicObjectCrossing):
     """
     Base of pedestrian crossing scenario
     """

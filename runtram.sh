@@ -50,8 +50,8 @@ defined_agent_files[human]="./customs/autoagents/human_tram_agent.py"
 agent_mode="hils"
 agent_file=${defined_agent_files[$agent_mode]}
 
-random_scenario=true
-scenario_mode=""
+generate_scenario=true
+scenario_mode="generate"
 scenario_file=""
 
 repetition="1"
@@ -91,12 +91,12 @@ function mapScenarioMode() {
   # Scenario Generation Mode
   # Exact scenario
   if [[ -n ${defined_scenario_files[$scenario_mode]} ]]; then
-    random_scenario=false
+    generate_scenario=false
     scenario_file=${defined_scenario_files[$scenario_mode]};
-  # Random generation
+  # Generation
   else
     echo "Scenario mode not found, using default (random)"
-    random_scenario=true
+    generate_scenario=true
     scenario_file=""
   fi
 }
@@ -104,7 +104,8 @@ function mapScenarioMode() {
 
 # MAIN PROGRAM
 ## Extract user arguments 
-POSITIONAL_ARGS=()
+SCENARIORUNNER_ARGS=()
+RUNTRAM_ARGS=()
 while [[ $# -gt 0 ]]; do
   case $1 in
     -r|--repetition)
@@ -132,6 +133,14 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    --validation)
+      RUNTRAM_ARGS+=("$1")
+      shift # past argument
+      ;;
+    --background-all)
+      RUNTRAM_ARGS+=("$1")
+      shift # past argument
+      ;;
     -h|--help)
       is_help=true
       shift
@@ -141,12 +150,13 @@ while [[ $# -gt 0 ]]; do
     #   exit 1
     #   ;;
     *)
-      POSITIONAL_ARGS+=("$1") # save positional arg
+      SCENARIORUNNER_ARGS+=("$1") # save positional arg
       shift # past argument
       ;;
   esac
 done
-rest="${POSITIONAL_ARGS[*]}"
+scenariorunner_args="${SCENARIORUNNER_ARGS[*]}"
+runtram_args="${RUNTRAM_ARGS[*]}"
 
 # map agent mode to agent file
 mapAgentMode
@@ -161,11 +171,13 @@ if [ $is_help = true ]; then
 fi
 
 # print summary
-echo "Agent used: $agent_file"
-if [ $random_scenario = true ]; then
-  echo "Using random scenario generation"
+echo "RUNTRAM: Autonomous Tram Testing Module"
+echo "Agent used: \"$agent_mode\" : \"$agent_file\""
+echo "Scenario mode: \"$scenario_mode\""
+if [ $generate_scenario = true ]; then
+  echo "Using scenario generation"
 else
-  echo "Using scenario: $scenario_file"
+  echo "Using scenario: \"$scenario_file\""
 fi
 
 # repetitions
@@ -173,15 +185,15 @@ for (( i=1 ; i<=$repetition ; i++ )); do
     echo "#-repetition: $i"
 
     # SCENARIO MAKING
-    if [ $random_scenario = true ]; then
+    if [ $generate_scenario = true ]; then
       scenario_file="scenario_repetition_$i.json"
       n_scenario_types=$(($scenario_base_size - 1 + $i));
       (set -x; python3 $scenario_maker \
                     --route $tram_route_file $route_number \
                     --filename $scenario_file \
                     --number-of-scenario-types $n_scenario_types \
-                    --background-all \
-                    --crossings-percent 0.5)
+                    --crossings-percent 0.5 \
+                    $runtram_args)
       scenario_file="customs/scenario_maker/out/$scenario_file"
     fi
 
@@ -194,7 +206,7 @@ for (( i=1 ; i<=$repetition ; i++ )); do
                 --route $tram_route_file $scenario_file $route_number \
                 --agent $agent_file \
                 --agentConfig $agent_config_file \
-                $rest)
+                $scenariorunner_args)
 
 done
 echo "Done"
