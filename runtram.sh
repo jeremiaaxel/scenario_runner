@@ -58,6 +58,9 @@ repetition="1"
 route_number="1"
 scenario_base_size="0"
 is_help=false
+
+SCENARIORUNNER_ARGS=()
+RUNTRAM_ARGS=()
 # DEFAULT ARGUMENTS - END
 
 # FUNCTIONS - START
@@ -90,7 +93,10 @@ function standardizeScenarioMode() {
 function mapScenarioMode() {
   # Scenario Generation Mode
   # Exact scenario
-  if [[ -n ${defined_scenario_files[$scenario_mode]} ]]; then
+  if [ $scenario_mode == "validation" ]; then
+    generate_scenario=true
+    RUNTRAM_ARGS+=("--validation")
+  elif [[ -n ${defined_scenario_files[$scenario_mode]} ]]; then
     generate_scenario=false
     scenario_file=${defined_scenario_files[$scenario_mode]};
   # Generation
@@ -104,8 +110,6 @@ function mapScenarioMode() {
 
 # MAIN PROGRAM
 ## Extract user arguments 
-SCENARIORUNNER_ARGS=()
-RUNTRAM_ARGS=()
 while [[ $# -gt 0 ]]; do
   case $1 in
     -r|--repetition)
@@ -133,10 +137,6 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    --validation)
-      RUNTRAM_ARGS+=("$1")
-      shift # past argument
-      ;;
     --background-all)
       RUNTRAM_ARGS+=("$1")
       shift # past argument
@@ -155,8 +155,6 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
-scenariorunner_args="${SCENARIORUNNER_ARGS[*]}"
-runtram_args="${RUNTRAM_ARGS[*]}"
 
 # map agent mode to agent file
 mapAgentMode
@@ -169,6 +167,9 @@ if [ $is_help = true ]; then
   display_help
   exit 0
 fi
+
+scenariorunner_args="${SCENARIORUNNER_ARGS[*]}"
+runtram_args="${RUNTRAM_ARGS[*]}"
 
 # print summary
 echo "RUNTRAM: Autonomous Tram Testing Module"
