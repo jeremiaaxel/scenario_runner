@@ -41,7 +41,7 @@ class SpawnActor(BasicScenario):
 
     underground_z = 500
     _other_actor_target_velocity = 5
-    _ego_vehicle_distance_driven = -1  # set value <= 0 to make the scenario endless
+    _ego_vehicle_distance_driven = 20  # set value <= 0 to make the scenario endless
     do_print = False
     _ego_route = None
 

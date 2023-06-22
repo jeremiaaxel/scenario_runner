@@ -1,4 +1,5 @@
 import random
+
 from customs.scenarios.obstructing_actor import (
     ObstructingVehicleHorn, ObstructingVehicleTimer,
     ObstructingPedestrianHorn, ObstructingPedestrianTimer
@@ -12,18 +13,15 @@ from customs.scenarios.spawn_bike import SpawnBikeOnTrigger
 from customs.scenarios.spawn_pedestrian import SpawnPedestrianOnTrigger
 from customs.scenarios.time import TimeDay, TimeNight, TimeSunrise
 from customs.scenarios.weather import get_weather_scenario
-# (
-#     WeatherClear, WeatherHardRain, WeatherOvercast,
-#     # Presets
-#     WeatherClearSunsetRoute, WeatherWetNoonRoute, 
-#     WeatherHardRainNightRoute, WeatherRainyDayRoute, 
-#     WeatherMidRainyNoonRoute
-# )
 from customs.scenarios.cut_in import CutInRoute
 from customs.helpers.blueprints import modify_class
 from collections import OrderedDict
 
 class AvailableScenarios(object): 
+    """
+    A class the contains all available scenarios.
+    All scenarios are defined as ordered dictionary.
+    """
     WEATHER_SCENARIOS = OrderedDict([
         ("Overcast", get_weather_scenario('overcast')),
         ("Foggy", get_weather_scenario('foggy')),
@@ -39,17 +37,27 @@ class AvailableScenarios(object):
         ("Sunrise", TimeSunrise)
     ])
 
+    # Spawning Scenarios but never ending
     BACKGROUND_SCENARIOS = OrderedDict([
         # Spawning(s)
         # "SpawnAngkot": SpawnAngkot,
         # "SpawnBike": SpawnBike,
         # "SpawnPedestrian": SpawnPedestrian,
         # "SpawnMixed": SpawnMixed,
+        ("SpawnActorOnTriggerBackground", modify_class(SpawnActorOnTrigger, _ego_vehicle_distance_driven=-1)),
+        ("SpawnAngkotOnTriggerBackground", modify_class(SpawnAngkotOnTrigger, _ego_vehicle_distance_drive=-1)),
+        ("SpawnBikeOnTriggerBackground", modify_class(SpawnBikeOnTrigger, _ego_vehicle_distance_drive=-1)),
+        ("SpawnPedestrianOnTriggerBackground", modify_class(SpawnPedestrianOnTrigger, _ego_vehicle_distance_drive=-1)),
+        ("SpawnMixedOnTriggerBackground", modify_class(SpawnMixedOnTrigger, _ego_vehicle_distance_drive=-1)),
+    ])
+
+    # Background scenarios but ending on ego drive distance
+    SPAWNING_SCENARIOS = OrderedDict([
         ("SpawnActorOnTrigger", SpawnActorOnTrigger),
         ("SpawnAngkotOnTrigger", SpawnAngkotOnTrigger),
         ("SpawnBikeOnTrigger", SpawnBikeOnTrigger),
         ("SpawnPedestrianOnTrigger", SpawnPedestrianOnTrigger),
-        ("SpawnMixedOnTrigger", SpawnMixedOnTrigger)
+        ("SpawnMixedOnTrigger", SpawnMixedOnTrigger),
     ])
 
     OTHER_SCENARIOS = OrderedDict([
@@ -74,7 +82,6 @@ class AvailableScenarios(object):
                                                           adversary_type=True,
                                                           _start_distance=CrossingPedestrianCyclistProps.DISTANCE_CLOSE,
                                                           custom_speed=CrossingPedestrianCyclistProps.SPEED_NORMAL)),
-                                                          
         ("CrossingPedestrianSlowFar", modify_class(CrossingPedestrianCyclist, 
                                                           custom_name="PedestrianSlowFarCrossing",
                                                           adversary_type=False,
@@ -95,7 +102,6 @@ class AvailableScenarios(object):
                                                           adversary_type=True,
                                                           _start_distance=CrossingPedestrianCyclistProps.DISTANCE_CLOSE,
                                                           custom_speed=CrossingPedestrianCyclistProps.SPEED_SLOW)),
-
         ("CrossingPedestrianRandom", modify_class(CrossingPedestrianCyclist,
                                                           custom_name="PedestrianRandomCrossing",
                                                           adversary_type=False,
@@ -112,52 +118,80 @@ class AvailableScenarios(object):
         # Obstructing(s)
         ("ObstructingVehicleHorn", ObstructingVehicleHorn),
         ("ObstructingVehicleTimer", ObstructingVehicleTimer),
-        # TODO: Fix obstructing pedestrian
         ("ObstructingPedestrianHorn", ObstructingPedestrianHorn),
         ("ObstructingPedestrianTimer", ObstructingPedestrianTimer),
         
-        # For Regression
-        ("SpawnStillWalkers", SpawnStillWalkers),
-
+        # Cut In
         ("CutInRoute", CutInRoute)
+
+        # For Regression
+        # ("SpawnStillWalkers", SpawnStillWalkers),
     ])
+    @staticmethod
+    def __get_scenarios(scenarios_dict, randomize=True):
+        scenarios = scenarios_dict.items()
+        if randomize:
+            random.shuffle(scenarios)
+        return OrderedDict(scenarios)
 
     @classmethod
     def get_weather_scenarios(cls, randomize=True):
-        scenarios = list(cls.WEATHER_SCENARIOS.items())
-        if randomize:
-            random.shuffle(scenarios)
-        return OrderedDict(scenarios)
+        """
+        Get weather scenarios
+        :param
+            randomize: randomize the order of the dict (default: True)
+        """
+        return cls.__get_scenarios(cls.WEATHER_SCENARIOS, randomize=randomize)
 
     @classmethod
     def get_time_scenarios(cls, randomize=True):
-        scenarios = list(cls.TIME_SCENARIOS.items())
-        if randomize:
-            random.shuffle(scenarios)
-        return OrderedDict(scenarios)
+        """
+        Get time scenarios
+        :param
+            randomize: randomize the order of the dict (default: True)
+        """
+        return cls.__get_scenarios(cls.TIME_SCENARIOS, randomize=randomize)
 
     @classmethod
     def get_other_scenarios(cls, randomize=True):
-        scenarios = list(cls.OTHER_SCENARIOS.items())
-        if randomize:
-            random.shuffle(scenarios)
-        return OrderedDict(scenarios)
+        """
+        Get other scenarios
+        :param
+            randomize: randomize the order of the dict (default: True)
+        """
+        return cls.__get_scenarios(cls.OTHER_SCENARIOS, randomize=randomize)
 
     @classmethod
     def get_background_scenarios(cls, randomize=True):
-        scenarios = list(cls.BACKGROUND_SCENARIOS.items())
-        if randomize:
-            random.shuffle(scenarios)
-        return OrderedDict(scenarios)
+        """
+        Get spawning scenarios but neverending as background scenario
+        :param
+            randomize: randomize the order of the dict (default: True)
+        """
+        return cls.__get_scenarios(cls.BACKGROUND_SCENARIOS, randomize=randomize)
+    
+    @classmethod
+    def get_spawning_scenarios(cls, randomize=True):
+        """
+        Get spawning scenarios
+        :param
+            randomize: randomize the order of the dict (default: True)
+        """
+        return cls.__get_scenarios(cls.SPAWNING_SCENARIOS, randomize=randomize)
 
     @classmethod
-    def get_all_scenarios(cls, randomize=True):
+    def get_all_scenarios(cls, randomize=True, no_background=False):
+        """
+        Get all scenarios.
+        :param
+            randomize: randomize the order of the dict (default: True)
+            no_background: not including background scenarios (nonending spawn) (default: False)
+        """
         all_scenarios_odict = OrderedDict()
-        all_scenarios_odict.update(cls.get_background_scenarios(randomize=False))
+        if not no_background:
+            all_scenarios_odict.update(cls.get_background_scenarios(randomize=False))
+        all_scenarios_odict.update(cls.get_spawning_scenarios(randomize=False))
         all_scenarios_odict.update(cls.get_weather_scenarios(randomize=False))
         all_scenarios_odict.update(cls.get_time_scenarios(randomize=False))
         all_scenarios_odict.update(cls.get_other_scenarios(randomize=False))
-        all_scenarios = list(all_scenarios_odict.items())
-        if randomize:
-            random.shuffle(all_scenarios)
-        return OrderedDict(all_scenarios)
+        return cls.__get_scenarios(all_scenarios_odict, randomize=randomize)
