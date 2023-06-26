@@ -121,6 +121,13 @@ class ObstructingActor(BasicScenario):
                                     "Obstructing actor on horn",
                                     in_horn_meta=py_trees.meta.success_is_running,
                                     out_horn_meta=py_trees.meta.success_is_running)
+        
+        # Timeout actors after 15 seconds if fails to get out of the way
+        actors_behavior_parallel = py_trees.composites.Parallel(
+            policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE
+        )
+        actors_behavior_parallel.add_child(horn_behavior)
+        actors_behavior_parallel.add_child(TimeOut(15))
 
         # non leaf nodes
         root = py_trees.composites.Parallel(
@@ -139,11 +146,10 @@ class ObstructingActor(BasicScenario):
             scenario_sequence.add_child(ChangeAutoPilot(self.other_actors[0], True))
         elif isinstance(self.other_actors[0], carla.Walker):
             scenario_sequence.add_child(ToggleWalkerController(self.ai_controllers[0], True))
-        scenario_sequence.add_child(horn_behavior) 
+        scenario_sequence.add_child(actors_behavior_parallel) 
         scenario_sequence.add_child(actor_removed)
         scenario_sequence.add_child(end_condition)
 
-        # py_trees.display.render_dot_tree(root, name=os.path.join(OUT_DIR, __class__.__name__))
         return root
 
     def _create_test_criteria(self):

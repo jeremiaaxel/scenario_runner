@@ -303,14 +303,21 @@ class ScenarioMaker(object):
                 for scenario_key in AvailableScenarios.get_validation_scenarios().keys()
             }
 
-            wp_idx = 3
             wp_out = False
+            wp_idx = 0
+            n_chunks = 0
+            scenarios_size = len(all_scenario_occurences) * occurences_each
+            if scenarios_size > 0:
+                n_chunks = len(route) // scenarios_size
+            curr_chunk = (wp_idx + 2, wp_idx + 2 + n_chunks)
+
             this_route_scenarios: Dict[ScenarioItem] = {}
             for scenario_type in all_scenario_occurences.keys():
                 if wp_out:
                     break
 
                 for _ in range(occurences_each):
+                    wp_idx = random.randrange(curr_chunk[0], curr_chunk[1])
                     if wp_idx >= len(route):
                         wp_out = True
                         break
@@ -324,8 +331,9 @@ class ScenarioMaker(object):
                         yaw=wp_transform.rotation.yaw,
                         scenario_type=str(scenario_type),
                     )
-                    wp_idx += random.randint(12, 30)
                     all_scenario_occurences[scenario_type] += 1
+
+                    curr_chunk = (curr_chunk[1], curr_chunk[1] + n_chunks)
 
             if not is_all_occurences_ok(all_scenario_occurences, occurences_each):
                 logger.info("Scenario size is bigger than route's waypoints size")

@@ -14,7 +14,7 @@
                             }
                         }
                     ],
-                    "scenario_type": "PedestrianRandomCrossing"
+                    "scenario_type": "CutInRoute"
                 }
             ]
         }
