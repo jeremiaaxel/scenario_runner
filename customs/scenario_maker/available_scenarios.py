@@ -53,21 +53,21 @@ class AvailableScenarios(object):
     BACKGROUND_SCENARIOS: Dict[str, Dict[str, BasicScenario]] = {
         'fourwheel': OrderedDict([
             ("SpawnAngkotOnTriggerBackground", modify_class(
-                SpawnAngkotOnTrigger, _ego_vehicle_distance_drive=-1)),
+                SpawnAngkotOnTrigger, _ego_vehicle_distance_driven=-1)),
         ]),
         'twowheel': OrderedDict([
             ("SpawnBikeOnTriggerBackground", modify_class(
-                SpawnBikeOnTrigger, _ego_vehicle_distance_drive=-1)),
+                SpawnBikeOnTrigger, _ego_vehicle_distance_driven=-1)),
         ]),
         'pedestrian': OrderedDict([
             ("SpawnPedestrianOnTriggerBackground", modify_class(
-                SpawnPedestrianOnTrigger, _ego_vehicle_distance_drive=-1)),
+                SpawnPedestrianOnTrigger, _ego_vehicle_distance_driven=-1)),
         ]),
         'mixed': OrderedDict([
             # ("SpawnActorOnTriggerBackground", modify_class(
             #     SpawnActorOnTrigger, _ego_vehicle_distance_driven=-1)),
             ("SpawnMixedOnTriggerBackground", modify_class(
-                SpawnMixedOnTrigger, _ego_vehicle_distance_drive=-1)),
+                SpawnMixedOnTrigger, _ego_vehicle_distance_driven=-1)),
             ])
     }
 
