@@ -15,6 +15,7 @@ class HumanInterface(object):
     _info_text = []
     _show_info = True
     ego_vehicle = None
+    server_fps = None
 
     def __init__(self, title=None, width=640, height=403):
         self._title = title
@@ -39,7 +40,7 @@ class HumanInterface(object):
         self._notifications = FadingText(
             font, (self._width, 40), (0, self._height - 40))
 
-    def update_info(self, imu_data, gnss_data, other_data=None):
+    def update_info(self, imu_data, gnss_data, other_data=None, clock=None):
         def get_heading(compass):
             heading = 'N' if compass > 270.5 or compass < 89.5 else ''
             heading += 'S' if 90.5 < compass < 269.5 else ''
@@ -100,9 +101,14 @@ class HumanInterface(object):
         accelerometer = [abs(x) if x == 0 else x for x in accelerometer]
         gyroscope = [abs(x) if x == 0 else x for x in gyroscope]
 
-        self._info_text = [
-            f'{"Server FPS":<10}: {self.server_fps:.2f} fps',
-            '',
+        self._info_text = []
+
+        self._info_text.extend([
+            f'{"Server FPS":<10}: ' + f'{self.server_fps:16.0f} fps' if self.server_fps else 'None',
+            # f'{"Client FPS":<10}: ' + f'{clock.get_fps():16.0f} fps' if clock else 'None',
+            ''])
+
+        self._info_text.extend([
             f'{"Speed":<10}: {speed:.2f} m/s',
             f'{"Compass":<10}: {compass:.2f}\N{DEGREE SIGN} {heading}',
             f'{"Accelero":<10}: {array_to_string(accelerometer)}',
@@ -110,7 +116,7 @@ class HumanInterface(object):
             f'{"GNSS":<10}: {lat:>6.2f} {lon:>6.2f}',
             '',
             f'{"Is horn:":<10} {other_data.get("is_horn", False)}',
-            '']
+            ''])
 
         if t_camera:
             self._info_text.extend([
@@ -199,13 +205,17 @@ class HumanInterface(object):
                 'gyroscope': parse_gyroscope(gyroscope),
                 'compass': parse_compass(compass)}
 
-    def run_interface(self, input_data, other_data=None):
-        """
-        Run the GUI
-        """
+    def _on_world_tick(self, timestamp):
+        if self._server_clock is None:
+            self._server_clock = pygame.time.Clock()
+
         self._server_clock.tick()
         self.server_fps = self._server_clock.get_fps()
 
+    def run_interface(self, input_data, other_data=None, clock=None):
+        """
+        Run the GUI
+        """
         # process sensor data
         image_center = input_data['Center'][1][:, :, -2::-1]
         imu_data = HumanInterface.parse_imu_data(input_data['IMU'][1])
@@ -216,7 +226,7 @@ class HumanInterface(object):
             image_center.swapaxes(0, 1))
         if self._surface is not None:
             self._display.blit(self._surface, (0, 0))
-        self.update_info(imu_data, gnss_data, other_data)
+        self.update_info(imu_data, gnss_data, other_data, clock)
         self.render_info()
         pygame.display.flip()
 

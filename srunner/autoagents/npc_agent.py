@@ -60,7 +60,7 @@ class NpcAgent(AutonomousAgent):
 
         return sensors
 
-    def run_step(self, input_data, timestamp):
+    def run_step(self, input_data, timestamp, clock=None):
         """
         Execute one step of navigation.
         """

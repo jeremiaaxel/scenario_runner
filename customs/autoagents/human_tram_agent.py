@@ -42,7 +42,7 @@ class HumanTramAgent(TramAgent):
             self._hic = HumanInterface(title=self.__class__.__name__)
         self._controller = KeyboardControl(keyboard_config)
 
-    def run_step(self, input_data, timestamp):
+    def run_step(self, input_data, timestamp, clock=None):
         """
         Execute one step of navigation.
         """
@@ -58,7 +58,7 @@ class HumanTramAgent(TramAgent):
         
         self.agent_engaged = True
         if self.with_gui:
-            self._hic.run_interface(input_data, other_data)
+            self._hic.run_interface(input_data, other_data, clock)
         self.prev_timestamp = timestamp
 
         return control
@@ -67,6 +67,9 @@ class HumanTramAgent(TramAgent):
         super().set_egovehicle(egovehicle)
         if self.with_gui:
             self._hic.set_egovehicle(egovehicle)
+
+    def _on_world_tick(self, timestamp):
+        self._hic._on_world_tick(timestamp)
 
     def destroy(self):
         """

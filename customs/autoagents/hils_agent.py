@@ -126,7 +126,7 @@ class HilsAgent(HumanTramAgent):
             csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
             csv_writer.writeheader()
 
-    def run_step(self, input_data, timestamp):
+    def run_step(self, input_data, timestamp, clock=None):
         """
         Execute one step of navigation.
         Steering: NPC agent
@@ -159,7 +159,7 @@ class HilsAgent(HumanTramAgent):
         # throttle, brake = 0, 1 # force brake for regression
 
         # steering: from NPC agent
-        control_super = super().run_step(input_data, timestamp)
+        control_super = super().run_step(input_data, timestamp, clock)
 
         control = VehicleControl(
             throttle=throttle,
@@ -180,7 +180,7 @@ class HilsAgent(HumanTramAgent):
                 control.brake = control_keyboard.brake
                 control.hand_brake = control_keyboard.hand_brake
 
-            self._hic.run_interface(input_data, {})
+            self._hic.run_interface(input_data, {}, clock)
 
         self.prev_timestamp = timestamp
 

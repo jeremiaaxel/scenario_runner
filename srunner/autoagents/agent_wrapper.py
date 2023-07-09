@@ -32,11 +32,14 @@ class AgentWrapper(object):
         """
         self._agent = agent
 
-    def __call__(self):
+    def __call__(self, clock = None):
         """
         Pass the call directly to the agent
         """
-        return self._agent()
+        return self._agent(clock)
+    
+    def _on_world_tick(self, timestamp):
+        self._agent._on_world_tick(timestamp)
 
     def setup_sensors(self, vehicle, debug_mode=False):
         """

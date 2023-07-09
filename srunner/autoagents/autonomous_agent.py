@@ -62,7 +62,7 @@ class AutonomousAgent(object):
 
         return sensors
 
-    def run_step(self, input_data, timestamp):
+    def run_step(self, input_data, timestamp, clock=None):
         """
         Execute one step of navigation.
         :return: control
@@ -82,7 +82,7 @@ class AutonomousAgent(object):
         """
         pass
 
-    def __call__(self):
+    def __call__(self, clock=None):
         """
         Execute the agent call, e.g. agent()
         Returns the next vehicle controls
@@ -94,10 +94,13 @@ class AutonomousAgent(object):
         if self.is_print_log:
             print('======[Agent] Wallclock_time = {} / Sim_time = {}'.format(wallclock, timestamp))
 
-        control = self.run_step(input_data, timestamp)
+        control = self.run_step(input_data, timestamp, clock)
         control.manual_gear_shift = False
 
         return control
+    
+    def _on_world_tick(self, timestamp):
+        pass
 
     def set_global_plan(self, global_plan_gps, global_plan_world_coord):
         """

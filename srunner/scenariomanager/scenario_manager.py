@@ -15,6 +15,7 @@ import sys
 import time
 
 import py_trees
+import pygame
 
 from srunner.autoagents.agent_wrapper import AgentWrapper
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
@@ -127,15 +128,20 @@ class ScenarioManager(object):
         self._watchdog.start()
         self._running = True
 
+        clock = pygame.time.Clock()
+        if hasattr(self._agent, "_on_world_tick"):
+            CarlaDataProvider.get_world().on_tick(self._agent._on_world_tick)
+            
         while self._running:
             timestamp = None
             world = CarlaDataProvider.get_world()
+            clock.tick_busy_loop(60)
             if world:
                 snapshot = world.get_snapshot()
                 if snapshot:
                     timestamp = snapshot.timestamp
             if timestamp:
-                self._tick_scenario(timestamp)
+                self._tick_scenario(timestamp, clock)
 
         self.cleanup()
 
@@ -149,7 +155,7 @@ class ScenarioManager(object):
         if self.scenario_tree.status == py_trees.common.Status.FAILURE:
             print("ScenarioManager: Terminated due to failure")
 
-    def _tick_scenario(self, timestamp):
+    def _tick_scenario(self, timestamp, clock=None):
         """
         Run next tick of scenario and the agent.
         If running synchornously, it also handles the ticking of the world.
@@ -168,7 +174,7 @@ class ScenarioManager(object):
             CarlaDataProvider.on_carla_tick()
 
             if self._agent is not None:
-                ego_action = self._agent()  # pylint: disable=not-callable
+                ego_action = self._agent(clock)  # pylint: disable=not-callable
 
             if self._agent is not None:
                 self.ego_vehicles[0].apply_control(ego_action)
