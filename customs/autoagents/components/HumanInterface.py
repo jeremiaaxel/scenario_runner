@@ -21,6 +21,7 @@ class HumanInterface(object):
         self._width = width
         self._height = height
         self._surface = None
+        self._server_clock = pygame.time.Clock()
 
         pygame.font.init()
         font_name = 'courier' if os.name == 'nt' else 'mono'
@@ -100,6 +101,8 @@ class HumanInterface(object):
         gyroscope = [abs(x) if x == 0 else x for x in gyroscope]
 
         self._info_text = [
+            f'{"Server FPS":<10}: {self.server_fps:.2f} fps',
+            '',
             f'{"Speed":<10}: {speed:.2f} m/s',
             f'{"Compass":<10}: {compass:.2f}\N{DEGREE SIGN} {heading}',
             f'{"Accelero":<10}: {array_to_string(accelerometer)}',
@@ -200,6 +203,9 @@ class HumanInterface(object):
         """
         Run the GUI
         """
+        self._server_clock.tick()
+        self.server_fps = self._server_clock.get_fps()
+
         # process sensor data
         image_center = input_data['Center'][1][:, :, -2::-1]
         imu_data = HumanInterface.parse_imu_data(input_data['IMU'][1])
