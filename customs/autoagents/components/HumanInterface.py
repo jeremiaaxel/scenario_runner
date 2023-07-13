@@ -40,6 +40,27 @@ class HumanInterface(object):
         self._notifications = FadingText(
             font, (self._width, 40), (0, self._height - 40))
 
+    @staticmethod
+    def get_nearby_actors_info(t_camera, ego_vehicle_id):
+        def distance(transform1, transform2):
+            return math.sqrt((transform1.x - transform2.location.x)**2 + (transform1.y - transform2.location.y)**2 + (transform1.z - transform2.location.z)**2)
+
+        actors_exception = ["controller.ai.walker"]
+        info_text = ["Nearby actors (camera):"]
+
+        actors = CarlaDataProvider.get_actors()
+        actors = [(id, actor) for id, actor in actors if actor is not None and actor.is_alive and
+                    actor.type_id not in actors_exception and id != ego_vehicle_id]
+        vehicles = [(distance(actor.get_location(), t_camera), actor)
+                    for id, actor in actors]
+        for d, vehicle in sorted(vehicles, key=lambda vehicles: vehicles[0]):
+            if d > 200.0:
+                break
+            vehicle_type = get_actor_display_name(vehicle, truncate=22)
+            info_text.append(f'{d:>9.2f} m {vehicle_type}')
+
+        return info_text
+
     def update_info(self, imu_data, gnss_data, other_data=None, clock=None):
         def get_heading(compass):
             heading = 'N' if compass > 270.5 or compass < 89.5 else ''
@@ -55,26 +76,6 @@ class HumanInterface(object):
                 if idx != len(arr) - 1:
                     result += f","
             return result
-
-        def get_nearby_actors_info():
-            def distance(transform1, transform2):
-                return math.sqrt((transform1.x - transform2.location.x)**2 + (transform1.y - transform2.location.y)**2 + (transform1.z - transform2.location.z)**2)
-
-            actors_exception = ["controller.ai.walker"]
-            info_text = ["Nearby actors (camera):"]
-
-            actors = CarlaDataProvider.get_actors()
-            actors = [(id, actor) for id, actor in actors if actor is not None and actor.is_alive and
-                      actor.type_id not in actors_exception and id != self.ego_vehicle.id]
-            vehicles = [(distance(actor.get_location(), t_camera), actor)
-                        for id, actor in actors]
-            for d, vehicle in sorted(vehicles, key=lambda vehicles: vehicles[0]):
-                if d > 200.0:
-                    break
-                vehicle_type = get_actor_display_name(vehicle, truncate=22)
-                info_text.append(f'{d:>9.2f} m {vehicle_type}')
-
-            return info_text
 
         if other_data is None:
             other_data = dict()
@@ -104,7 +105,7 @@ class HumanInterface(object):
         self._info_text = []
 
         self._info_text.extend([
-            f'{"Server FPS":<10}: ' + f'{self.server_fps:16.0f} fps' if self.server_fps else 'None',
+            f'{"Server FPS":<10}: ' + f'{self.server_fps:.0f} fps' if self.server_fps else 'None',
             # f'{"Client FPS":<10}: ' + f'{clock.get_fps():16.0f} fps' if clock else 'None',
             ''])
 
@@ -114,10 +115,12 @@ class HumanInterface(object):
             f'{"Accelero":<10}: {array_to_string(accelerometer)}',
             f'{"Gyroscop":<10}: {array_to_string(gyroscope)}',
             f'{"GNSS":<10}: {lat:>6.2f} {lon:>6.2f}',
-            '',
-            f'{"Is horn:":<10} {other_data.get("is_horn", False)}',
             ''])
+        
+        # Other data
+        self._info_text.append(f'{"Is horn:":<10} {other_data.get("is_horn", False)}')
 
+        # Location data
         if t_camera:
             self._info_text.extend([
                 "(camera)",
@@ -132,10 +135,12 @@ class HumanInterface(object):
                 ]
             )
 
+        # Nearby actors data
+        self._info_text.append(f'{"DM command:":<10} {other_data.get("dm_command", "")}')
         self._info_text.extend(
             [
                 "",
-                *get_nearby_actors_info()
+                *__class__.get_nearby_actors_info(t_camera, self.ego_vehicle.id)
             ]
         )
 

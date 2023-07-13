@@ -8,7 +8,7 @@ from customs.scenarios.obstructing_actor import (
 from customs.scenarios.crossing_pedestrian import CrossingPedestrianCyclist, CrossingPedestrianCyclistProps
 from customs.scenarios.spawn_car import SpawnCarOnTrigger
 from customs.scenarios.spawn_mixed import SpawnMixedOnTrigger
-from customs.scenarios.spawn_still_walkers import SpawnStillWalkers
+from customs.scenarios.spawn_still_walkers import RegressionScenarios
 from customs.scenarios.spawn_actor import SpawnActorOnTrigger
 from customs.scenarios.spawn_angkot import SpawnAngkotOnTrigger
 from customs.scenarios.spawn_bike import SpawnBikeOnTrigger
@@ -151,6 +151,9 @@ class AvailableScenarios(object):
         "cutin": OrderedDict([
             ("CutInRoute", CutInRoute)
         ]),
+        "regression": OrderedDict([
+            ("Regression", RegressionScenarios)
+        ])
         # TODO: CarCrossingOnJunction
         # TODO: BikeCrossingOnJunction
         # "spawnstill": OrderedDict([

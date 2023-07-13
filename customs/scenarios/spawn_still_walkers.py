@@ -11,13 +11,23 @@ from srunner.scenariomanager.timer import TimeOut
 from srunner.scenarios.basic_scenario import BasicScenario
 
 
-class SpawnStillWalkers(BasicScenario):
-    delta_ys = [num for num in range(5, 36, 5)]
-    delta_xs = [num for num in range(-5, 11, 5)]
+class RegressionScenarios(BasicScenario):
+    """
+    Spawn some walkers in certain x and y distances overtime.
+    """
+    # delta_ys = [num for num in range(5, 36, 5)]
+    # delta_xs = [num for num in range(-5, 11, 5)]
+
+    delta_ys = [35]
+    delta_xs = [0]
     transforms = []
     actor_timeout = 15 # (s)
 
-    model = "walker.*"
+    model = "walker.pedestrian.0001"
+    model = "vehicle.carlamotors.carlacola"
+    # model = "vehicle.micro.microlino"
+    # model = "vehicle.vespa.zx125"
+    # model = "vehicle.bh.crossbike"
 
     def __init__(self, 
                  world,
@@ -88,8 +98,8 @@ class SpawnStillWalkers(BasicScenario):
         for actor_idx, actor in enumerate(self.other_actors):
             actor_seq = Sequence(name="Actor sequence")
             actor_seq.add_child(ActorTransformSetter(actor, self.transforms[actor_idx]))
-            actor_seq.add_child(TimeOut(self.actor_timeout))
-            actor_seq.add_child(ActorDestroy(actor, name=f"Destroy actor {actor.id}"))
+            # actor_seq.add_child(TimeOut(self.actor_timeout))
+            # actor_seq.add_child(ActorDestroy(actor, name=f"Destroy actor {actor.id}"))
             root.add_child(actor_seq)
 
         return root

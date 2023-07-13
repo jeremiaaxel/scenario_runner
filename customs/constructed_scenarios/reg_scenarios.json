@@ -14,7 +14,7 @@
                             }
                         }
                     ],
-                    "scenario_type": "SpawnStillWalkers"
+                    "scenario_type": "Regression"
                 }
             ]
         }

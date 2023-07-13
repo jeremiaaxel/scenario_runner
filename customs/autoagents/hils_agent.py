@@ -24,6 +24,7 @@ from hils_connector.carla_handlers.inbound import ControlHandler
 from threading import Event
 from carla import VehicleControl
 import logging
+from customs.autoagents.components.HumanInterface import HumanInterface
 from customs.helpers.config import OUT_DIR
 
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
@@ -126,6 +127,21 @@ class HilsAgent(HumanTramAgent):
             csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
             csv_writer.writeheader()
 
+    def _log_actors_and_speed(self, timestamp):
+        t_camera = None
+        _camera = CarlaDataProvider.get_sensor_by_id('Center')
+        if _camera is not None:
+            t_camera = _camera.get_transform()
+        other_actors_info = HumanInterface.get_nearby_actors_info(t_camera, self.ego_vehicle.id)
+        other_distance = ""
+        if len(other_actors_info) > 1:
+            other_distance = other_actors_info[1]
+
+        v = self.ego_vehicle.get_velocity()
+        speed = math.sqrt(v.x**2 + v.y**2 + v.z**2)
+        
+        self._command_log(self._dm_command.val, timestamp, filename="command_log_with_actors.txt", actors_distances=other_distance.strip(), ego_speed=f"{speed:.2f} m/s")
+
     def run_step(self, input_data, timestamp, clock=None):
         """
         Execute one step of navigation.
@@ -151,8 +167,10 @@ class HilsAgent(HumanTramAgent):
                 manual_gear_shift=False,
             )
 
+        # log timestamp, command, distance
         self._vehicle_control_event.wait(timeout=self.dm_command_wait_timeout)
         self._command_log(self._dm_command.val, timestamp, filename="command_log.txt")
+        self._log_actors_and_speed(timestamp)
 
         throttle, brake = 0, 0
         throttle, _, brake = self._translate_dm_command(timestamp)
@@ -180,7 +198,7 @@ class HilsAgent(HumanTramAgent):
                 control.brake = control_keyboard.brake
                 control.hand_brake = control_keyboard.hand_brake
 
-            self._hic.run_interface(input_data, {}, clock)
+            self._hic.run_interface(input_data, { 'dm_command': self._dm_command.val }, clock)
 
         self.prev_timestamp = timestamp
 
@@ -202,12 +220,18 @@ class HilsAgent(HumanTramAgent):
 
         return dm.get_commands()
     
-    def _command_log(self, command, timestamp=None, filename: str="logs.txt"):
+    def _command_log(self, command, timestamp=None, filename: str="logs.txt", **kwargs):
         fullfilename = os.path.join(OUT_DIR, "command_logs")
         os.makedirs(fullfilename, exist_ok=True)
         fullfilename = os.path.join(fullfilename, filename)
+
+        logstrings = [f"timestamp: {timestamp} | command: {command}"]
+
+        for key, value in kwargs.items():
+            logstrings.append(f"{key}: {value}")
+
         with open(fullfilename, "a") as logfile:
-            logfile.write(f"timestamp: {timestamp} | command: {command}\n")
+            logfile.write('\n'.join(logstrings) + '\n')
 
     def _on_vehicle_control(self, data: int):
         if self._vehicle_control_event.is_set():
